@@ -84,7 +84,6 @@ convert_model_output_tidy <- function(model_output=list()){
   N_age=dim(model_output$S)[2]
   t_pts=dim(model_output$S)[1]
   date_values1=model_output$year[1]+((model_output$day-model_output$day[1]+1)/365.0)
-  date_values2=model_output$S
   date_values2=array(rep(date_values1,N_age),dim=c(N_age,t_pts))
 
   return(data.frame(age=rep(c(1:N_age),t_pts),
