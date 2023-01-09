@@ -84,9 +84,9 @@ convert_model_output_tidy <- function(model_output=list()){
   N_age=dim(model_output$S)[2]
   t_pts=dim(model_output$S)[1]
   date_values1=model_output$year[1]+((model_output$day-model_output$day[1]+1)/365.0)
-  date_values2=array(rep(date_values1,N_age),dim=c(N_age,t_pts))
+  date_values2=array(sort(rep(date_values1,N_age)),dim=c(N_age,t_pts))
 
   return(data.frame(age=rep(c(1:N_age),t_pts),
-                    date=as.vector(date_values2),S=as.vector(model_output$S),E=as.vector(model_output$E),
-                    I=as.vector(model_output$I), R=as.vector(model_output$R),V=as.vector(model_output$V)))
+                    date=as.vector(date_values2),  S=as.vector(t(model_output$S)),E=as.vector(t(model_output$E)),
+                    I=as.vector(t(model_output$I)),R=as.vector(t(model_output$R)),V=as.vector(t(model_output$V))))
 }
