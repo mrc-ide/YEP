@@ -7,8 +7,7 @@
 input_data_process(
   input_data = list(),
   obs_sero_data = NULL,
-  obs_case_data = NULL,
-  obs_outbreak_data = NULL
+  obs_case_data = NULL
 )
 }
 \arguments{
@@ -20,15 +19,12 @@ positives}
 
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 deaths}
-
-\item{obs_outbreak_data}{Outbreak Y/N data for comparison, by region and year, in format 0 = no outbreaks,
-1 = 1 or more outbreak(s)}
 }
 \description{
-Cross-reference input data with serological, annual case/death and/or outbreak data for comparison
+Cross-reference input data with serological and/or annual case/death data for comparison
 }
 \details{
 This function, used to prepare input data for functions used to calculate the likelihood of observed data,
   amends a list of population and vaccination data used as input for other functions,
-  cross-referencing it with seroprevalence, case and/or outbreak data and adding connection information.
+  cross-referencing it with seroprevalence and/or case data and adding connection information.
 }
