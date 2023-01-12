@@ -9,7 +9,6 @@ MCMC(
   input_data = list(),
   obs_sero_data = NULL,
   obs_case_data = NULL,
-  obs_outbreak_data = NULL,
   filename_prefix = "Chain",
   Niter = 1,
   type = NULL,
@@ -53,9 +52,6 @@ positives}
 
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no.
 cases/no. deaths}
-
-\item{obs_outbreak_data}{Outbreak Y/N data for comparison, by region and year, in format 0 = no outbreaks,
-1 = 1 or more outbreak(s)}
 
 \item{filename_prefix}{Prefix of names for output files}
 

@@ -31,8 +31,6 @@
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no.
 #'   cases/no. deaths
-#' @param obs_outbreak_data Outbreak Y/N data for comparison, by region and year, in format 0 = no outbreaks,
-#'   1 = 1 or more outbreak(s)
 #' @param filename_prefix Prefix of names for output files
 #' @param Niter Total number of steps to run
 #' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
@@ -58,7 +56,7 @@
 #' '
 #' @export
 #'
-MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,obs_outbreak_data=NULL,
+MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                  filename_prefix="Chain",Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,
                  prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
@@ -340,4 +338,235 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   } else {likelihood=-Inf}
 
   return(likelihood)
+}
+#-------------------------------------------------------------------------------
+#' @title mcmc_checks
+#'
+#' @description Perform checks on MCMC inputs
+#'
+#' @details This function, which is called by MCMC(), performs a number of checks on data to be used in fitting to
+#' ensure proper functionality. It verifies that the number of parameters being varied is consistent with other
+#' settings and that certain values are not outwith sensible boundaries (e.g. probabilities must be between 0 and 1).
+#'
+#' @param log_params_ini Initial values of varied parameters (natural logarithm of actual parameters)
+#' @param n_regions Number of regions
+#' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
+#'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
+#' @param log_params_min Lower limits of varied parameter values if specified
+#' @param log_params_max Upper limits of varied parameter values if specified
+#' @param prior_type Text indicating which type of calculation to use for prior probability
+#'  If prior_type = "zero", prior probability is always zero
+#'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
+#'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
+#'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param enviro_data Values of environmental covariates (if in use)
+#' @param R0_fixed_values Values of R0 to use if not being varied (set to NULL if R0 is being varied)
+#' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+#' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
+#' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
+#' @param m_FOI_Brazil FOI multiplier for Brazil regions
+#'
+#' @export
+#'
+mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=c(),log_params_max=c(),prior_type=NULL,
+                        enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,
+                        m_FOI_Brazil=1.0){
+
+  param_names=names(log_params_ini)
+  n_params=length(log_params_ini)
+  assert_that(is.null(param_names)==FALSE) #Check that parameters have been named (should always be done in MCMC2())
+  assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro")) #Check that type is one of those allowed
+  assert_that(prior_type %in% c("zero","flat","exp","norm")) #Check that prior type is one of those allowed
+
+  #If vaccine efficacy, severe case reporting probability and/or fatal case reporting probability have been set to
+  #NULL, check that they appear among the parameters (should always have been set up in MCMC() if
+  #create_param_labels() ran correctly )
+  if(is.numeric(vaccine_efficacy)==TRUE){
+    flag_vacc_eff=0
+    assert_that(0.0<=vaccine_efficacy && vaccine_efficacy<=1.0)
+  } else {
+    flag_vacc_eff=1
+    assert_that("vaccine_efficacy" %in% param_names)
+  }
+  if(is.numeric(p_rep_severe)==TRUE){
+    flag_severe=0
+    assert_that(0.0<=p_rep_severe && p_rep_severe<=1.0)
+  } else {
+    flag_severe=1
+    assert_that("p_rep_severe" %in% param_names)
+  }
+  if(is.numeric(p_rep_death)==TRUE){
+    flag_death=0
+    assert_that(0.0<=p_rep_death && p_rep_death<=1.0)
+  } else {
+    flag_death=1
+    assert_that("p_rep_death" %in% param_names)
+  }
+  if(is.numeric(m_FOI_Brazil)==TRUE){
+    flag_br=0
+    assert_that(0.0<=m_FOI_Brazil && m_FOI_Brazil<=1.0)
+  } else {
+    flag_br=1
+    assert_that("m_FOI_Brazil" %in% param_names)
+  }
+
+  #If environmental data has been supplied, get names of variables
+  if(is.null(enviro_data)==FALSE){
+    env_vars=names(enviro_data[c(2:ncol(enviro_data))])
+    n_env_vars=length(env_vars)
+  }
+
+  #Check that total number of parameters is correct based on "type" and on number of additional parameters (vaccine
+  #efficacy, reporting probabilities); check parameters named in correct order
+  if(type=="FOI+R0"){
+    assert_that(n_params==(2*n_regions)+flag_vacc_eff+flag_severe+flag_death+flag_br)
+    if(flag_vacc_eff==1){assert_that(param_names[1+(2*n_regions)]=="vaccine_efficacy")}
+    if(flag_severe==1){assert_that(param_names[1+flag_vacc_eff+(2*n_regions)]=="p_rep_severe")}
+    if(flag_death==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+(2*n_regions)]=="p_rep_death")}
+    if(flag_br==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+flag_death+(2*n_regions)]=="m_FOI_Brazil")}
+  }
+  if(type=="FOI"){
+    assert_that(is.null(R0_fixed_values)==FALSE)
+    assert_that(length(R0_fixed_values)==n_regions)
+    assert_that(n_params==n_regions+flag_vacc_eff+flag_severe+flag_death+flag_br)
+    if(flag_vacc_eff==1){assert_that(param_names[1+n_regions]=="vaccine_efficacy")}
+    if(flag_severe==1){assert_that(param_names[1+flag_vacc_eff+n_regions]=="p_rep_severe")}
+    if(flag_death==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+n_regions]=="p_rep_death")}
+    if(flag_br==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+flag_death+n_regions]=="m_FOI_Brazil")}
+  }
+  if(type=="FOI+R0 enviro"){
+    assert_that(is.null(enviro_data)==FALSE)
+    assert_that(n_params==(2*n_env_vars)+flag_vacc_eff+flag_severe+flag_death+flag_br)
+    for(i in 1:n_env_vars){
+      assert_that(param_names[i]==paste("FOI_",env_vars[i],sep=""))
+      assert_that(param_names[i+n_env_vars]==paste("R0_",env_vars[i],sep=""))
+    }
+    if(flag_vacc_eff==1){assert_that(param_names[1+(2*n_env_vars)]=="vaccine_efficacy")}
+    if(flag_severe==1){assert_that(param_names[1+flag_vacc_eff+(2*n_env_vars)]=="p_rep_severe")}
+    if(flag_death==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+(2*n_env_vars)]=="p_rep_death")}
+    if(flag_br==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+flag_death+(2*n_env_vars)]=="m_FOI_Brazil")}
+  }
+  if(type=="FOI enviro"){
+    assert_that(is.null(enviro_data)==FALSE)
+    assert_that(is.null(R0_fixed_values)==FALSE)
+    assert_that(length(R0_fixed_values)==n_regions)
+    assert_that(n_params==n_env_vars+flag_vacc_eff+flag_severe+flag_death+flag_br)
+    for(i in 1:n_env_vars){assert_that(param_names[i]==paste("FOI_",env_vars[i],sep=""))}
+    if(flag_vacc_eff==1){assert_that(param_names[1+n_env_vars]=="vaccine_efficacy")}
+    if(flag_severe==1){assert_that(param_names[1+flag_vacc_eff+n_env_vars]=="p_rep_severe")}
+    if(flag_death==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+n_env_vars]=="p_rep_death")}
+    if(flag_br==1){assert_that(param_names[1+flag_vacc_eff+flag_severe+flag_death+n_env_vars]=="m_FOI_Brazil")}
+  }
+
+  return(NULL)
+}
+#-------------------------------------------------------------------------------
+#' @title mcmc_FOI_R0_setup
+#'
+#' @description Set up FOI and R0 values and calculate some prior probability values for MCMC calculation
+#'
+#' @details Takes in parameter values used for Markov Chain Monte Carlo fitting, calculates spillover force of
+#' infection and (optionally) reproduction number values either directly or from environmental covariates. Also
+#' calculates related components of prior probability.
+#'
+#' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
+#'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
+#' @param prior_type Text indicating which type of calculation to use for prior probability
+#'  If prior_type = "zero", prior probability is always zero
+#'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
+#'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
+#'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param regions Vector of region names
+#' @param log_params_prop Proposed values of varied parameters (natural logarithm of actual parameters)
+#' @param enviro_data Environmental data frame, containing only relevant environmental variables
+#' @param R0_fixed_values Values of R0 to use if not being varied
+#' @param log_params_min Lower limits of varied parameter values if specified
+#' @param log_params_max Upper limits of varied parameter values if specified
+#' '
+#' @export
+#'
+mcmc_FOI_R0_setup <- function(type="",prior_type="",regions="",log_params_prop=c(),enviro_data=list(),
+                              R0_fixed_values=c(),log_params_min=c(),log_params_max=c()){
+
+  n_params=length(log_params_prop)
+  n_regions=length(regions)
+  FOI_values=R0_values=rep(0,n_regions)
+
+  if(type %in% c("FOI+R0 enviro","FOI enviro")){
+    n_env_vars=ncol(enviro_data)-1
+    if(type=="FOI+R0 enviro"){
+      enviro_coeffs=exp(log_params_prop[c(1:(2*n_env_vars))])
+    } else {
+      enviro_coeffs=exp(log_params_prop[c(1:n_env_vars)])}
+    for(i in 1:n_regions){
+      model_params=param_calc_enviro(enviro_coeffs,
+                                     as.numeric(enviro_data[enviro_data$region==regions[i],1+c(1:n_env_vars)]))
+      FOI_values[i]=model_params$FOI
+      if(type=="FOI+R0 enviro"){R0_values[i]=model_params$R0} else {R0_values[i]=R0_fixed_values[i]}
+    }
+  }
+  if(type %in% c("FOI+R0","FOI")){
+    FOI_values=exp(log_params_prop[c(1:n_regions)])
+    if(type=="FOI+R0"){R0_values=exp(log_params_prop[c((n_regions+1):(2*n_regions))])
+    } else {R0_values=R0_fixed_values}
+  }
+
+  prior=0
+  if(prior_type=="exp"){
+    prior_FOI=dexp(FOI_values,rate=1,log=TRUE)
+    if(type %in% c("FOI+R0","FOI+R0 enviro")){prior_R0=dexp(R0_values,rate=1,log=TRUE)} else {prior_R0=0}
+    prior = prior+sum(prior_FOI)+sum(prior_R0)
+  }
+  if(prior_type=="flat"){
+    if(is.null(log_params_min)==FALSE){
+      for(i in 1:n_params){
+        if(log_params_prop[i]<log_params_min[i]){prior=-Inf}
+      }
+    }
+    if(is.null(log_params_max)==FALSE){
+      for(i in 1:n_params){
+        if(log_params_prop[i]>log_params_max[i]){prior=-Inf}
+      }
+    }
+  }
+  if(prior_type=="norm"){
+    if(type=="FOI"){n_params_check=n_regions}
+    if(type=="FOI+R0"){n_params_check=2*n_regions}
+    if(type=="FOI enviro"){n_params_check=n_env_vars}
+    if(type=="FOI+R0 enviro"){n_params_check=2*n_env_vars}
+    prior=sum(dnorm(log_params_prop[c(1:n_params_check)],mean = 0,sd = 30,log = TRUE))
+  }
+
+  output=list(FOI_values=FOI_values,R0_values=R0_values,prior=prior)
+  return(output)
+}
+#-------------------------------------------------------------------------------
+#' @title param_prop_setup
+#'
+#' @description Set up proposed new log parameter values for next step in chain
+#'
+#' @details Takes in current values of parameter set used for Markov Chain Monte Carlo fitting and proposes new values
+#' from multivariate normal distribution where the existing values form the mean and the standard deviation is
+#' based on the chain covariance or (if the flag "adapt" is set to 1) a flat value based on the number of parameters.
+#'
+#' @param log_params Previous log parameter values used as input
+#' @param chain_cov Covariance calculated from previous steps in chain
+#' @param adapt 0/1 flag indicating which type of calculation to use for proposition value
+#' '
+#' @export
+#'
+param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
+
+  n_params = length(log_params)
+  if (adapt==1) {
+    sigma = (2.38 ^ 2) * chain_cov / n_params #'optimal' scaling of chain covariance
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  } else {
+    sigma = ((1e-2) ^ 2) * diag(n_params) / n_params #this is an inital proposal covariance, see [Mckinley et al 2014]
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  }
+  log_params_prop = log_params_prop_a[1,]
+  names(log_params_prop)=names(log_params)
+
+  return(log_params_prop)
 }

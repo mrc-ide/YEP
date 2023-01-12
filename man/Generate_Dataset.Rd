@@ -10,7 +10,6 @@ Generate_Dataset(
   R0_values = c(),
   obs_sero_data = NULL,
   obs_case_data = NULL,
-  obs_outbreak_data = NULL,
   vaccine_efficacy = 1,
   p_rep_severe = 1,
   p_rep_death = 1,
@@ -30,9 +29,6 @@ positives}
 
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 deaths}
-
-\item{obs_outbreak_data}{Outbreak Y/N data for comparison, by region and year, in format 0 = no outbreaks,
-1 = 1 or more outbreak(s)}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
 

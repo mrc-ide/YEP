@@ -15,6 +15,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import graphics
 #' @import grDevices
 #' @import maptree
+#' @import mvtnorm
 #' @import sf
 #' @import stats
 #------------------------------------------------
@@ -189,8 +190,6 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
-#' @param obs_outbreak_data Outbreak Y/N data for comparison, by region and year, in format 0 = no outbreaks,
-#'   1 = 1 or more outbreak(s)
 #' @param vaccine_efficacy Fractional vaccine efficacy
 #' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
 #' @param p_rep_death Probability of reporting of a fatal infection
@@ -203,14 +202,14 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @export
 #'
 Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
-                             obs_sero_data=NULL,obs_case_data=NULL,obs_outbreak_data=NULL,
+                             obs_sero_data=NULL,obs_case_data=NULL,
                              vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,mode_start=1,dt=1.0){
 
   assert_that(input_data_check(input_data),
               msg=paste("Input data must be in standard format",
                         " (see https://mrc-ide.github.io/YellowFeverDynamics/articles/CGuideAInputs.html )"))
-  assert_that(any(is.null(obs_sero_data)==FALSE,is.null(obs_case_data)==FALSE,is.null(obs_outbreak_data)==FALSE),
-              msg="Need at least one of obs_sero_data, obs_case_data or obs_outbreak_data")
+  assert_that(any(is.null(obs_sero_data)==FALSE,is.null(obs_case_data)==FALSE),
+              msg="Need at least one of obs_sero_data or obs_case_data")
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   if(is.null(obs_case_data)==FALSE){
     assert_that(p_rep_severe >=0.0 && p_rep_severe <=1.0,
@@ -279,7 +278,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     #Compile seroprevalence data if necessary
     if(flag_sero==1){
       sero_line_list=input_data$sero_line_list[[n_region]]
-      sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output,i)
+      sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
       model_sero_data$samples[sero_line_list]=sero_results$samples
       model_sero_data$positives[sero_line_list]=sero_results$positives
     }
@@ -290,4 +289,79 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))
+}
+#-------------------------------------------------------------------------------
+#' @title create_param_labels
+#'
+#' @description Apply names to the parameters in a set used for data matching and parameter fitting
+#'
+#' @details Takes in input list and environmental data along with names of additional parameters (vaccine efficacy
+#' and reporting probabilities) and generates list of names for parameter set to use as input for fitting functions
+#'
+#' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
+#'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
+#' @param input_data List of population and vaccination data for multiple regions (created using data input creation
+#' code and usually loaded from RDS file)
+#' @param enviro_data Environmental data frame, containing only relevant environmental variables
+#' @param extra_params Vector of strings listing parameters besides ones determining FOI/R0 (may include vaccine
+#'   efficacy and/or infection/death reporting probabilities)
+#'
+#' @export
+#'
+create_param_labels <- function(type="FOI",input_data=list(),enviro_data=NULL,extra_params=c("vacc_eff")){
+
+  assert_that(type %in% c("FOI","FOI+R0","FOI enviro","FOI+R0 enviro"))
+  assert_that(input_data_check(input_data),msg="Input data must be in standard format")
+
+  n_extra=length(extra_params)
+
+  if(type %in% c("FOI","FOI+R0")){
+    regions=input_data$region_labels
+    n_regions=length(regions)
+    if(type=="FOI"){n_params=n_regions+n_extra} else {n_params=(2*n_regions)+n_extra}
+    param_names=rep("",n_params)
+    for(i in 1:n_regions){
+      param_names[i]=paste("FOI_",regions[i],sep="")
+      if(type=="FOI+R0"){param_names[i+n_regions]=paste("R0_",regions[i],sep="")}
+    }
+  } else {
+    assert_that(is.data.frame(enviro_data)) #TODO - msg
+    env_vars=colnames(enviro_data)[c(2:ncol(enviro_data))]
+    n_env_vars=length(env_vars)
+    if(type=="FOI enviro"){n_params=n_env_vars+n_extra} else {n_params=(2*n_env_vars)+n_extra}
+    param_names=rep("",n_params)
+    for(i in 1:n_env_vars){
+      param_names[i]=paste("FOI_",env_vars[i],sep="")
+      if(type=="FOI+R0 enviro"){param_names[i+n_env_vars]=paste("R0_",env_vars[i],sep="")}
+    }
+  }
+  if(n_extra>0){param_names[(n_params-n_extra+1):n_params]=extra_params}
+
+  return(param_names)
+}
+#-------------------------------------------------------------------------------
+#' @title param_calc_enviro
+#'
+#' @description Parameter calculation from environmental covariates
+#'
+#' @details Takes in set of coefficients of environmental covariates and covariate values and calculates values of
+#'   spillover force of infection and reproduction number.
+#'
+#' @param enviro_coeffs Values of environmental coefficients
+#' @param enviro_covar_values Values of environmental covariates
+#' '
+#' @export
+#'
+param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
+
+  assert_that(all(enviro_coeffs>=0),msg="All environmental coefficients must have positive values")
+  n_env_vars=length(enviro_covar_values)
+  assert_that(length(enviro_coeffs) %in% c(n_env_vars,2*n_env_vars),
+              msg="Number of environmental coefficients must equal number of covariates (calculating FOI only) or twice number of covariates (calculating FOI and R0)")
+
+  output=list(FOI=NA,R0=NA)
+  output$FOI=sum(enviro_coeffs[c(1:n_env_vars)]*enviro_covar_values)
+  if(length(enviro_coeffs)==2*n_env_vars){output$R0=sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)}
+
+  return(output)
 }

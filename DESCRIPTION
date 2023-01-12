@@ -17,6 +17,7 @@ Imports:
     dde,
     ggplot2,
     maptree,
+    mvtnorm,
     sf,
     stats
 SystemRequirements: C++11
