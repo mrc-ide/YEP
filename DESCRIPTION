@@ -16,10 +16,13 @@ Imports:
     assertthat,
     dde,
     ggplot2,
+    graphics,
+    grDevices,
     maptree,
     mvtnorm,
     sf,
-    stats
+    stats,
+    tgp
 SystemRequirements: C++11
 Remotes:
     mrc-ide/odin

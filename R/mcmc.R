@@ -570,3 +570,116 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 
   return(log_params_prop)
 }
+#-------------------------------------------------------------------------------
+#' @title mcmc_prelim_fit
+#'
+#' @description Test multiple sets of parameters randomly drawn from range between maximum and minimum
+#' values in order to find approximate values giving maximum likelihood
+#'
+#' @details This function is used to estimate the model parameter values giving maximum likelihood; it is primarily
+#' intended to be used to generate initial parameter values for Markov Chain Monte Carlo fitting (using the mcmc()
+#' function).
+#'
+#' @param n_iterations = Number of times to run and adjust maximum/minimum
+#' @param n_param_sets = Number of parameter sets to run in each iteration
+#' @param n_bounds = Number of parameter sets (with highest likelihood values) to take at each iteration to create new
+#' maximum/minimum values
+#' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
+#'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
+#' @param log_params_min Initial lower limits of varied parameter values (natural logarithm of actual limits)
+#' @param log_params_max Initial upper limits of varied parameter values (natural logarithm of actual limits)
+#' @param input_data List of population and vaccination data for multiple regions (created using data input creation
+#'   code and usually loaded from RDS file)
+#' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+#'   positives
+#' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
+#'   deaths
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
+#'  If mode_start = 0, only vaccinated individuals
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity
+#' @param prior_type Text indicating which type of calculation to use for prior probability
+#'  If prior_type = "zero", prior probability is always zero
+#'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
+#'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
+#'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param dt time increment in days (must be 1 or 5)
+#' @param enviro_data Values of environmental variables (if in use)
+#' @param R0_fixed_values Values of R0 to use if not being varied
+#' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+#' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
+#' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
+#' @param m_FOI_Brazil Multiplier of FOI in Brazil regions
+#' '
+#' @export
+#'
+mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
+                            type=NULL,log_params_min=NULL,log_params_max=NULL,input_data=list(),
+                            obs_sero_data=list(),obs_case_data=list(),
+                            mode_start=0,prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=c(),
+                            vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
+
+  #TODO - Add assertthat functions
+  assert_that(length(log_params_min)==length(log_params_max))
+  assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro"))
+  assert_that(prior_type %in% c("zero","flat","exp","norm"))
+
+  best_fit_results=list()
+  n_params=length(log_params_min)
+  extra_params=c()
+  if(is.null(vaccine_efficacy)==TRUE){extra_params=append(extra_params,"vaccine_efficacy")}
+  if(is.null(p_rep_severe)==TRUE){extra_params=append(extra_params,"p_rep_severe")}
+  if(is.null(p_rep_death)==TRUE){extra_params=append(extra_params,"p_rep_death")}
+  if(is.null(m_FOI_Brazil)==TRUE){extra_params=append(extra_params,"m_FOI_Brazil")}
+  param_names=create_param_labels(type,input_data,enviro_data,extra_params)
+  #TODO - Additional assert_that checks
+  assert_that(length(param_names)==n_params)
+  names(log_params_min)=names(log_params_max)=param_names
+  xlabels=param_names
+  for(i in 1:n_params){xlabels[i]=substr(xlabels[i],1,15)}
+  ylabels=10^c(-8,-6,-4,-3,-2,-1,0,1)
+  par(mar=c(6,2,1,1))
+  ylim=c(min(log_params_min),max(log_params_max))
+
+  for(iteration in 1:n_iterations){
+    cat("\nIteration: ",iteration,"\n",sep="")
+    all_param_sets <- lhs(n=n_param_sets,rect=cbind(log_params_min,log_params_max))
+    results=data.frame()
+    const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
+                    mode_start=mode_start,prior_type=prior_type,dt=dt,enviro_data=enviro_data,
+                    R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
+                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil)
+
+    for(set in 1:n_param_sets){
+      if(set %% 10 == 0){cat("\n")}
+      cat(set,"\t",sep="")
+      log_params_prop=all_param_sets[set,]
+      names(log_params_prop)=param_names
+      like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,const_list)
+      results<-rbind(results,c(set,exp(log_params_prop),like_prop))
+      if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
+    }
+    results<-results[order(results$LogLikelihood,decreasing=TRUE), ]
+    best_fit_results[[iteration]]=results
+
+    log_params_min_new=log_params_max_new=rep(0,n_params)
+    for(i in 1:n_params){
+      log_params_min_new[i]=min(log(results[c(1:n_bounds),i+1]))
+      log_params_max_new[i]=max(log(results[c(1:n_bounds),i+1]))
+    }
+    names(log_params_min_new)=names(log_params_max_new)=param_names
+
+    matplot(x=c(1:n_params),y=log(t(results[c(1:n_bounds),c(1:n_params)+1])),type="p",pch=16,col=1,
+            xaxt="n",yaxt="n",xlab="",ylab="",ylim=ylim)
+    axis(side=1,at=c(1:n_params),labels=xlabels,las=2,cex.axis=0.7)
+    axis(side=2,at=log(ylabels),labels=ylabels)
+    matplot(x=c(1:n_params),y=log_params_min,type="l",col=1,lty=2,add=TRUE)
+    matplot(x=c(1:n_params),y=log_params_max,type="l",col=1,lty=2,add=TRUE)
+    matplot(x=c(1:n_params),y=log_params_min_new,type="l",col=2,add=TRUE)
+    matplot(x=c(1:n_params),y=log_params_max_new,type="l",col=2,add=TRUE)
+
+    log_params_min=log_params_min_new
+    log_params_max=log_params_max_new
+  }
+
+  return(best_fit_results)
+}

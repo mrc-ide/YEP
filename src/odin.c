@@ -645,7 +645,7 @@ SEXP SEIRV_Model_create(SEXP user) {
   internal->FOI_max = 1;
   internal->initial_day = 0;
   internal->initial_time = 0;
-  internal->Pmin = 0;
+  internal->Pmin = 0.10000000000000001;
   internal->t_incubation = 5;
   internal->t_infectious = 5;
   internal->t_latent = 5;

@@ -18,6 +18,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import mvtnorm
 #' @import sf
 #' @import stats
+#' @import tgp
 #------------------------------------------------
 # unload DLL when package is unloaded
 #' @noRd
