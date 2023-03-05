@@ -22,7 +22,9 @@ Imports:
     mvtnorm,
     sf,
     stats,
-    tgp
+    tgp,
+    truncdist,
+    utils
 SystemRequirements: C++11
 Remotes:
     mrc-ide/odin

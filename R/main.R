@@ -19,6 +19,8 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import sf
 #' @import stats
 #' @import tgp
+#' @import truncdist
+#' @import utils
 #------------------------------------------------
 # unload DLL when package is unloaded
 #' @noRd
