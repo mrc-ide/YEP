@@ -46,7 +46,7 @@ case_data_generate <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
 
   x_res <- x$run(n_steps)
   for(t in c((step0+1):n_steps)){
-    results_data$C[t]=sum(x_res[t,pts_select])
+    results_data$C[t-step0]=sum(x_res[t,pts_select])
   }
 
   return(results_data)
