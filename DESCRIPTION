@@ -20,6 +20,7 @@ Imports:
     grDevices,
     maptree,
     mvtnorm,
+    odin,
     sf,
     stats,
     tgp,
