@@ -275,16 +275,16 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
         annual_data$rep_cases[n_year]=annual_data$rep_deaths[n_year]+rbinom(1,severe_infs-deaths,p_rep_severe)
       }
 
-      model_case_values[case_line_list]=annual_data$rep_cases
-      model_death_values[case_line_list]=annual_data$rep_deaths
+      model_case_values[case_line_list]=model_case_values[case_line_list]+annual_data$rep_cases
+      model_death_values[case_line_list]=model_death_values[case_line_list]+annual_data$rep_deaths
     }
 
     #Compile seroprevalence data if necessary
     if(flag_sero==1){
       sero_line_list=input_data$sero_line_list[[n_region]]
       sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
-      model_sero_data$samples[sero_line_list]=sero_results$samples
-      model_sero_data$positives[sero_line_list]=sero_results$positives
+      model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
+      model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
     }
     model_output<-NULL
   }
