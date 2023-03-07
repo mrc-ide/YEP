@@ -10,6 +10,7 @@ t_infectious <- 5 #Time cases remain infectious
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
 #' @import assertthat
+#' @import coda
 #' @import dde
 #' @import ggplot2
 #' @import graphics
