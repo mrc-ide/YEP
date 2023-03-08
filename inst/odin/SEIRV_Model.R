@@ -4,12 +4,9 @@
 # time point (separated by increment dt) and also numbers of new infections and total force of infection at each
 # time point.
 
-dt <- user() #Time increment in days
-#initial(time) <- 0 #Initial value of time in days
-#update(time) <- (step + 1) * dt
-
 #Parameters
-FOI_spillover <- user() #Spillover force of infection
+dt <- user() #Time increment in days
+FOI_spillover <- user() #Spillover force of infection (per day)
 R0 <- user() #Basic reproduction number
 N_age <- user() #Number of age categories
 vacc_rate_annual[,] <- user() #Daily rate of vaccination by age and year
@@ -27,7 +24,7 @@ dP1_all[,] <- user() #Daily increase in number of people by age group (people ar
 dP2_all[,] <- user() #Daily decrease in number of people by age group (people leaving group due to age etc.)
 n_years <- user() #Number of years for which model to be run
 
-Pmin <- 0.1 #Minimum population setting to avoid negative numbers
+Pmin <- 0 #Minimum population setting to avoid negative numbers
 FOI_max <- 1.0 #Upper threshold for total force of infection to avoid more infections than people in a group
 t_incubation <- 5 #Time for cases to incubate in mosquito
 t_latent <- 5 #Latent period before cases become infectious

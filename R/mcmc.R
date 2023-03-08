@@ -614,6 +614,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of FOI in Brazil regions
+#' @param progress_file File to send results in progress
 #' '
 #' @export
 #'
@@ -621,7 +622,8 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                             type=NULL,log_params_min=NULL,log_params_max=NULL,input_data=list(),
                             obs_sero_data=list(),obs_case_data=list(),
                             mode_start=0,prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=c(),
-                            vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
+                            vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
+                            progress_file="file.csv"){
 
   #TODO - Add assertthat functions
   assert_that(length(log_params_min)==length(log_params_max))
@@ -636,6 +638,9 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
   if(is.null(p_rep_death)==TRUE){extra_params=append(extra_params,"p_rep_death")}
   if(is.null(m_FOI_Brazil)==TRUE){extra_params=append(extra_params,"m_FOI_Brazil")}
   param_names=create_param_labels(type,input_data,enviro_data,extra_params)
+
+  cat(c(param_names,"LogLikelihood"),file=progress_file,sep="\t")
+
   #TODO - Additional assert_that checks
   assert_that(length(param_names)==n_params)
   names(log_params_min)=names(log_params_max)=param_names
@@ -655,13 +660,19 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                     p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil)
 
     for(set in 1:n_param_sets){
+      cat("\n",file=progress_file,sep="",append=TRUE)
       if(set %% 10 == 0){cat("\n")}
       cat(set,"\t",sep="")
       log_params_prop=all_param_sets[set,]
+
+      cat(log_params_prop,file=progress_file,sep="\t",append=TRUE)
+
       names(log_params_prop)=param_names
       like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,const_list)
       results<-rbind(results,c(set,exp(log_params_prop),like_prop))
       if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
+
+      cat("\t",like_prop,file=progress_file,sep="",append=TRUE)
     }
     results<-results[order(results$LogLikelihood,decreasing=TRUE), ]
     best_fit_results[[iteration]]=results

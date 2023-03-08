@@ -22,7 +22,8 @@ mcmc_prelim_fit(
   vaccine_efficacy = NULL,
   p_rep_severe = NULL,
   p_rep_death = NULL,
-  m_FOI_Brazil = 1
+  m_FOI_Brazil = 1,
+  progress_file = "file.csv"
 )
 }
 \arguments{
@@ -71,7 +72,9 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 
 \item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
 
-\item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions
+\item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions}
+
+\item{progress_file}{File to send results in progress
 '}
 }
 \description{
