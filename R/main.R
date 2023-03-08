@@ -11,14 +11,9 @@ t_infectious <- 5 #Time cases remain infectious
 #' @useDynLib YEP, .registration = TRUE
 #' @import assertthat
 #' @import coda
-#' @import dde
-#' @import ggplot2
 #' @import graphics
-#' @import grDevices
-#' @import maptree
 #' @import mvtnorm
 #' @import odin
-#' @import sf
 #' @import stats
 #' @import tgp
 #' @import truncdist
@@ -65,7 +60,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
                        Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
                        year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
 
-  n_nv=5 #Number of non-vector outputs
+  n_nv=4 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
   t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
@@ -75,7 +70,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
 
-  return(list(day=x_res[t_pts,3],year=x_res[t_pts,4],FOI_total=x_res[t_pts,5],
+  return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
               S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
               E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
               I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),

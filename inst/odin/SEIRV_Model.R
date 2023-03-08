@@ -5,8 +5,8 @@
 # time point.
 
 dt <- user() #Time increment in days
-initial(time) <- 0 #Initial value of time in days
-update(time) <- (step + 1) * dt
+#initial(time) <- 0 #Initial value of time in days
+#update(time) <- (step + 1) * dt
 
 #Parameters
 FOI_spillover <- user() #Spillover force of infection
