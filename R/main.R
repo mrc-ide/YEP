@@ -11,6 +11,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @useDynLib YEP, .registration = TRUE
 #' @import assertthat
 #' @import coda
+#' @import dde
 #' @import graphics
 #' @import mvtnorm
 #' @import odin
