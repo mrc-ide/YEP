@@ -15,6 +15,7 @@ LinkingTo:
 Imports:
     assertthat,
     coda,
+    dde,
     graphics,
     mvtnorm,
     odin,
