@@ -239,44 +239,34 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
 
-    #Get information on which observed data types are available for considered region
-    flag_sero=input_data$flag_sero[n_region]
-    flag_case=input_data$flag_case[n_region]
-
-    #Get input data on region
-    vacc_data=input_data$vacc_data[n_region,,]
-    pop_data=input_data$pop_data[n_region,,]
-    year_end=input_data$year_end[n_region]
-    year_data_begin=input_data$year_data_begin[n_region]
-
     #Run model
-    model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data,pop_data,
-                           year0=min(input_data$years_labels),years_data=c(year_data_begin:year_end),
+    model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
+                           pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
+                           years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
                            mode_start,vaccine_efficacy,dt=dt)
 
     #Compile case data if needed
-    if(flag_case==1){
+    if(input_data$flag_case[n_region]==1){
       case_line_list=input_data$case_line_list[[n_region]]
       years_outbreak=obs_case_data$year[case_line_list]
       n_years_outbreak=length(case_line_list)
 
-      blank=rep(0,n_years_outbreak)
-      annual_data=list(rep_cases=blank,rep_deaths=blank)
+      rep_cases=rep_deaths=rep(0,n_years_outbreak)
       for(n_year in 1:n_years_outbreak){
         year=years_outbreak[n_year]
         infs=sum(model_output$C[model_output$year==year,])
         severe_infs=rbinom(1,floor(infs),p_severe_inf)
         deaths=rbinom(1,severe_infs,p_death_severe_inf)
-        annual_data$rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-        annual_data$rep_cases[n_year]=annual_data$rep_deaths[n_year]+rbinom(1,severe_infs-deaths,p_rep_severe)
+        rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
+        rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,severe_infs-deaths,p_rep_severe)
       }
 
-      model_case_values[case_line_list]=model_case_values[case_line_list]+annual_data$rep_cases
-      model_death_values[case_line_list]=model_death_values[case_line_list]+annual_data$rep_deaths
+      model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
+      model_death_values[case_line_list]=model_death_values[case_line_list]+rep_deaths
     }
 
     #Compile seroprevalence data if necessary
-    if(flag_sero==1){
+    if(input_data$flag_sero[n_region]==1){
       sero_line_list=input_data$sero_line_list[[n_region]]
       sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
       model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
@@ -285,7 +275,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     model_output<-NULL
   }
 
-  if(flag_sero==1){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
+  if(any(input_data$flag_sero[n_region]>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))
