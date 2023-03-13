@@ -35,7 +35,7 @@ deaths}
 
 \item{const_list}{= List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
 mode_start,prior_type,dt=dt,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
-m_FOI_Brazil)}
+m_FOI_Brazil,cluster)}
 }
 \description{
 Single MCMC step - one or more regions

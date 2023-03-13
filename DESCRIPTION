@@ -19,6 +19,7 @@ Imports:
     graphics,
     mvtnorm,
     odin,
+    parallel,
     stats,
     tgp,
     truncdist,

@@ -15,6 +15,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import graphics
 #' @import mvtnorm
 #' @import odin
+#' @import parallel
 #' @import stats
 #' @import tgp
 #' @import truncdist
@@ -179,7 +180,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #-------------------------------------------------------------------------------
 #' @title Generate_Dataset
 #'
-#' @description Generate serological, annual case/death and/or annual outbreak risk data
+#' @description Generate serological and/or annual case/death data
 #'
 #' @details This function is used to generate serological, annual case/death and/or annual outbreak risk data based
 #'   on observed or dummy data sets; it is normally used by single_like_calc() and data_match_single() functions

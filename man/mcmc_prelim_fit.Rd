@@ -23,7 +23,8 @@ mcmc_prelim_fit(
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
-  progress_file = "file.csv"
+  progress_file = "file.csv",
+  cluster = NULL
 )
 }
 \arguments{
@@ -74,7 +75,9 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 
 \item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions}
 
-\item{progress_file}{File to send results in progress
+\item{progress_file}{File to send results in progress}
+
+\item{cluster}{Cluster of threads to use if multithreading to be used; set to NULL otherwise
 '}
 }
 \description{

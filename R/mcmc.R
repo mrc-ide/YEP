@@ -53,13 +53,14 @@
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
+#' @param cluster Cluster of threads to use for multithreading; set to NULL if not using multithreading
 #' '
 #' @export
 #'
 MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                  filename_prefix="Chain",Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,
                  prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
-                 p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
+                 p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,cluster=NULL){
 
   #Check that initial, minimum and maximum parameters are in vectors of same sizes
   n_params=length(log_params_ini)
@@ -96,7 +97,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
                   mode_start=mode_start,prior_type=prior_type,dt=dt,enviro_data=enviro_data,
                   R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
-                  p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil)
+                  p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
   ### find posterior probability at start ###
   out = MCMC_step(log_params=log_params_ini,input_data,obs_sero_data,obs_case_data,
@@ -186,7 +187,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @param like_current = Current accepted likelihood value
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
 #'   mode_start,prior_type,dt=dt,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
-#'   m_FOI_Brazil)
+#'   m_FOI_Brazil,cluster)
 #'
 #' @export
 #'
@@ -237,7 +238,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
 #'   deaths
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
 #'   mode_start,prior_type,dt=dt,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
-#'   m_FOI_Brazil)
+#'   m_FOI_Brazil,cluster)
 #'
 #' @export
 #'
@@ -300,15 +301,20 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   prior_prop=prior_vacc+prior_report+FOI_R0_data$prior+sum(dnorm(log(c(p_rep_severe,p_rep_death)),
                                                                  mean = 0,sd = 30,log = TRUE))
 
-  if(is.null(obs_sero_data)){sero_like_values=NA}
-  if(is.null(obs_case_data)){cases_like_values=deaths_like_values=NA}
+  if(is.null(obs_sero_data)){sero_like_values=0}
+  if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
 
   ### If prior finite, evaluate likelihood ###
   if (is.finite(prior_prop)) {
 
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
-                                vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt)
+    if(is.null(const_list$cluster)){
+      dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
+                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt)
+    } else {
+      dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
+                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,const_list$cluster)
+    }
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
@@ -330,11 +336,6 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
                                  size=rep(1,length(obs_case_data$deaths)),log=TRUE)
     }
-
-
-
-
-
 
     likelihood=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
                      sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
@@ -615,6 +616,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of FOI in Brazil regions
 #' @param progress_file File to send results in progress
+#' @param cluster Cluster of threads to use if multithreading to be used; set to NULL otherwise
 #' '
 #' @export
 #'
@@ -623,7 +625,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                             obs_sero_data=list(),obs_case_data=list(),
                             mode_start=0,prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=c(),
                             vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
-                            progress_file="file.csv"){
+                            progress_file="file.csv",cluster=NULL){
 
   #TODO - Add assertthat functions
   assert_that(length(log_params_min)==length(log_params_max))
@@ -657,7 +659,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
     const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
                     mode_start=mode_start,prior_type=prior_type,dt=dt,enviro_data=enviro_data,
                     R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
-                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil)
+                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
     for(set in 1:n_param_sets){
       cat("\n",file=progress_file,sep="",append=TRUE)

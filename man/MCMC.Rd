@@ -22,7 +22,8 @@ MCMC(
   vaccine_efficacy = NULL,
   p_rep_severe = NULL,
   p_rep_death = NULL,
-  m_FOI_Brazil = 1
+  m_FOI_Brazil = 1,
+  cluster = NULL
 )
 }
 \arguments{
@@ -87,7 +88,9 @@ enviro"); set to NULL if not in use}
 
 \item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
 
-\item{m_FOI_Brazil}{Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
+\item{m_FOI_Brazil}{Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
+
+\item{cluster}{Cluster of threads to use for multithreading; set to NULL if not using multithreading
 '}
 }
 \description{
