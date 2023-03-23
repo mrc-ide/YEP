@@ -643,7 +643,7 @@ SEXP SEIRV_Model_create(SEXP user) {
   internal->vacc_rate_annual = NULL;
   internal->FOI_max = 1;
   internal->initial_day = 0;
-  internal->Pmin = 0;
+  internal->Pmin = 1e-99;
   internal->t_incubation = 5;
   internal->t_infectious = 5;
   internal->t_latent = 5;
