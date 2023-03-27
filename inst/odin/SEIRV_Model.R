@@ -14,6 +14,9 @@ vaccine_efficacy <- user() #Proportion of vaccinations which successfully protec
 
 #initial conditions
 year0 <- user()  #Starting year
+steps_inc <- user() #TBA
+steps_lat <- user() #TBA
+steps_inf <- user() #TBA
 Sus0[] <- user() #Susceptible population by age group at start
 Exp0[] <- user() #Exposed population by age group at start
 Inf0[] <- user() #Infectious population by age group at start
@@ -26,19 +29,20 @@ n_years <- user() #Number of years for which model to be run
 
 Pmin <- 1.0e-99 #Minimum population setting to avoid negative numbers
 FOI_max <- 1.0 #Upper threshold for total force of infection to avoid more infections than people in a group
-t_incubation <- 5 #Time for cases to incubate in mosquito
-t_latent <- 5 #Latent period before cases become infectious
-t_infectious <- 5 #Time cases remain infectious
-I_lag[1:N_age] <- delay(I[i], t_incubation)
-beta <- (R0*dt)/t_infectious #Daily exposure rate
+# t_incubation <- 5 #Time for cases to incubate in mosquito
+# t_latent <- 5 #Latent period before cases become infectious
+# t_infectious <- 5 #Time cases remain infectious
+I_lag[1:N_age] <- delay(I[i], steps_inc)
+#beta <- (R0*dt)/t_infectious #Daily exposure rate
+beta <- R0/steps_inf #Daily exposure rate
 FOI_sum <-  min(FOI_max, beta*(sum(I_lag)/P_tot) + (FOI_spillover*dt)) #Total force of infection
 year_i <- floor(((step+1)*dt)/365) + 1 #Number of years since start, as integer
 dP1[1:N_age] <- dP1_all[i, as.integer(year_i)]*dt #Increase in population by age group over 1 time increment
 dP2[1:N_age] <- dP2_all[i, as.integer(year_i)]*dt #Decrease in population by age group over 1 time increment
 
 E_new[1:N_age] <- S[i]*FOI_sum #New exposed individuals by age group (deterministic)
-I_new[1:N_age] <- delay(E_new[i], t_latent)     #New infectious individuals by age group
-R_new[1:N_age] <- delay(I_new[i], t_infectious)     #New recovered individuals by age group
+I_new[1:N_age] <- delay(E_new[i], steps_lat)     #New infectious individuals by age group
+R_new[1:N_age] <- delay(I_new[i], steps_inf)     #New recovered individuals by age group
 P_nV[1:N_age] <- S[i] + R[i] #Total vaccine-targetable population by age group
 inv_P_nV[1:N_age] <- 1.0/P_nV[i]
 P[1:N_age] <- P_nV[i] + V[i] #Total population by age group

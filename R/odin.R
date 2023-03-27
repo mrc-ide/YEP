@@ -17,8 +17,9 @@ SEIRV_Model_ <- R6::R6Class(
       rhs_dde = "SEIRV_Model_rhs_dde"),
     dll = "YEP",
     user = c("Cas0", "dP1_all", "dP2_all", "dt", "Exp0", "FOI_spillover",
-             "Inf0", "N_age", "n_years", "R0", "Rec0", "Sus0", "Vac0",
-             "vacc_rate_annual", "vaccine_efficacy", "year0"),
+             "Inf0", "N_age", "n_years", "R0", "Rec0", "steps_inc",
+             "steps_inf", "steps_lat", "Sus0", "Vac0", "vacc_rate_annual",
+             "vaccine_efficacy", "year0"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they

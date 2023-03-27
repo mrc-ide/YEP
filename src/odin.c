@@ -512,10 +512,10 @@ typedef struct SEIRV_Model_internal {
   double *R_new;
   double R0;
   double *Rec0;
+  double steps_inc;
+  double steps_inf;
+  double steps_lat;
   double *Sus0;
-  double t_incubation;
-  double t_infectious;
-  double t_latent;
   double *Vac0;
   double *vacc_rate;
   double *vacc_rate_annual;
@@ -644,9 +644,6 @@ SEXP SEIRV_Model_create(SEXP user) {
   internal->FOI_max = 1;
   internal->initial_day = 0;
   internal->Pmin = 1e-99;
-  internal->t_incubation = 5;
-  internal->t_infectious = 5;
-  internal->t_latent = 5;
   internal->Cas0 = NULL;
   internal->dP1_all = NULL;
   internal->dP2_all = NULL;
@@ -658,6 +655,9 @@ SEXP SEIRV_Model_create(SEXP user) {
   internal->n_years = NA_INTEGER;
   internal->R0 = NA_REAL;
   internal->Rec0 = NULL;
+  internal->steps_inc = NA_REAL;
+  internal->steps_inf = NA_REAL;
+  internal->steps_lat = NA_REAL;
   internal->Sus0 = NULL;
   internal->Vac0 = NULL;
   internal->vacc_rate_annual = NULL;
@@ -797,12 +797,12 @@ SEXP SEIRV_Model_contents(SEXP internal_p) {
   SEXP Rec0 = PROTECT(allocVector(REALSXP, internal->dim_Rec0));
   memcpy(REAL(Rec0), internal->Rec0, internal->dim_Rec0 * sizeof(double));
   SET_VECTOR_ELT(contents, 73, Rec0);
+  SET_VECTOR_ELT(contents, 74, ScalarReal(internal->steps_inc));
+  SET_VECTOR_ELT(contents, 75, ScalarReal(internal->steps_inf));
+  SET_VECTOR_ELT(contents, 76, ScalarReal(internal->steps_lat));
   SEXP Sus0 = PROTECT(allocVector(REALSXP, internal->dim_Sus0));
   memcpy(REAL(Sus0), internal->Sus0, internal->dim_Sus0 * sizeof(double));
-  SET_VECTOR_ELT(contents, 74, Sus0);
-  SET_VECTOR_ELT(contents, 75, ScalarReal(internal->t_incubation));
-  SET_VECTOR_ELT(contents, 76, ScalarReal(internal->t_infectious));
-  SET_VECTOR_ELT(contents, 77, ScalarReal(internal->t_latent));
+  SET_VECTOR_ELT(contents, 77, Sus0);
   SEXP Vac0 = PROTECT(allocVector(REALSXP, internal->dim_Vac0));
   memcpy(REAL(Vac0), internal->Vac0, internal->dim_Vac0 * sizeof(double));
   SET_VECTOR_ELT(contents, 78, Vac0);
@@ -891,10 +891,10 @@ SEXP SEIRV_Model_contents(SEXP internal_p) {
   SET_STRING_ELT(nms, 71, mkChar("R_new"));
   SET_STRING_ELT(nms, 72, mkChar("R0"));
   SET_STRING_ELT(nms, 73, mkChar("Rec0"));
-  SET_STRING_ELT(nms, 74, mkChar("Sus0"));
-  SET_STRING_ELT(nms, 75, mkChar("t_incubation"));
-  SET_STRING_ELT(nms, 76, mkChar("t_infectious"));
-  SET_STRING_ELT(nms, 77, mkChar("t_latent"));
+  SET_STRING_ELT(nms, 74, mkChar("steps_inc"));
+  SET_STRING_ELT(nms, 75, mkChar("steps_inf"));
+  SET_STRING_ELT(nms, 76, mkChar("steps_lat"));
+  SET_STRING_ELT(nms, 77, mkChar("Sus0"));
   SET_STRING_ELT(nms, 78, mkChar("Vac0"));
   SET_STRING_ELT(nms, 79, mkChar("vacc_rate"));
   SET_STRING_ELT(nms, 80, mkChar("vacc_rate_annual"));
@@ -912,9 +912,12 @@ SEXP SEIRV_Model_set_user(SEXP internal_p, SEXP user) {
   internal->N_age = user_get_scalar_int(user, "N_age", internal->N_age, NA_REAL, NA_REAL);
   internal->n_years = user_get_scalar_int(user, "n_years", internal->n_years, NA_REAL, NA_REAL);
   internal->R0 = user_get_scalar_double(user, "R0", internal->R0, NA_REAL, NA_REAL);
+  internal->steps_inc = user_get_scalar_double(user, "steps_inc", internal->steps_inc, NA_REAL, NA_REAL);
+  internal->steps_inf = user_get_scalar_double(user, "steps_inf", internal->steps_inf, NA_REAL, NA_REAL);
+  internal->steps_lat = user_get_scalar_double(user, "steps_lat", internal->steps_lat, NA_REAL, NA_REAL);
   internal->vaccine_efficacy = user_get_scalar_double(user, "vaccine_efficacy", internal->vaccine_efficacy, NA_REAL, NA_REAL);
   internal->year0 = user_get_scalar_double(user, "year0", internal->year0, NA_REAL, NA_REAL);
-  internal->beta = (internal->R0 * internal->dt) / (double) internal->t_infectious;
+  internal->beta = internal->R0 / (double) internal->steps_inf;
   internal->dim_C = internal->N_age;
   internal->dim_Cas0 = internal->N_age;
   internal->dim_dP1 = internal->N_age;
@@ -1117,10 +1120,10 @@ void SEIRV_Model_rhs(SEIRV_Model_internal* internal, size_t step, double * state
   }
   ring_buffer_head_advance(internal->delay_ring_I_lag);
   double * delay_ring_I_lag_tail;
-  if ((int)step - internal->t_incubation <= internal->initial_step) {
+  if ((int)step - internal->steps_inc <= internal->initial_step) {
     delay_ring_I_lag_tail = (double*)ring_buffer_tail(internal->delay_ring_I_lag);
   } else {
-    delay_ring_I_lag_tail = (double*) ring_buffer_head_offset(internal->delay_ring_I_lag, internal->t_incubation);
+    delay_ring_I_lag_tail = (double*) ring_buffer_head_offset(internal->delay_ring_I_lag, internal->steps_inc);
   }
   memcpy(internal->I_lag, delay_ring_I_lag_tail, internal->dim_I_lag * sizeof(double));
   for (int i = 1; i <= internal->N_age; ++i) {
@@ -1163,10 +1166,10 @@ void SEIRV_Model_rhs(SEIRV_Model_internal* internal, size_t step, double * state
   }
   ring_buffer_head_advance(internal->delay_ring_I_new);
   double * delay_ring_I_new_tail;
-  if ((int)step - internal->t_latent <= internal->initial_step) {
+  if ((int)step - internal->steps_lat <= internal->initial_step) {
     delay_ring_I_new_tail = (double*)ring_buffer_tail(internal->delay_ring_I_new);
   } else {
-    delay_ring_I_new_tail = (double*) ring_buffer_head_offset(internal->delay_ring_I_new, internal->t_latent);
+    delay_ring_I_new_tail = (double*) ring_buffer_head_offset(internal->delay_ring_I_new, internal->steps_lat);
   }
   memcpy(internal->I_new, delay_ring_I_new_tail, internal->dim_I_new * sizeof(double));
   {
@@ -1182,10 +1185,10 @@ void SEIRV_Model_rhs(SEIRV_Model_internal* internal, size_t step, double * state
   }
   ring_buffer_head_advance(internal->delay_ring_R_new);
   double * delay_ring_R_new_tail;
-  if ((int)step - internal->t_infectious <= internal->initial_step) {
+  if ((int)step - internal->steps_inf <= internal->initial_step) {
     delay_ring_R_new_tail = (double*)ring_buffer_tail(internal->delay_ring_R_new);
   } else {
-    delay_ring_R_new_tail = (double*) ring_buffer_head_offset(internal->delay_ring_R_new, internal->t_infectious);
+    delay_ring_R_new_tail = (double*) ring_buffer_head_offset(internal->delay_ring_R_new, internal->steps_inf);
   }
   memcpy(internal->R_new, delay_ring_R_new_tail, internal->dim_R_new * sizeof(double));
   for (int i = 1; i <= internal->N_age; ++i) {

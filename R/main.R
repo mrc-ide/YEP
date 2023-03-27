@@ -58,6 +58,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
                        start_SEIRV,dt)
 
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
+                       steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
                        Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
                        Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
                        year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
@@ -123,8 +124,12 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
               msg="years_data must be iterative vector of years")
   assert_that(max(years_data)+1-years_data[1]<=n_years,msg="Period of years_data must lie within population data")
   vacc_initial=vacc_data[1,]
-  assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year")
+  assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year)")
   inv_365=1.0/365.0
+
+  steps_inc=ceiling(t_incubation/dt)
+  steps_lat=ceiling(t_latent/dt)
+  steps_inf=ceiling(t_infectious/dt)
 
   P0=Cas0=Sus0=Exp0=Inf0=Rec0=Vac0=rep(0,N_age)
   dP1_all=dP2_all=vacc_rates=array(rep(0,N_age*n_years),dim=c(N_age,n_years))
@@ -173,7 +178,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     Vac0=P0*vacc_initial
   }
 
-  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,
+  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,steps_inc=steps_inc,steps_lat=steps_lat,steps_inf=steps_inf,
               Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
               dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt))
 }
