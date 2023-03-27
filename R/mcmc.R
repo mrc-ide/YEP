@@ -135,7 +135,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     }
 
     #Output chain to file every 10 iterations; start new file every 10,000 iterations
-    if (iter %% 1 == 0){
+    if (iter %% 10 == 0){
       if (iter %% 10000 == 0){fileIndex  = iter/10000}
 
       filename=paste(filename_prefix,fileIndex,".csv",sep="")
