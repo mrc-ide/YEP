@@ -100,6 +100,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
                   p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
   ### find posterior probability at start ###
+  write.table(x=data.frame(iter=0),file="outputs/progress_check.csv",append=FALSE,quote=TRUE)
   out = MCMC_step(log_params=log_params_ini,input_data,obs_sero_data,obs_case_data,
                    chain_cov=1,adapt=0,like_current=-Inf,const_list)
 
@@ -155,6 +156,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     }
 
     #Next iteration in chain
+    write.table(x=data.frame(iter=iter),file="outputs/progress_check.csv",append=TRUE,quote=TRUE)
     out = MCMC_step(log_params,input_data,obs_sero_data,obs_case_data,chain_cov,adapt,like_current,
                      const_list)
   }
@@ -195,7 +197,6 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
                        chain_cov=1,adapt=0,like_current=-Inf,const_list=list()) {
 
   cat("\n\tStep start")
-  cat("\n\n",file="outputs/progress_check.txt",sep="",append=TRUE)
 
   #Propose new parameter values
   log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
@@ -204,7 +205,6 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
   like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,const_list)
 
   cat("\n\tStep end")
-  cat("\n\n",file="outputs/progress_check.txt",sep="",append=TRUE)
 
   if(is.finite(like_prop)==FALSE) {
     p_accept = -Inf
