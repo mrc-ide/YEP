@@ -238,11 +238,8 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     model_case_values=model_death_values=rep(0,nrow(obs_case_data))
   } else {model_case_values=model_death_values=NA}
 
-  cat("\n\t\tRegion: ")
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
-    cat("\t",n_region,sep="")
-    cat("\t",n_region,file="outputs/progress_check.txt",sep="",append=TRUE)
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
