@@ -195,6 +195,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
                        chain_cov=1,adapt=0,like_current=-Inf,const_list=list()) {
 
   cat("\n\tStep start")
+  cat("\n\n",file="outputs/progress_check.txt",sep="",append=TRUE)
 
   #Propose new parameter values
   log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
@@ -203,6 +204,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
   like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,const_list)
 
   cat("\n\tStep end")
+  cat("\n\n",file="outputs/progress_check.txt",sep="",append=TRUE)
 
   if(is.finite(like_prop)==FALSE) {
     p_accept = -Inf
@@ -248,8 +250,6 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
 #'
 single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                               const_list=list()) {
-
-  cat("\n\t\tLikelihood calculation start")
 
   regions=input_data$region_labels
   n_regions=length(regions)
@@ -348,8 +348,6 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
 
   } else {likelihood=-Inf}
-
-  cat("\n\t\tLikelihood calculation end")
 
   return(likelihood)
 }
