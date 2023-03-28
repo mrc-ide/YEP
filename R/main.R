@@ -16,6 +16,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import mvtnorm
 #' @import odin
 #' @import parallel
+#' @import R.utils
 #' @import stats
 #' @import tgp
 #' @import truncdist

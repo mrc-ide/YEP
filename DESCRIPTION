@@ -20,6 +20,7 @@ Imports:
     mvtnorm,
     odin,
     parallel,
+    R.utils,
     stats,
     tgp,
     truncdist,

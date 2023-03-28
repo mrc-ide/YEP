@@ -140,10 +140,11 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
       if (iter %% 10000 == 0){fileIndex  = iter/10000}
 
       filename=paste(filename_prefix,fileIndex,".csv",sep="")
+      if(file.exists(filename)==FALSE){file.create(filename)}
       lines=min((fileIndex * 10000+1),iter):iter
       cat("\nIteration ",iter,sep="")
       data_out<-cbind(posterior_current,posterior_prop,exp(chain),flag_accept,exp(chain_prop),chain_cov_all)[lines,]
-      if(R.utils::fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
+      if(fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
     }
 
     #Decide whether next iteration will be adaptive
