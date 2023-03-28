@@ -143,25 +143,22 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
       lines=min((fileIndex * 10000+1),iter):iter
       cat("\nIteration ",iter,sep="")
       data_out<-cbind(posterior_current,posterior_prop,exp(chain),flag_accept,exp(chain_prop),chain_cov_all)[lines,]
-      write.csv(data_out,filename,row.names=FALSE)
+      if(R.utils::fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
     }
 
-    #Decide whether next iteration will be adaptive
-    adapt = 0
-    chain_cov = 1
-    # if (iter>burnin & runif(1)<0.9){ #adapt
-    #   adapt = 1
-    #   chain_cov  = cov(chain[max(nrow(chain)-10000, 1):nrow(chain),])
-    # } else {
-    #   adapt = 0
-    #   chain_cov = 1
-    # }
+    Decide whether next iteration will be adaptive
+    if (iter>burnin & runif(1)<0.9){ #adapt
+      adapt = 1
+      chain_cov  = cov(chain[max(nrow(chain)-10000, 1):nrow(chain),])
+    } else {
+      adapt = 0
+      chain_cov = 1
+    }
 
     #Next iteration in chain
     out = MCMC_step(log_params,input_data,obs_sero_data,obs_case_data,chain_cov,adapt,like_current,
                      const_list)
   }
-
   #Get final parameter values
   param_out=exp(out$log_params)
   names(param_out)=names(log_params_ini)
@@ -197,11 +194,14 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                        chain_cov=1,adapt=0,like_current=-Inf,const_list=list()) {
 
+  cat("\n\tGenerating new parameter values")
   #Propose new parameter values
   log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
 
+  cat("\n\tCalculating likelihood")
   #Calculate likelihood using single_like_calc function
   like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,const_list)
+  cat("\n\tLikelihood calculated")
 
   if(is.finite(like_prop)==FALSE) {
     p_accept = -Inf
@@ -307,6 +307,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   if(is.null(obs_sero_data)){sero_like_values=0}
   if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
 
+  cat("\n\t\tGenerating dataset for regions: ")
   ### If prior finite, evaluate likelihood ###
   if (is.finite(prior_prop)) {
 
@@ -575,7 +576,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
     log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
   }
   log_params_prop = log_params_prop_a[1,]
-  names(log_params_prop)=names(log_params)
+  #names(log_params_prop)=names(log_params)
 
   return(log_params_prop)
 }

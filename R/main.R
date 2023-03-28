@@ -245,6 +245,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
+    cat(" ",n_region)
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
