@@ -323,6 +323,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
+      dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
       sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
         lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
         obs_sero_data$positives*log(dataset$model_sero_values)+
