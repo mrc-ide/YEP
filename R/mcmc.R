@@ -146,7 +146,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
       if(R.utils::fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
     }
 
-    Decide whether next iteration will be adaptive
+    #Decide whether next iteration will be adaptive
     if (iter>burnin & runif(1)<0.9){ #adapt
       adapt = 1
       chain_cov  = cov(chain[max(nrow(chain)-10000, 1):nrow(chain),])
