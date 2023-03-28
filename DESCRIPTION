@@ -5,7 +5,8 @@ Version: 0.1.0
 Authors@R: person("Keith", "Fraser", email = "keith.fraser@imperial.ac.uk", role = c("aut", "cre"))
 Maintainers@R: person("Keith", "Fraser", email = "keith.fraser@imperial.ac.uk", role = c("aut", "cre"))
 Description: A package for running a dynamic, deterministic SEIRV model of yellow fever, creating input data and processing output data.
-Depends: R (>= 4.2.0)
+Depends: 
+    R (>= 4.2.0)
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -14,14 +15,12 @@ LinkingTo:
     cpp11
 Imports:
     assertthat,
-    coda,
     dde,
     graphics,
-    mvtnorm,
     odin,
     parallel,
+    mvtnorm,
     R.utils,
-    stats,
     tgp,
     truncdist,
     utils

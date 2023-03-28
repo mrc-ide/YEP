@@ -10,16 +10,15 @@ t_infectious <- 5 #Time cases remain infectious
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
 #' @import assertthat
-#' @import coda
 #' @import dde
-#' @import graphics
-#' @import mvtnorm
+#' @importFrom graphics axis matplot par
+#' @importFrom mvtnorm rmvnorm
 #' @import odin
 #' @import parallel
-#' @import R.utils
-#' @import stats
-#' @import tgp
-#' @import truncdist
+#' @importFrom R.utils fileAccess
+#' @importFrom stats cov dexp dnbinom dnorm rbinom runif
+#' @importFrom tgp lhs
+#' @importFrom truncdist dtrunc
 #' @import utils
 #------------------------------------------------
 # unload DLL when package is unloaded
@@ -246,7 +245,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
-    cat(" ",n_region)
+    #cat(" ",n_region)
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
