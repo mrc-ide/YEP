@@ -171,9 +171,9 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
 
   if(any(input_data$flag_sero[n_region]>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
-    model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
-    model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
-    model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
+    # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
+    # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
+    # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
   }
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
