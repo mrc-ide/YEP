@@ -327,7 +327,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
       sero_rev=1.0-dataset$model_sero_values
       sero_rev[sero_rev<0.0]=0.0
-      #cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
+      cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
       sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
         lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
         obs_sero_data$positives*log(dataset$model_sero_values)+
