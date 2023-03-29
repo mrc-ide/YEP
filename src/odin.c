@@ -1088,7 +1088,7 @@ SEXP SEIRV_Model_metadata(SEXP internal_p) {
   return ret;
 }
 SEXP SEIRV_Model_initial_conditions(SEXP internal_p, SEXP step_ptr) {
-  int step = scalar_int(step_ptr, "step");
+  /*int step = scalar_int(step_ptr, "step");*/
   SEIRV_Model_internal *internal = SEIRV_Model_get_internal(internal_p, 1);
   SEXP r_state = PROTECT(allocVector(REALSXP, internal->dim_C + internal->dim_E + internal->dim_I + internal->dim_R + internal->dim_S + internal->dim_V + 3));
   double * state = REAL(r_state);
