@@ -679,7 +679,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
       cat("\n\tSet: ",set,sep="")
       log_params_prop=all_param_sets[set,]
 
-      cat("\n\t\tParams: ",signif(log_params_prop,3))
+      cat("\n\tParams: ",signif(log_params_prop,3))
 
       #cat(log_params_prop,file=progress_file,sep="\t",append=TRUE)
 
@@ -688,7 +688,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
       results<-rbind(results,c(set,exp(log_params_prop),like_prop))
       if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
 
-      cat("\n\t\tLikelihood calculation complete")
+      cat("\n\tLikelihood calculation complete")
 
     }
     results<-results[order(results$LogLikelihood,decreasing=TRUE), ]

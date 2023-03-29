@@ -243,16 +243,16 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     model_case_values=model_death_values=rep(0,nrow(obs_case_data))
   } else {model_case_values=model_death_values=NA}
 
-  #cat("\n\t\tRegion: ")
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
-    #cat(" ",n_region)
+    cat("\n\t\tBeginning modelling region ",n_region)
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
                            pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
                            years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
                            mode_start,vaccine_efficacy,dt=dt)
+    cat("\n\t\tFinished modelling region ",n_region)
     t_pts=length(model_output$year)
 
     #Compile case data if needed
@@ -288,7 +288,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   if(any(input_data$flag_sero[n_region]>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
-    cat("\n",model_sero_data$samples,"\n",model_sero_data$positives,sep="\t")
+    cat("\n\n\t\tSero samples:\t",model_sero_data$samples,"\n\t\tSero pos:\t",model_sero_data$positives,sep="\t")
     # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
