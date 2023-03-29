@@ -54,6 +54,7 @@ t_infectious <- 5 #Time cases remain infectious
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1941:1942),
                       mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
 
+  cat("\n\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
   cat("\n\t\t\tGenerating parameters")
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                        start_SEIRV,dt)
@@ -293,7 +294,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   if(any(input_data$flag_sero[n_region]>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
-    cat("\n\n\t\tSero samples:\t",model_sero_data$samples,"\n\t\tSero pos:\t",model_sero_data$positives,sep="\t")
+    #cat("\n\n\t\tSero samples:\t",model_sero_data$samples,"\n\t\tSero pos:\t",model_sero_data$positives,sep="\t")
     # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
