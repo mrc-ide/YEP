@@ -307,6 +307,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
   if(is.null(obs_sero_data)){sero_like_values=0}
   if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
+  cat("\n",prior_prop,sep="")
 
   #cat("\n\t\tGenerating dataset for regions: ")
   ### If prior finite, evaluate likelihood ###
