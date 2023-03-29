@@ -325,10 +325,13 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
     if(is.null(obs_sero_data)==FALSE){
       dataset$model_sero_values[dataset$model_sero_values>1.0]=1.0
       dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
+      sero_rev=1.0-dataset$model_sero_values
+      sero_rev[sero_rev<0.0]=0.0
+      #cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
       sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
         lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
         obs_sero_data$positives*log(dataset$model_sero_values)+
-        (obs_sero_data$samples-obs_sero_data$positives)*log(1.0-dataset$model_sero_values)
+        (obs_sero_data$samples-obs_sero_data$positives)*log(sero_rev)
     }
     #Likelihood of observing annual case/death data
     if(is.null(obs_case_data)==FALSE){
@@ -668,10 +671,12 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                     p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
     for(set in 1:n_param_sets){
-      #cat("\n",file=progress_file,sep="",append=TRUE)
-      if(set %% 10 == 0){cat("\n")}
-      cat(set,"\t",sep="")
+      #if(set %% 10 == 0){cat("\n")}
+      #cat(set,"\t",sep="")
+      cat("\n\tSet: ",set,sep="")
       log_params_prop=all_param_sets[set,]
+
+      cat("\n\t\tParams: ",signif(log_params_prop,3))
 
       #cat(log_params_prop,file=progress_file,sep="\t",append=TRUE)
 
@@ -680,7 +685,8 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
       results<-rbind(results,c(set,exp(log_params_prop),like_prop))
       if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
 
-      #cat("\t",like_prop,file=progress_file,sep="",append=TRUE)
+      cat("\n\t\tLikelihood calculation complete")
+
     }
     results<-results[order(results$LogLikelihood,decreasing=TRUE), ]
     best_fit_results[[iteration]]=results

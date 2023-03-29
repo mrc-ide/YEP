@@ -31,27 +31,28 @@ Model_Run_Thread <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=
   model_output=Model_Run(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
 
   model_data=list(years=years_data)
+  t_pts=length(model_output$year)
+  n_years=length(years_data)
   if(flag_case==1){
-    model_data$infs=rep(NA,length(years_data))
-    i=0
-    for(year in years_data){
-      i=i+1
-      model_data$infs[i]=sum(model_output$C[model_output$year==year,])
+    model_data$infs=rep(NA,n_years)
+    for(n_year in c(1:n_years)){
+      pts=c(1:t_pts)[model_output$year==years_data[n_year]]
+      model_data$infs[n_year]=sum(model_output$C[pts,])
     }
   }
   if(flag_sero==1){
     N_age=dim(vacc_data)[2]
-    blank=array(NA,dim=c(length(years_data),N_age))
+    blank=array(NA,dim=c(n_years,N_age))
     model_data$S=model_data$E=model_data$I=model_data$R=model_data$V=blank
-    i=0
-    for(year in years_data){
-      i=i+1
+    for(n_year in c(1:n_years)){
+      year=years_data[n_year]
+      pts=c(1:t_pts)[model_output$year==year]
       for(j in 1:N_age){
-        model_data$S[i,j]=sum(model_output$S[model_output$year==year,j])
-        model_data$E[i,j]=sum(model_output$E[model_output$year==year,j])
-        model_data$I[i,j]=sum(model_output$I[model_output$year==year,j])
-        model_data$R[i,j]=sum(model_output$R[model_output$year==year,j])
-        model_data$V[i,j]=sum(model_output$V[model_output$year==year,j])
+        model_data$S[n_year,j]=sum(model_output$S[pts,j])
+        model_data$E[n_year,j]=sum(model_output$E[pts,j])
+        model_data$I[n_year,j]=sum(model_output$I[pts,j])
+        model_data$R[n_year,j]=sum(model_output$R[pts,j])
+        model_data$V[n_year,j]=sum(model_output$V[pts,j])
       }
     }
   }
@@ -128,7 +129,7 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
     years_data_sets[[n_region]]=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region])
   }
 
-  model_data <- clusterMap(cluster,Model_Run_Thread,FOI=FOI_values,R0=R0_values,vacc_data=vacc_data_subsets,
+  model_data <- clusterMap(cl=cluster,fun=Model_Run_Thread,FOI=FOI_values,R0=R0_values,vacc_data=vacc_data_subsets,
                            pop_data=pop_data_subsets,years_data=years_data_sets,flag_case=input_data$flag_case,
                            flag_sero=input_data$flag_sero,
                            MoreArgs=list(year0=input_data$years_labels[1],mode_start=mode_start,

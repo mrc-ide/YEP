@@ -243,6 +243,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     model_case_values=model_death_values=rep(0,nrow(obs_case_data))
   } else {model_case_values=model_death_values=NA}
 
+  #cat("\n\t\tRegion: ")
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
     #cat(" ",n_region)
@@ -252,6 +253,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
                            pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
                            years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
                            mode_start,vaccine_efficacy,dt=dt)
+    t_pts=length(model_output$year)
 
     #Compile case data if needed
     if(input_data$flag_case[n_region]==1){
@@ -262,7 +264,8 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
       rep_cases=rep_deaths=rep(0,n_years_outbreak)
       for(n_year in 1:n_years_outbreak){
         year=years_outbreak[n_year]
-        infs=sum(model_output$C[model_output$year==year,])
+        pts=c(1:t_pts)[model_output$year==year]
+        infs=sum(model_output$C[pts,])
         severe_infs=rbinom(1,floor(infs),p_severe_inf)
         deaths=rbinom(1,severe_infs,p_death_severe_inf)
         rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
