@@ -307,12 +307,13 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
   if(is.null(obs_sero_data)){sero_like_values=0}
   if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
-  cat("\n",prior_prop,sep="")
+  #cat("\n",prior_prop,sep="")
 
   #cat("\n\t\tGenerating dataset for regions: ")
   ### If prior finite, evaluate likelihood ###
   if (is.finite(prior_prop)) {
 
+    cat("\n\tGenerating dataset")
     #Generate modelled data over all regions
     if(is.null(const_list$cluster)){
       dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
@@ -321,6 +322,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
                                   vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,const_list$cluster)
     }
+    cat("\n\tDataset generation completed")
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
@@ -328,7 +330,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
       sero_rev=1.0-dataset$model_sero_values
       sero_rev[sero_rev<0.0]=0.0
-      cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
+      #cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
       sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
         lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
         obs_sero_data$positives*log(dataset$model_sero_values)+

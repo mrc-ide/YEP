@@ -288,6 +288,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   if(any(input_data$flag_sero[n_region]>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
+    cat("\n",model_sero_data$samples,"\n",model_sero_data$positives,sep="\t")
     # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
