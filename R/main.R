@@ -54,9 +54,11 @@ t_infectious <- 5 #Time cases remain infectious
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1941:1942),
                       mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
 
+  cat("\n\t\t\tGenerating parameters")
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                        start_SEIRV,dt)
 
+  cat("\n\t\t\tInitializing")
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
                        steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
                        Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
@@ -70,8 +72,11 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
+
+  cat("\n\t\t\tRunning")
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
+  cat("\n\t\t\tComplete")
 
   return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
               S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
