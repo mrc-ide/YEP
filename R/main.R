@@ -54,7 +54,7 @@ t_infectious <- 5 #Time cases remain infectious
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1941:1942),
                       mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
 
-  cat("\n\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
+  cat("\n\t\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
   cat("\n\t\t\tGenerating parameters")
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                        start_SEIRV,dt)
@@ -68,11 +68,12 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 
   n_nv=4 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
-  t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
+  t_pts_all=c(1:((max(years_data)-year0)*(365/dt))) #All output time points
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
+  cat("\n\t\t\tn_steps:\t",n_steps,"\tstep0:\t",step0,"\tt_pts_out:\t",t_pts_out)
 
   cat("\n\t\t\tRunning")
   x_res <- x$run(n_steps)
@@ -252,7 +253,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
-    cat("\n\t\tBeginning modelling region ",n_region)
+    cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
