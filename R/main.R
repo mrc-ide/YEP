@@ -54,12 +54,12 @@ t_infectious <- 5 #Time cases remain infectious
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1941:1942),
                       mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
 
-  cat("\n\t\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
-  cat("\n\t\t\tGenerating parameters")
+  #cat("\n\t\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
+  #cat("\n\t\t\tGenerating parameters")
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                        start_SEIRV,dt)
 
-  cat("\n\t\t\tInitializing")
+  #cat("\n\t\t\tInitializing")
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
                        steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
                        Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
@@ -73,12 +73,12 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
-  cat("\n\t\t\tn_steps:\t",n_steps,"\tstep0:\t",step0,"\tt_pts_out:\t",t_pts_out)
+  #cat("\n\t\t\tn_steps:\t",n_steps,"\tstep0:\t",step0,"\tt_pts_out:\t",t_pts_out)
 
-  cat("\n\t\t\tRunning")
+  #cat("\n\t\t\tRunning")
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
-  cat("\n\t\t\tComplete")
+  #cat("\n\t\t\tComplete")
 
   return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
               S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
@@ -253,14 +253,14 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
 
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
-    cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
+    #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
 
     #Run model
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
                            pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
                            years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
                            mode_start,vaccine_efficacy,dt=dt)
-    cat("\n\t\tFinished modelling region ",n_region)
+    #cat("\n\t\tFinished modelling region ",n_region)
     t_pts=length(model_output$year)
 
     #Compile case data if needed
@@ -294,7 +294,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
     model_output<-NULL
   }
 
-  if(any(input_data$flag_sero[n_region]>0)){
+  if(any(input_data$flag_sero>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
     #cat("\n\n\t\tSero samples:\t",model_sero_data$samples,"\n\t\tSero pos:\t",model_sero_data$positives,sep="\t")
     # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0

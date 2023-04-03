@@ -313,7 +313,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   ### If prior finite, evaluate likelihood ###
   if (is.finite(prior_prop)) {
 
-    cat("\n\tGenerating dataset")
+    #cat("\n\tGenerating dataset")
     #Generate modelled data over all regions
     if(is.null(const_list$cluster)){
       dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
@@ -322,7 +322,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
                                   vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,const_list$cluster)
     }
-    cat("\n\tDataset generation completed")
+    #cat("\n\tDataset generation completed")
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
@@ -688,7 +688,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
       results<-rbind(results,c(set,exp(log_params_prop),like_prop))
       if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
 
-      cat("\n\tLikelihood calculation complete")
+      cat("\n\tLikelihood = ",like_prop,sep="")
 
     }
     results<-results[order(results$LogLikelihood,decreasing=TRUE), ]
