@@ -40,7 +40,8 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param vacc_data Vaccination coverage in each age group by year
 #' @param pop_data Population in each age group by year
 #' @param year0 First year in population/vaccination data
-#' @param years_data Incremental vector of years for which to output SEIRV data
+#' @param years_data Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
+#'  data from 1945 to 1950 is required, years_data should be c(1945:1951)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
@@ -48,18 +49,18 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param output_type Output data to save:
+#'  "full" for all SEIRV data plus day, year, total FOI
+#'  "case" for just year and number of new infections
 #' '
 #' @export
 #'
-Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1941:1942),
-                      mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
+Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1940:1941),
+                      mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0,output_type="full") {
 
-  #cat("\n\t\t\tFOI:\t",FOI_spillover,"\tR0:\t",R0,"\tvacc_eff:\t",vaccine_efficacy)
-  #cat("\n\t\t\tGenerating parameters")
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                        start_SEIRV,dt)
 
-  #cat("\n\t\t\tInitializing")
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
                        steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
                        Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
@@ -73,34 +74,37 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
-  #cat("\n\t\t\tn_steps:\t",n_steps,"\tstep0:\t",step0,"\tt_pts_out:\t",t_pts_out)
 
-  #cat("\n\t\t\tRunning")
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
-  #cat("\n\t\t\tComplete")
 
-  return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
-              S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
-              E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
+  if(output_type=="full"){
+    return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
+                S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
+                E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+                I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+                R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+                V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+                C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
+  } else {
+    return(list(year=x_res[t_pts,3],
+                C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
+  }
 }
 #-------------------------------------------------------------------------------
 #' @title Parameter setup
 #'
 #' @description Set up parameters to input into model
 #'
-#' @details Takes in multiple inputs, outputs list for use by odin.dust SEIRV model versions.
+#' @details Takes in multiple inputs, outputs list for use by odin SEIRV model.
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Reproduction number for urban spread of infection
 #' @param vacc_data Vaccination coverage in each age group by year
 #' @param pop_data Population in each age group by year
 #' @param year0 First year in population/vaccination data
-#' @param years_data Incremental vector of years for which to output SEIRV data
+#' @param years_data Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
+#'  data from 1945 to 1950 is required, years_data should be c(1945:1951)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
@@ -216,8 +220,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' '
 #' @export
 #'
-Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
-                             obs_sero_data=NULL,obs_case_data=NULL,
+Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_sero_data=NULL,obs_case_data=NULL,
                              vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,mode_start=1,dt=1.0){
 
   assert_that(input_data_check(input_data),
@@ -274,10 +277,10 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),
         year=years_outbreak[n_year]
         pts=c(1:t_pts)[model_output$year==year]
         infs=sum(model_output$C[pts,])
-        severe_infs=rbinom(1,floor(infs),p_severe_inf)
-        deaths=rbinom(1,severe_infs,p_death_severe_inf)
-        rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-        rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,severe_infs-deaths,p_rep_severe)
+        severe_infs=infs*p_severe_inf
+        deaths=severe_infs*p_death_severe_inf
+        rep_deaths=round(deaths*p_rep_death)
+        rep_cases=rep_deaths+round((severe_infs-deaths)*p_rep_severe)
       }
 
       model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
@@ -379,4 +382,154 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
   if(length(enviro_coeffs)==2*n_env_vars){output$R0=sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)}
 
   return(output)
+}
+#-------------------------------------------------------------------------------
+#' @title total_burden_estimate
+#'
+#' @description Function to calculate annual yellow fever burden across multiple regions based on derived parameters
+#'
+#' @details Function to take in parameter sets derived from MCMC fitting and use to calculate annual total and reported
+#' case and death numbers for multiple regions to compare with external data
+#'
+#' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
+#'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
+#' @param param_dist Data frame of values of input parameters, one set per row
+#' @param input_data List of population and vaccination data for multiple regions
+#' @param start_SEIRV SEIRV data to use as input
+#' @param years_data Vector of years for which to output data
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
+#'  If mode_start=0, only vaccinated individuals
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=2, use SEIRV input in list from previous run(s)
+#' @param flag_reporting Flag indicating whether to output number of reported severe and fatal cases
+#' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param enviro_data enviro_data Data frame containing values of environmental covariates; set to NULL if not in use
+#' @param R0_fixed_values Values of R0 to use if not being taken from parameter distribution
+#' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+#' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
+#' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
+#' @param m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
+#'
+#' @export
+#'
+total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_data=list(),start_SEIRV=NULL,
+                                  years_data=c(),mode_start=1,flag_reporting=FALSE,dt=5.0,
+                                  enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
+                                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
+
+  assert_that(input_data_check(input_data),msg="Input data must be in standard format (TBA)")
+  assert_that(all(input_data$region_labels==enviro_data$region)==TRUE) #TODO - msg
+  assert_that(min(years_data)>=input_data$years_labels[1]) #TODO - msg
+  assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro"))
+  assert_that(is.logical(flag_reporting))
+  assert_that(all(param_dist>0.0),msg="All parameter values in distribution must be positive")
+
+  n_param_sets=nrow(param_dist)
+  n_years=length(years_data)
+  year_data_begin=years_data[1]
+  year_end=max(years_data)+1
+  regions=input_data$region_labels
+  n_regions=length(regions)
+  case_ar1=death_ar1=array(NA,dim=c(n_years,n_regions,n_param_sets))
+  case_ar2=death_ar2=array(NA,dim=c(n_years,n_param_sets))
+  FOI_values=R0_values=rep(NA,n_regions)
+  if(type %in% c("FOI+R0 enviro","FOI enviro")){n_env_vars=ncol(enviro_data)-1}
+
+  cat("\nSets:\n")
+  for(n_param_set in 1:n_param_sets){
+    cat(" ",n_param_set,sep="")
+    if(n_param_set %% 10 == 0){cat("\n")}
+    params=param_dist[n_param_set,]
+    names(params)=colnames(param_dist)
+    if(is.null(vaccine_efficacy)){vaccine_efficacy_set=params$vaccine_efficacy} else {vaccine_efficacy_set=vaccine_efficacy}
+    if(is.null(p_rep_severe)){p_rep_severe_set=params$p_rep_severe} else {p_rep_severe_set=p_rep_severe}
+    if(is.null(p_rep_death)){p_rep_death_set=params$p_rep_death} else {p_rep_death_set=p_rep_death}
+    if(is.null(m_FOI_Brazil)){m_FOI_Brazil_set=params$m_FOI_Brazil} else {m_FOI_Brazil_set=m_FOI_Brazil}
+
+    if(type %in% c("FOI+R0 enviro","FOI enviro")){
+      if(type=="FOI+R0 enviro"){enviro_coeffs=params[c(1:(2*n_env_vars))]} else {enviro_coeffs=params[c(1:n_env_vars)]}
+      for(n_region in 1:n_regions){
+        model_params=param_calc_enviro(enviro_coeffs,
+                                       as.numeric(enviro_data[enviro_data$region==regions[n_region],1+c(1:n_env_vars)]))
+        FOI_values[n_region]=model_params$FOI
+        if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil_set}
+        if(type=="FOI+R0 enviro"){R0_values[n_region]=model_params$R0} else {
+          R0_values[n_region]=R0_fixed_values[n_region]}
+      }
+    }
+    if(type %in% c("FOI+R0","FOI")){
+      FOI_values=as.numeric(params)[c(1:n_regions)]
+      if(type=="FOI+R0"){R0_values=as.numeric(params[c((n_regions+1):(2*n_regions))])
+      } else {R0_values=R0_fixed_values}
+    }
+
+    for(n_region in 1:n_regions){
+
+      if(mode_start==2){
+        start_SEIRV_set=list(S=start_SEIRV$S[,n_region,n_param_set],
+                             E=start_SEIRV$E[,n_region,n_param_set],I=start_SEIRV$I[,n_region,n_param_set],
+                             R=start_SEIRV$R[,n_region,n_param_set],V=start_SEIRV$V[,n_region,n_param_set])
+      } else {start_SEIRV_set=NULL}
+      case_data <- case_data_generate(FOI_values[n_region],R0_values[n_region],
+                                      vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
+                                      year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),mode_start,
+                                      vaccine_efficacy_set,start_SEIRV_set,dt)
+      t_pts=length(case_data$year)
+
+      for(n_year in 1:n_years){
+        lines=c(1:t_pts)[case_data$year==years_data[n_year]]
+        infs=sum(case_data$C[lines])
+        severe_infs=infs*p_severe_inf
+        deaths=severe_infs*p_death_severe_inf
+        case_ar1[n_year,n_region,n_param_set]=severe_infs
+        death_ar1[n_year,n_region,n_param_set]=deaths
+      }
+    }
+
+    for(n_year in 1:n_years){
+      case_ar2[n_year,n_param_set]=sum(case_ar1[n_year,,n_param_set])
+      death_ar2[n_year,n_param_set]=sum(death_ar1[n_year,,n_param_set])
+    }
+  }
+
+  if(flag_reporting){
+    rep_case_ar1=rep_death_ar1=array(NA,dim=c(n_years,n_regions,n_param_sets))
+    rep_case_ar2=rep_death_ar2=array(NA,dim=c(n_years,n_param_sets))
+
+    for(n_param_set in 1:n_param_sets){
+      for(n_region in 1:n_regions){
+        for(n_year in 1:n_years){
+          cases=case_ar1[n_year,n_region,n_param_set]
+          deaths=death_ar1[n_year,n_region,n_param_set]
+          rep_deaths=round(deaths*p_rep_death_set)
+          rep_cases=rep_deaths+round((severe_infs-deaths)*p_rep_severe_set)
+          rep_case_ar1[n_year,n_region,n_param_set]=rep_cases
+          rep_death_ar1[n_year,n_region,n_param_set]=rep_deaths
+        }
+      }
+      for(n_year in 1:n_years){
+        rep_case_ar2[n_year,n_param_set]=sum(rep_case_ar1[n_year,,n_param_set])
+        rep_death_ar2[n_year,n_param_set]=sum(rep_death_ar1[n_year,,n_param_set])
+      }
+    }
+    plot_frame1=data.frame(year=rep(years_data,n_regions*n_param_sets),
+                           region=rep(sort(rep(regions,n_years)),n_param_sets),
+                           set=sort(rep(c(1:n_param_sets),n_years*n_regions)),
+                           cases=as.vector(case_ar1),deaths=as.vector(death_ar1),
+                           rep_cases=as.vector(rep_case_ar1),rep_deaths=as.vector(rep_death_ar1))
+    plot_frame2=data.frame(year=rep(years_data,n_param_sets),set=sort(rep(c(1:n_param_sets),n_years)),
+                           cases=as.vector(case_ar2),deaths=as.vector(death_ar2),
+                           rep_cases=as.vector(rep_case_ar2),rep_deaths=as.vector(rep_death_ar2))
+
+  } else {
+    plot_frame1=data.frame(year=rep(years_data,n_regions*n_param_sets),
+                           region=rep(sort(rep(regions,n_years)),n_param_sets),
+                           set=sort(rep(c(1:n_param_sets),n_years*n_regions)),
+                           cases=as.vector(case_ar1),deaths=as.vector(death_ar1))
+    plot_frame2=data.frame(year=rep(years_data,n_param_sets),set=sort(rep(c(1:n_param_sets),n_years)),
+                           cases=as.vector(case_ar2),deaths=as.vector(death_ar2))
+  }
+
+
+  return(list(by_region=plot_frame1,all=plot_frame2))
 }

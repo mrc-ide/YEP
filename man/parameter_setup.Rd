@@ -28,7 +28,8 @@ parameter_setup(
 
 \item{year0}{First year in population/vaccination data}
 
-\item{years_data}{Incremental vector of years for which to output SEIRV data}
+\item{years_data}{Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
+data from 1945 to 1950 is required, years_data should be c(1945:1951)}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
@@ -46,5 +47,5 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 Set up parameters to input into model
 }
 \details{
-Takes in multiple inputs, outputs list for use by odin.dust SEIRV model versions.
+Takes in multiple inputs, outputs list for use by odin SEIRV model.
 }

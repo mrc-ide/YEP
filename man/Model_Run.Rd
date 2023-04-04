@@ -10,11 +10,12 @@ Model_Run(
   vacc_data = list(),
   pop_data = list(),
   year0 = 1940,
-  years_data = c(1941:1942),
+  years_data = c(1940:1941),
   mode_start = 0,
   vaccine_efficacy = 1,
   start_SEIRV = list(),
-  dt = 1
+  dt = 1,
+  output_type = "full"
 )
 }
 \arguments{
@@ -28,7 +29,8 @@ Model_Run(
 
 \item{year0}{First year in population/vaccination data}
 
-\item{years_data}{Incremental vector of years for which to output SEIRV data}
+\item{years_data}{Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
+data from 1945 to 1950 is required, years_data should be c(1945:1951)}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
@@ -39,7 +41,11 @@ If mode_start=2, use SEIRVC input in list from previous run(s)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)
+\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+
+\item{output_type}{Output data to save:
+ "full" for all SEIRV data plus day, year, total FOI
+ "case" for just year and number of new infections
 '}
 }
 \description{

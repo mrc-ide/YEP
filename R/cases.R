@@ -30,21 +30,22 @@ case_data_generate <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,start_SEIRV,dt)
 
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
+                       steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
                        Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
-                       Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,year0=pars$year0,
-                       vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
+                       Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
+                       year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
 
-  n_nv=5 #Number of non-vector outputs
-  N_age=length(pop_data[1,])
-  t_pts=c(1:(((max(years_data)+1)-year0)*(365/dt)))
-  n_data_pts=(6*N_age)+n_nv
-  n_steps=length(t_pts)
-  step0=(years_data[1]-year0)*(365/dt)
-  steps=n_steps-step0
-  results_data=list(year=sort(rep(c(years_data[1]:max(years_data)),(365/dt))),C=rep(0,steps))
-  pts_select=c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))
+  n_nv=4 #Number of non-vector outputs
+  N_age=length(pop_data[1,]) #Number of age groups
+  t_pts_all=c(1:((max(years_data)-year0)*(365/dt))) #All output time points
+  n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
+  n_steps=length(t_pts_all) #Total number of output time points
+  step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
 
   x_res <- x$run(n_steps)
+
+  results_data=list(year=x_res[,3],C=rep(0,n_steps-step0))
+  pts_select=c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))
   for(t in c((step0+1):n_steps)){
     results_data$C[t-step0]=sum(x_res[t,pts_select])
   }
