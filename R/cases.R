@@ -37,16 +37,17 @@ case_data_generate <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
 
   n_nv=4 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
-  t_pts_all=c(1:((max(years_data)-year0)*(365/dt))) #All output time points
+  t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
 
   x_res <- x$run(n_steps)
 
-  results_data=list(year=x_res[,3],C=rep(0,n_steps-step0))
+  results_data=list(year=rep(0,n_steps-step0),C=rep(0,n_steps-step0))
   pts_select=c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))
   for(t in c((step0+1):n_steps)){
+    results_data$year[t-step0]=x_res[t,3]
     results_data$C[t-step0]=sum(x_res[t,pts_select])
   }
 

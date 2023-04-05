@@ -181,7 +181,7 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
         if(grepl(region,obs_sero_data$region[j])==TRUE){
           sero_line_list[[i]]=append(sero_line_list[[i]],j)
           year_data_begin[i]=min(obs_sero_data$year[j],year_data_begin[i])
-          year_end[i]=max(obs_sero_data$year[j]+1,year_end[i])
+          year_end[i]=max(obs_sero_data$year[j],year_end[i])
         }
       }
       sero_line_list[[i]]=sero_line_list[[i]][c(2:length(sero_line_list[[i]]))]
@@ -193,7 +193,7 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
         if(grepl(region,obs_case_data$region[j])==TRUE){
           case_line_list[[i]]=append(case_line_list[[i]],j)
           year_data_begin[i]=min(obs_case_data$year[j],year_data_begin[i])
-          year_end[i]=max(obs_case_data$year[j]+1,year_end[i])
+          year_end[i]=max(obs_case_data$year[j],year_end[i])
         }
       }
       case_line_list[[i]]=case_line_list[[i]][c(2:length(case_line_list[[i]]))]

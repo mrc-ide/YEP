@@ -39,27 +39,24 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param R0 Basic reproduction number for urban spread of infection
 #' @param vacc_data Vaccination coverage in each age group by year
 #' @param pop_data Population in each age group by year
+#' @param years_data Incremental vector of years denoting years for which to save data
+#' @param output_type Type of data to output - "full" for all, "case" for only years and new infections
+#' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param year0 First year in population/vaccination data
-#' @param years_data Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
-#'  data from 1945 to 1950 is required, years_data should be c(1945:1951)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-#'  If mode_start=2, use SEIRVC input in list from previous run(s)
+#'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param vaccine_efficacy Proportional vaccine efficacy
-#' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
-#' @param output_type Output data to save:
-#'  "full" for all SEIRV data plus day, year, total FOI
-#'  "case" for just year and number of new infections
 #' '
 #' @export
 #'
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1940:1941),
-                      mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0,output_type="full") {
+                               mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0,output_type="full") {
 
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
-                       start_SEIRV,dt)
+                                start_SEIRV,dt)
 
   x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
                        steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
@@ -69,7 +66,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 
   n_nv=4 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
-  t_pts_all=c(1:((max(years_data)-year0)*(365/dt))) #All output time points
+  t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
@@ -77,6 +74,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
+  if(step0==0){x_res[1,3]=year0}
 
   if(output_type=="full"){
     return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
@@ -86,7 +84,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
                 R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
                 V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
                 C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
-  } else {
+  }else{
     return(list(year=x_res[t_pts,3],
                 C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
   }
@@ -103,8 +101,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 #' @param vacc_data Vaccination coverage in each age group by year
 #' @param pop_data Population in each age group by year
 #' @param year0 First year in population/vaccination data
-#' @param years_data Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
-#'  data from 1945 to 1950 is required, years_data should be c(1945:1951)
+#' @param years_data Incremental vector of years denoting years for which to save data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
@@ -116,7 +113,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 #' @export
 #'
 parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,
-                            years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
+                                     years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
 
   assert_that(length(pop_data[,1])>1) #TODO - msg
   assert_that(length(pop_data[1,])>1) #TODO - msg
@@ -128,11 +125,11 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   assert_that(vaccine_efficacy<=1.0 && vaccine_efficacy>=0.0,msg="Vaccine efficacy must be between 0 and 1")
   if(mode_start==2){
     assert_that(is.null(start_SEIRV$S)==FALSE,msg="When mode_start=2, start_SEIRV data is required")
-    }
+  }
   assert_that(years_data[1]>=year0,msg="First data year must be greater than or equal to year0")
-  assert_that(is.integer(years_data) &&
-                all(years_data[c(2:length(years_data))]-years_data[c(1:(length(years_data)-1))]),
-              msg="years_data must be iterative vector of years")
+  # assert_that(is.integer(years_data) &&
+  #               all(years_data[c(2:length(years_data))]-years_data[c(1:(length(years_data)-1))]),
+  #             msg="years_data must be iterative vector of years")
   assert_that(max(years_data)+1-years_data[1]<=n_years,msg="Period of years_data must lie within population data")
   vacc_initial=vacc_data[1,]
   assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year)")
@@ -221,7 +218,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @export
 #'
 Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_sero_data=NULL,obs_case_data=NULL,
-                             vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,mode_start=1,dt=1.0){
+                                      vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,mode_start=1,dt=1.0){
 
   assert_that(input_data_check(input_data),
               msg=paste("Input data must be in standard format",
@@ -234,7 +231,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
                 msg="Severe infection reporting probability must be between 0 and 1")
     assert_that(p_rep_death >=0.0 && p_rep_death <=1.0,
                 msg="Fatal infection reporting probability must be between 0 and 1")
-    }
+  }
 
   n_regions=length(input_data$region_labels)
   assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions")
@@ -259,10 +256,14 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
     #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
 
     #Run model
+    # if(input_data$flag_sero[n_region]==1){
+    #   if(input_data$flag_case[n_region]==1){output_type="full_annual"}else{output_type="SEIRV_annual"}
+    # }else{
+    #   output_type="case_annual"}
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
-                           pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
-                           years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
-                           mode_start,vaccine_efficacy,dt=dt)
+                                    pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
+                                    years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
+                                    mode_start,vaccine_efficacy,dt=dt)
     #cat("\n\t\tFinished modelling region ",n_region)
     t_pts=length(model_output$year)
 
@@ -274,13 +275,13 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
 
       rep_cases=rep_deaths=rep(0,n_years_outbreak)
       for(n_year in 1:n_years_outbreak){
-        year=years_outbreak[n_year]
-        pts=c(1:t_pts)[model_output$year==year]
+        pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
+        #pts=match(years_outbreak[n_year],model_output$year)
         infs=sum(model_output$C[pts,])
         severe_infs=infs*p_severe_inf
         deaths=severe_infs*p_death_severe_inf
-        rep_deaths=round(deaths*p_rep_death)
-        rep_cases=rep_deaths+round((severe_infs-deaths)*p_rep_severe)
+        rep_deaths[n_year]=round(deaths*p_rep_death)
+        rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
       }
 
       model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
@@ -303,7 +304,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
     # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
     # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
-    }
+  }
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))

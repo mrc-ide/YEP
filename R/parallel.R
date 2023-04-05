@@ -28,7 +28,37 @@
 Model_Run_Thread <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,flag_sero=0,
                              year0=1940,mode_start=0,vaccine_efficacy=1.0,dt=1.0){
 
-  model_output=Model_Run(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
+  pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
+
+  x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
+                       steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
+                       Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
+                       Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
+                       year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
+
+  n_nv=4 #Number of non-vector outputs
+  N_age=length(pop_data[1,]) #Number of age groups
+  t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
+  n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
+  n_steps=length(t_pts_all) #Total number of output time points
+  step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
+  t_pts_out=n_steps-step0 #Number of time points in final output data
+
+  x_res <- x$run(n_steps)
+  t_pts=c((step0+1):n_steps)
+  if(step0==0){x_res[1,3]=year0}
+
+  model_output=list(year=x_res[t_pts,3])
+  if(flag_sero==1){
+    model_output$S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+  }
+  if(flag_case==1) {
+    model_output$C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+  }
 
   model_data=list(years=years_data)
   t_pts=length(model_output$year)
@@ -148,12 +178,11 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
 
       rep_cases=rep_deaths=rep(0,n_years_outbreak)
       for(n_year in 1:n_years_outbreak){
-        year=years_outbreak[n_year]
-        infs=model_data_subset$infs[model_data_subset$years==year]
-        severe_infs=rbinom(1,floor(infs),p_severe_inf)
-        deaths=rbinom(1,severe_infs,p_death_severe_inf)
-        rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-        rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,severe_infs-deaths,p_rep_severe)
+        infs=sum(model_data_subset$infs[model_data_subset$years==years_outbreak[n_year]])
+        severe_infs=infs*p_severe_inf
+        deaths=severe_infs*p_death_severe_inf
+        rep_deaths[n_year]=round(deaths*p_rep_death)
+        rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
       }
 
       model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
@@ -168,13 +197,9 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
       model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
     }
   }
-  model_output<-NULL
 
   if(any(input_data$flag_sero>0)){
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
-    # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
-    # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
-    # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
   }
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,

@@ -29,24 +29,21 @@ Model_Run(
 
 \item{year0}{First year in population/vaccination data}
 
-\item{years_data}{Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
-data from 1945 to 1950 is required, years_data should be c(1945:1951)}
+\item{years_data}{Incremental vector of years denoting years for which to save data}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
 If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-If mode_start=2, use SEIRVC input in list from previous run(s)}
+If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
-
-\item{output_type}{Output data to save:
- "full" for all SEIRV data plus day, year, total FOI
- "case" for just year and number of new infections
+\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)
 '}
+
+\item{output_type}{Type of data to output - "full" for all, "case" for only years and new infections}
 }
 \description{
 Run SEIRV model

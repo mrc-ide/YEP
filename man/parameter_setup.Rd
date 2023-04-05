@@ -28,8 +28,7 @@ parameter_setup(
 
 \item{year0}{First year in population/vaccination data}
 
-\item{years_data}{Incremental vector of years denoting start of data saving through to year at which to stop, i.e. if
-data from 1945 to 1950 is required, years_data should be c(1945:1951)}
+\item{years_data}{Incremental vector of years denoting years for which to save data}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
