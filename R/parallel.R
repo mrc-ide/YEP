@@ -202,6 +202,8 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
   }
 
+  model_data=NULL
+
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))
 }
