@@ -5,8 +5,8 @@
 #' @description Run SEIRV model for one region when dataset being generated using multithreading
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
-#' for one region over a specified time period for a number of particles/threads and outputs specific data for dataset being
-#' generated in parallel.
+#' for one region over a specified time period for a number of particles/threads and outputs specific data for dataset
+#' being generated in parallel.
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Basic reproduction number for urban spread of infection
@@ -25,8 +25,8 @@
 #' '
 #' @export
 #'
-Model_Run_Thread <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,flag_sero=0,
-                             year0=1940,mode_start=0,vaccine_efficacy=1.0,dt=1.0){
+Model_Run_Thread <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,
+                             flag_sero=0,year0=1940,mode_start=0,vaccine_efficacy=1.0,dt=1.0){
 
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
 
@@ -120,8 +120,7 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
                                       vaccine_efficacy,p_rep_severe,p_rep_death,mode_start,dt,cluster){
 
   assert_that(is.null(cluster)==FALSE)
-  assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
-                                            " (see https://mrc-ide.github.io/YellowFeverDynamics/articles/CGuideAInputs.html )"))
+  assert_that(input_data_check(input_data),msg="Input data must be in standard format")
   assert_that(any(is.null(obs_sero_data)==FALSE,is.null(obs_case_data)==FALSE),
               msg="Need at least one of obs_sero_data or obs_case_data")
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
@@ -202,7 +201,7 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
     model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
   }
 
-  model_data=NULL
+  #model_data=NULL
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))

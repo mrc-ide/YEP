@@ -320,7 +320,8 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
                                   vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt)
     } else {
       dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
-                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,const_list$cluster)
+                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,
+                                  const_list$dt,const_list$cluster)
     }
     #cat("\n\tDataset generation completed")
 
@@ -352,7 +353,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     likelihood=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
                      sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
-    dataset=NULL
+    #dataset=NULL
 
   } else {likelihood=-Inf}
 

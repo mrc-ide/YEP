@@ -113,7 +113,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
 #' @export
 #'
 parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,
-                                     years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
+                            years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
 
   assert_that(length(pop_data[,1])>1) #TODO - msg
   assert_that(length(pop_data[1,])>1) #TODO - msg
@@ -143,7 +143,6 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   dP1_all=dP2_all=vacc_rates=array(rep(0,N_age*n_years),dim=c(N_age,n_years))
   for(i in 1:N_age){
     P0[i]=max(1.0,pop_data[1,i]) #Set all population values to nonzero minimum to avoid NaN values
-    #P0[i]=max(1.0e-99,pop_data[1,i]) #Set all population values to nonzero minimum to avoid NaN values (NOTE: differs from YFD)
   }
   for(n_year in 1:n_years){
     for(i in 1:N_age){
@@ -187,8 +186,8 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     Vac0=P0*vacc_initial
   }
 
-  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,steps_inc=steps_inc,steps_lat=steps_lat,steps_inf=steps_inf,
-              Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
+  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,steps_inc=steps_inc,steps_lat=steps_lat,
+              steps_inf=steps_inf,Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
               dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt))
 }
 #-------------------------------------------------------------------------------
@@ -375,12 +374,13 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
 
   assert_that(all(enviro_coeffs>=0),msg="All environmental coefficients must have positive values")
   n_env_vars=length(enviro_covar_values)
-  assert_that(length(enviro_coeffs) %in% c(n_env_vars,2*n_env_vars),
-              msg="Number of environmental coefficients must equal number of covariates (calculating FOI only) or twice number of covariates (calculating FOI and R0)")
+  assert_that(length(enviro_coeffs) %in% c(n_env_vars,2*n_env_vars),msg="Wrong number of environmental coefficients")
 
   output=list(FOI=NA,R0=NA)
   output$FOI=sum(enviro_coeffs[c(1:n_env_vars)]*enviro_covar_values)
-  if(length(enviro_coeffs)==2*n_env_vars){output$R0=sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)}
+  if(length(enviro_coeffs)==2*n_env_vars){
+    output$R0=sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)
+    }
 
   return(output)
 }
@@ -389,8 +389,8 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
 #'
 #' @description Function to calculate annual yellow fever burden across multiple regions based on derived parameters
 #'
-#' @details Function to take in parameter sets derived from MCMC fitting and use to calculate annual total and reported
-#' case and death numbers for multiple regions to compare with external data
+#' @details Function to take in parameter sets derived from MCMC fitting and use to calculate annual total and
+#'   reported case and death numbers for multiple regions to compare with external data
 #'
 #' @param type Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
 #'   covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"
@@ -442,7 +442,8 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
     if(n_param_set %% 10 == 0){cat("\n")}
     params=param_dist[n_param_set,]
     names(params)=colnames(param_dist)
-    if(is.null(vaccine_efficacy)){vaccine_efficacy_set=params$vaccine_efficacy} else {vaccine_efficacy_set=vaccine_efficacy}
+    if(is.null(vaccine_efficacy)){vaccine_efficacy_set=params$vaccine_efficacy} else {
+      vaccine_efficacy_set=vaccine_efficacy}
     if(is.null(p_rep_severe)){p_rep_severe_set=params$p_rep_severe} else {p_rep_severe_set=p_rep_severe}
     if(is.null(p_rep_death)){p_rep_death_set=params$p_rep_death} else {p_rep_death_set=p_rep_death}
     if(is.null(m_FOI_Brazil)){m_FOI_Brazil_set=params$m_FOI_Brazil} else {m_FOI_Brazil_set=m_FOI_Brazil}
@@ -473,8 +474,8 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
       } else {start_SEIRV_set=NULL}
       case_data <- case_data_generate(FOI_values[n_region],R0_values[n_region],
                                       vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
-                                      year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),mode_start,
-                                      vaccine_efficacy_set,start_SEIRV_set,dt)
+                                      year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),
+                                      mode_start,vaccine_efficacy_set,start_SEIRV_set,dt)
       t_pts=length(case_data$year)
 
       for(n_year in 1:n_years){
