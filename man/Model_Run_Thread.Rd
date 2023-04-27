@@ -50,6 +50,6 @@ Run SEIRV model for one region when dataset being generated using multithreading
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
-for one region over a specified time period for a number of particles/threads and outputs specific data for dataset being
-generated in parallel.
+for one region over a specified time period for a number of particles/threads and outputs specific data for dataset
+being generated in parallel.
 }

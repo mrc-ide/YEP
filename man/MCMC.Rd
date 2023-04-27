@@ -27,7 +27,7 @@ MCMC(
 )
 }
 \arguments{
-\item{log_params_ini}{Initial values of parameters to be varied These should always be the log() values of the
+\item{log_params_ini}{Initial values of parameters to be varied. These should always be the log() values of the
 actual parameters, ordered as follows:
 1) Parameters controlling the value of spillover force of infection FOI, either a) a number of FOI values equal
 to the total number of regions to be considered or b) a number of environmental coefficients used to calculate

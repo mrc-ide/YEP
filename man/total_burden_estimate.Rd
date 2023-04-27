@@ -58,6 +58,6 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 Function to calculate annual yellow fever burden across multiple regions based on derived parameters
 }
 \details{
-Function to take in parameter sets derived from MCMC fitting and use to calculate annual total and reported
-case and death numbers for multiple regions to compare with external data
+Function to take in parameter sets derived from MCMC fitting and use to calculate annual total and
+  reported case and death numbers for multiple regions to compare with external data
 }

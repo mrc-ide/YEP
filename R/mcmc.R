@@ -8,7 +8,7 @@
 #' @details This is the master function for running a Markov chain to optimize the parameters of the yellow fever
 #' model based on the calculated likelihood of observing supplied data given a particular set of parameters.
 #'
-#' @param log_params_ini Initial values of parameters to be varied These should always be the log() values of the
+#' @param log_params_ini Initial values of parameters to be varied. These should always be the log() values of the
 #'   actual parameters, ordered as follows:
 #'   1) Parameters controlling the value of spillover force of infection FOI, either a) a number of FOI values equal
 #'   to the total number of regions to be considered or b) a number of environmental coefficients used to calculate
@@ -347,8 +347,10 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
       }
       cases_like_values=dnbinom(x=obs_case_data$cases,mu=model_case_values,
                                 size=rep(1,length(obs_case_data$cases)),log=TRUE)
-      deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
-                                 size=rep(1,length(obs_case_data$deaths)),log=TRUE)
+      if(is.null(obs_case_data$deaths)==FALSE){
+        deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
+                                   size=rep(1,length(obs_case_data$deaths)),log=TRUE)
+      } else {deaths_like_values=0}
     }
 
     likelihood=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
@@ -356,7 +358,6 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
     #dataset=NULL
 
   } else {likelihood=-Inf}
-
 
   return(likelihood)
 }
