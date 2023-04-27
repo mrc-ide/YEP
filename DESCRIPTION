@@ -15,9 +15,7 @@ LinkingTo:
     cpp11
 Imports:
     assertthat,
-    dde,
     graphics,
-    odin,
     parallel,
     mvtnorm,
     R.utils,

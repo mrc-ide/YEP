@@ -9,17 +9,15 @@ t_infectious <- 5 #Time cases remain infectious
 #------------------------------------------------
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
-#' @import assertthat
-#' @import dde
+#' @importFrom assertthat assert_that
 #' @importFrom graphics axis matplot par
 #' @importFrom mvtnorm rmvnorm
-#' @import odin
-#' @import parallel
+#' @importFrom parallel clusterMap
 #' @importFrom R.utils fileAccess
 #' @importFrom stats cov dexp dnbinom dnorm rbinom runif
 #' @importFrom tgp lhs
 #' @importFrom truncdist dtrunc
-#' @import utils
+#' @importFrom utils write.csv
 #------------------------------------------------
 # unload DLL when package is unloaded
 #' @noRd
