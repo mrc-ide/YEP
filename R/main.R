@@ -10,6 +10,7 @@ t_infectious <- 5 #Time cases remain infectious
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
 #' @importFrom assertthat assert_that
+#' @import dde
 #' @importFrom graphics axis matplot par
 #' @importFrom mvtnorm rmvnorm
 #' @importFrom parallel clusterMap
