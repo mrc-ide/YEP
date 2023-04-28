@@ -13,6 +13,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import dde
 #' @importFrom graphics axis matplot par
 #' @importFrom mvtnorm rmvnorm
+#' @import odin
 #' @importFrom parallel clusterMap
 #' @importFrom R.utils fileAccess
 #' @importFrom stats cov dexp dnbinom dnorm rbinom runif
