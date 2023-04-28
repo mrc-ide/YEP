@@ -17,10 +17,11 @@ Imports:
     assertthat,
     dde,
     graphics,
+    mvtnorm,
     odin,
     parallel,
-    mvtnorm,
     R.utils,
+    stats,
     tgp,
     truncdist,
     utils

@@ -1,6 +1,6 @@
 # R file for functions used for multithread dataset generation in YEP package
 #-------------------------------------------------------------------------------
-#' @title Model_Run_Thread
+#' @title Model_Run_Threaded
 #'
 #' @description Run SEIRV model for one region when dataset being generated using multithreading
 #'
@@ -25,7 +25,7 @@
 #' '
 #' @export
 #'
-Model_Run_Thread <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,
+Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,
                              flag_sero=0,year0=1940,mode_start=0,vaccine_efficacy=1.0,dt=1.0){
 
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
@@ -158,7 +158,7 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
     years_data_sets[[n_region]]=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region])
   }
 
-  model_data <- clusterMap(cl=cluster,fun=Model_Run_Thread,FOI=FOI_values,R0=R0_values,vacc_data=vacc_data_subsets,
+  model_data <- clusterMap(cl=cluster,fun=Model_Run_Threaded,FOI_spillover=FOI_values,R0=R0_values,vacc_data=vacc_data_subsets,
                            pop_data=pop_data_subsets,years_data=years_data_sets,flag_case=input_data$flag_case,
                            flag_sero=input_data$flag_sero,
                            MoreArgs=list(year0=input_data$years_labels[1],mode_start=mode_start,
