@@ -53,7 +53,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @export
 #'
 Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1940:1941),
-                               mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0,output_type="full") {
+                               mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
 
   pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
                                 start_SEIRV,dt)
@@ -76,17 +76,13 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   t_pts=c((step0+1):n_steps)
   if(step0==0){x_res[1,3]=year0}
 
-  if(output_type=="full"){
-    return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
-                S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
-                E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-                I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-                R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-                V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-                C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
-  }else{
-    return(list(year=x_res[t_pts,3],
-                C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
+  return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
+              S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
+              E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+              I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+              R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+              V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
+              C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
   }
 }
 #-------------------------------------------------------------------------------
@@ -255,10 +251,6 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
     #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
 
     #Run model
-    # if(input_data$flag_sero[n_region]==1){
-    #   if(input_data$flag_case[n_region]==1){output_type="full_annual"}else{output_type="SEIRV_annual"}
-    # }else{
-    #   output_type="case_annual"}
     model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
                                     pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
                                     years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
@@ -410,13 +402,14 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
+#' @param cluster TBA
 #'
 #' @export
 #'
 total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_data=list(),start_SEIRV=NULL,
                                   years_data=c(),mode_start=1,flag_reporting=FALSE,dt=5.0,
                                   enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
-                                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
+                                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,cluster=NULL){
 
   assert_that(input_data_check(input_data),msg="Input data must be in standard format (TBA)")
   assert_that(all(input_data$region_labels==enviro_data$region)==TRUE) #TODO - msg
@@ -465,6 +458,7 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
       } else {R0_values=R0_fixed_values}
     }
 
+    #TODO - Add option to run in parallel
     for(n_region in 1:n_regions){
 
       if(mode_start==2){
