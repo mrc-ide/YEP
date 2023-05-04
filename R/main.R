@@ -498,7 +498,7 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
       case_data <- clusterMap(cl=cluster,fun=Model_Run_Threaded,FOI_spillover=FOI_values,R0=R0_values,
                               vacc_data=vacc_data_subsets,pop_data=pop_data_subsets,
                                MoreArgs=list(years_data=years_data,flag_case=1,flag_sero=0,year0=input_data$years_labels[1],
-                                             mode_start=mode_start,vaccine_efficacy=vaccine_efficacy,dt=dt))
+                                             mode_start=mode_start,vaccine_efficacy=vaccine_efficacy_set,dt=dt))
 
       for(n_region in 1:n_regions){
         t_pts=length(case_data[[n_region]]$year)
