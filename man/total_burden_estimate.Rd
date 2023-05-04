@@ -18,7 +18,8 @@ total_burden_estimate(
   vaccine_efficacy = NULL,
   p_rep_severe = NULL,
   p_rep_death = NULL,
-  m_FOI_Brazil = 1
+  m_FOI_Brazil = 1,
+  cluster = NULL
 )
 }
 \arguments{
@@ -53,6 +54,8 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 \item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
 
 \item{m_FOI_Brazil}{Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
+
+\item{cluster}{TBA}
 }
 \description{
 Function to calculate annual yellow fever burden across multiple regions based on derived parameters

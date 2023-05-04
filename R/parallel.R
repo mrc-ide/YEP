@@ -19,9 +19,8 @@
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-#'  If mode_start=2, use SEIRVC input in list from previous run(s)
 #' @param vaccine_efficacy Proportional vaccine efficacy
-#' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param dt Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' '
 #' @export
 #'
@@ -110,7 +109,6 @@ Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-#'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param cluster Cluster of threads to use for multithread run
 #' '
@@ -158,9 +156,9 @@ Generate_Dataset_Threaded <- function(input_data,FOI_values,R0_values,obs_sero_d
     years_data_sets[[n_region]]=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region])
   }
 
-  model_data <- clusterMap(cl=cluster,fun=Model_Run_Threaded,FOI_spillover=FOI_values,R0=R0_values,vacc_data=vacc_data_subsets,
-                           pop_data=pop_data_subsets,years_data=years_data_sets,flag_case=input_data$flag_case,
-                           flag_sero=input_data$flag_sero,
+  model_data <- clusterMap(cl=cluster,fun=Model_Run_Threaded,FOI_spillover=FOI_values,R0=R0_values,
+                           vacc_data=vacc_data_subsets,pop_data=pop_data_subsets,years_data=years_data_sets,
+                           flag_case=input_data$flag_case,flag_sero=input_data$flag_sero,
                            MoreArgs=list(year0=input_data$years_labels[1],mode_start=mode_start,
                                          vaccine_efficacy=vaccine_efficacy,dt=dt))
 

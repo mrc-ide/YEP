@@ -14,8 +14,7 @@ Model_Run(
   mode_start = 0,
   vaccine_efficacy = 1,
   start_SEIRV = list(),
-  dt = 1,
-  output_type = "full"
+  dt = 1
 )
 }
 \arguments{
@@ -42,8 +41,6 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)
 '}
-
-\item{output_type}{Type of data to output - "full" for all, "case" for only years and new infections}
 }
 \description{
 Run SEIRV model

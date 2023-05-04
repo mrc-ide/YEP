@@ -40,7 +40,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param vacc_data Vaccination coverage in each age group by year
 #' @param pop_data Population in each age group by year
 #' @param years_data Incremental vector of years denoting years for which to save data
-#' @param output_type Type of data to output - "full" for all, "case" for only years and new infections
+# @param output_type Type of data to output - "full" for all, "case" for only days, years and new infections
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param year0 First year in population/vaccination data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
@@ -76,6 +76,7 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
   t_pts=c((step0+1):n_steps)
   if(step0==0){x_res[1,3]=year0}
 
+  #if(output_type=="full"){
   return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
               S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
               E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
@@ -83,7 +84,11 @@ Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),
               R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
               V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
               C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
-  }
+  #}
+  # if(output_type=="case"){
+  #   return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
+  #               C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
+  # }
 }
 #-------------------------------------------------------------------------------
 #' @title Parameter setup
@@ -458,27 +463,54 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
       } else {R0_values=R0_fixed_values}
     }
 
-    #TODO - Add option to run in parallel
-    for(n_region in 1:n_regions){
+    if(is.null(cluster)){
+      for(n_region in 1:n_regions){
+        if(mode_start==2){
+          start_SEIRV_set=list(S=start_SEIRV$S[,n_region,n_param_set],
+                               E=start_SEIRV$E[,n_region,n_param_set],I=start_SEIRV$I[,n_region,n_param_set],
+                               R=start_SEIRV$R[,n_region,n_param_set],V=start_SEIRV$V[,n_region,n_param_set])
+        } else {start_SEIRV_set=NULL}
+        case_data <- case_data_generate(FOI_values[n_region],R0_values[n_region],
+                                        vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
+                                        year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),
+                                        mode_start,vaccine_efficacy_set,start_SEIRV_set,dt)
+        t_pts=length(case_data$year)
 
-      if(mode_start==2){
-        start_SEIRV_set=list(S=start_SEIRV$S[,n_region,n_param_set],
-                             E=start_SEIRV$E[,n_region,n_param_set],I=start_SEIRV$I[,n_region,n_param_set],
-                             R=start_SEIRV$R[,n_region,n_param_set],V=start_SEIRV$V[,n_region,n_param_set])
-      } else {start_SEIRV_set=NULL}
-      case_data <- case_data_generate(FOI_values[n_region],R0_values[n_region],
-                                      vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
-                                      year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),
-                                      mode_start,vaccine_efficacy_set,start_SEIRV_set,dt)
-      t_pts=length(case_data$year)
+        for(n_year in 1:n_years){
+          lines=c(1:t_pts)[case_data$year==years_data[n_year]]
+          infs=sum(case_data$C[lines])
+          severe_infs=infs*p_severe_inf
+          deaths=severe_infs*p_death_severe_inf
+          case_ar1[n_year,n_region,n_param_set]=severe_infs
+          death_ar1[n_year,n_region,n_param_set]=deaths
+        }
+      }
+    } else {
+      #TODO - Add option to run in parallel
+      assert_that(mode_start %in% c(0,1))
 
-      for(n_year in 1:n_years){
-        lines=c(1:t_pts)[case_data$year==years_data[n_year]]
-        infs=sum(case_data$C[lines])
-        severe_infs=infs*p_severe_inf
-        deaths=severe_infs*p_death_severe_inf
-        case_ar1[n_year,n_region,n_param_set]=severe_infs
-        death_ar1[n_year,n_region,n_param_set]=deaths
+      vacc_data_subsets=pop_data_subsets=list()
+      for(n_region in 1:n_regions){
+        vacc_data_subsets[[n_region]]=input_data$vacc_data[n_region,,]
+        pop_data_subsets[[n_region]]=input_data$pop_data[n_region,,]
+      }
+
+      case_data <- clusterMap(cl=cluster,fun=Model_Run_Threaded,FOI_spillover=FOI_values,R0=R0_values,
+                              vacc_data=vacc_data_subsets,pop_data=pop_data_subsets,
+                               MoreArgs=list(years_data=years_data,flag_case=1,flag_sero=0,year0=input_data$years_labels[1],
+                                             mode_start=mode_start,vaccine_efficacy=vaccine_efficacy,dt=dt))
+
+      for(n_region in 1:n_regions){
+        t_pts=length(case_data[[n_region]]$year)
+
+        for(n_year in 1:n_years){
+          lines=c(1:t_pts)[case_data[[n_region]]$year==years_data[n_year]]
+          infs=sum(case_data[[n_region]]$C[lines])
+          severe_infs=infs*p_severe_inf
+          deaths=severe_infs*p_death_severe_inf
+          case_ar1[n_year,n_region,n_param_set]=severe_infs
+          death_ar1[n_year,n_region,n_param_set]=deaths
+        }
       }
     }
 
