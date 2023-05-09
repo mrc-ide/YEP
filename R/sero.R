@@ -1,9 +1,9 @@
-# R file for functions relating to serological data in YellowFeverDynamics package
+# R file for functions relating to serological data in YEP package
 #-------------------------------------------------------------------------------
 #' @title sero_calculate
 #'
 #' @description Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
-#' range
+#' range - TODO: add functionality for multiple repetitions/particles
 #'
 #' @details Takes in information on minimum and maximum ages of desired range, year(s) for which to calculate
 #' seroprevalence, factor representing proportion of patients with unknown vaccine status, and SEIRV model output
@@ -25,28 +25,26 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
   assert_that(vc_factor>=0 && vc_factor<=1,msg="vc_factor must be between 0 and 1")
   assert_that(is.null(data$S)==FALSE) #TODO - Improve check on SEIRV data
 
-
-
   ages=c((age_min+1):age_max)
   sero_values=rep(0,length(years))
 
   for(i in 1:length(years)){
     n_t=which(data$year %in% years[i])
     if(vc_factor==0){
-      samples=data$S[n_t,ages]+data$E[n_t,ages]+data$I[n_t,ages]+data$R[n_t,ages]
-      positives=data$R[n_t,ages]
+      samples=data$S[ages,,n_t]+data$E[ages,,n_t]+data$I[ages,,n_t]+data$R[ages,,n_t]
+      positives=data$R[ages,,n_t]
       sero_values[i]=sum(positives)/sum(samples)
     } else {
      if(vc_factor==1){
-       samples=data$S[n_t,ages]+data$E[n_t,ages]+data$I[n_t,ages]+data$R[n_t,ages]+data$V[n_t,ages]
-       positives=data$R[n_t,ages]+data$V[n_t,ages]
+       samples=data$S[ages,,n_t]+data$E[ages,,n_t]+data$I[ages,,n_t]+data$R[ages,,n_t]+data$V[ages,,n_t]
+       positives=data$R[ages,,n_t]+data$V[ages,,n_t]
        sero_values[i]=sum(positives)/sum(samples)
      } else {
-       samples=data$S[n_t,ages]+data$E[n_t,ages]+data$I[n_t,ages]+data$R[n_t,ages]
-       positives=data$R[n_t,ages]
+       samples=data$S[ages,,n_t]+data$E[ages,,n_t]+data$I[ages,,n_t]+data$R[ages,,n_t]
+       positives=data$R[ages,,n_t]
        sero_values[i]=((1.0-vc_factor)*sum(positives))/sum(samples)
-       samples=samples+data$V[n_t,ages]
-       positives=positives+data$V[n_t,ages]
+       samples=samples+data$V[ages,,n_t]
+       positives=positives+data$V[ages,,n_t]
        sero_values[i]=sero_values[i]+((vc_factor*sum(positives))/sum(samples))
      }
     }
@@ -58,7 +56,7 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
 #' @title sero_calculate2
 #'
 #' @description Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
-#' and year(s)
+#' and year(s) - TODO: add functionality for multiple repetitions/particles
 #'
 #' @details Takes in information on minimum and maximum ages of desired range(s), year(s) for which to calculate
 #' number of "samples" (people eligible for testing) and "positives" (people who would test positive), plus vc_factor
@@ -83,13 +81,13 @@ sero_calculate2 <- function(sero_data=list(),model_data=list()){
     year=sero_data$year[i]
     vc_factor=sero_data$vc_factor[i]
     n_t=which(model_data$year==year)
-    S_sum=sum(model_data$S[n_t,ages])
-    E_sum=sum(model_data$E[n_t,ages])
-    I_sum=sum(model_data$I[n_t,ages])
-    R_sum=sum(model_data$R[n_t,ages])
+    S_sum=sum(model_data$S[ages,,n_t])
+    E_sum=sum(model_data$E[ages,,n_t])
+    I_sum=sum(model_data$I[ages,,n_t])
+    R_sum=sum(model_data$R[ages,,n_t])
     samples=S_sum+E_sum+I_sum+R_sum
     if(vc_factor>0){
-      V_sum=sum(model_data$V[n_t,ages])
+      V_sum=sum(model_data$V[ages,,n_t])
       if(vc_factor==1){
         samples=samples+V_sum
         positives=R_sum+V_sum

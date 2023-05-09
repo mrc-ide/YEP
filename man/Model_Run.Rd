@@ -14,7 +14,10 @@ Model_Run(
   mode_start = 0,
   vaccine_efficacy = 1,
   start_SEIRV = list(),
-  dt = 1
+  dt = 1,
+  n_particles = 1,
+  n_threads = 1,
+  output_type = "full"
 )
 }
 \arguments{
@@ -39,11 +42,17 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)
+\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+
+\item{n_particles}{number of particles to use}
+
+\item{n_threads}{number of threads to use}
+
+\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only
 '}
 }
 \description{
-Run SEIRV model
+Run SEIRV model - TODO: add option for odin.dust parallelism
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model

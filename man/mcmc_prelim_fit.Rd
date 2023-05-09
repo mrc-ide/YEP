@@ -17,6 +17,7 @@ mcmc_prelim_fit(
   mode_start = 0,
   prior_type = "zero",
   dt = 1,
+  n_reps = 1,
   enviro_data = NULL,
   R0_fixed_values = c(),
   vaccine_efficacy = NULL,
@@ -61,6 +62,8 @@ If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 
 If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
 
 \item{dt}{time increment in days (must be 1 or 5)}
+
+\item{n_reps}{Number of repetitions}
 
 \item{enviro_data}{Values of environmental variables (if in use)}
 

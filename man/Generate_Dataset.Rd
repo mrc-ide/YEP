@@ -14,7 +14,8 @@ Generate_Dataset(
   p_rep_severe = 1,
   p_rep_death = 1,
   mode_start = 1,
-  dt = 1
+  dt = 1,
+  n_reps = 1
 )
 }
 \arguments{
@@ -41,11 +42,13 @@ If mode_start=0, only vaccinated individuals
 If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
 If mode_start=2, use SEIRV input in list from previous run(s)}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)
+\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+
+\item{n_reps}{number of stochastic repetitions
 '}
 }
 \description{
-Generate serological and/or annual case/death data
+Generate serological and/or annual case/death data - TODO: add option(s) for parallelism
 }
 \details{
 This function is used to generate serological, annual case/death and/or annual outbreak risk data based

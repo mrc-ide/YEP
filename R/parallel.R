@@ -27,13 +27,9 @@
 Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),years_data=c(),flag_case=0,
                              flag_sero=0,year0=1940,mode_start=0,vaccine_efficacy=1.0,dt=1.0){
 
-  pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,dt=dt)
-
-  x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
-                       steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
-                       Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
-                       Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
-                       year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
+  x <- SEIRV_Model$new(pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,
+                                            vaccine_efficacy,start_SEIRV=NULL,dt),
+                       time = 1, n_particles = 1, n_threads=1)
 
   n_nv=4 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
@@ -42,6 +38,7 @@ Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
+  dimensions=c(N_age,t_pts_out)
 
   x_res <- x$run(n_steps)
   t_pts=c((step0+1):n_steps)
@@ -49,14 +46,14 @@ Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
 
   model_output=list(year=x_res[t_pts,3])
   if(flag_sero==1){
-    model_output$S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age))
-    model_output$E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age))
-    model_output$I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age))
-    model_output$R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age))
-    model_output$V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$S=array(x_res[c((1+n_nv):(N_age+n_nv)),1,t_pts],dim=dimensions)
+    model_output$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),1,t_pts],dim=dimensions)
+    model_output$I=array(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),1,t_pts],dim=dimensions)
+    model_output$R=array(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),1,t_pts],dim=dimensions)
+    model_output$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),1,t_pts],dim=dimensions)
   }
   if(flag_case==1) {
-    model_output$C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))
+    model_output$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),1,t_pts],dim=dimensions)
   }
 
   model_data=list(years=years_data)
@@ -66,7 +63,7 @@ Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
     model_data$infs=rep(NA,n_years)
     for(n_year in c(1:n_years)){
       pts=c(1:t_pts)[model_output$year==years_data[n_year]]
-      model_data$infs[n_year]=sum(model_output$C[pts,])
+      model_data$infs[n_year]=sum(model_output$C[,pts])
     }
   }
   if(flag_sero==1){
@@ -77,11 +74,11 @@ Model_Run_Threaded <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_dat
       year=years_data[n_year]
       pts=c(1:t_pts)[model_output$year==year]
       for(j in 1:N_age){
-        model_data$S[n_year,j]=sum(model_output$S[pts,j])
-        model_data$E[n_year,j]=sum(model_output$E[pts,j])
-        model_data$I[n_year,j]=sum(model_output$I[pts,j])
-        model_data$R[n_year,j]=sum(model_output$R[pts,j])
-        model_data$V[n_year,j]=sum(model_output$V[pts,j])
+        model_data$S[n_year,j]=sum(model_output$S[j,pts])
+        model_data$E[n_year,j]=sum(model_output$E[j,pts])
+        model_data$I[n_year,j]=sum(model_output$I[j,pts])
+        model_data$R[n_year,j]=sum(model_output$R[j,pts])
+        model_data$V[n_year,j]=sum(model_output$V[j,pts])
       }
     }
   }

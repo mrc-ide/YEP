@@ -13,6 +13,7 @@ total_burden_estimate(
   mode_start = 1,
   flag_reporting = FALSE,
   dt = 5,
+  n_reps = 1,
   enviro_data = NULL,
   R0_fixed_values = NULL,
   vaccine_efficacy = NULL,
@@ -42,6 +43,8 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 \item{flag_reporting}{Flag indicating whether to output number of reported severe and fatal cases}
 
 \item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+
+\item{n_reps}{#TBA}
 
 \item{enviro_data}{enviro_data Data frame containing values of environmental covariates; set to NULL if not in use}
 

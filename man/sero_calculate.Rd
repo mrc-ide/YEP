@@ -26,7 +26,7 @@ sero_calculate(
 }
 \description{
 Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
-range
+range - TODO: add functionality for multiple repetitions/particles
 }
 \details{
 Takes in information on minimum and maximum ages of desired range, year(s) for which to calculate

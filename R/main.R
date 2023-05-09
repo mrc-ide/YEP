@@ -13,7 +13,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @import dde
 #' @importFrom graphics axis matplot par
 #' @importFrom mvtnorm rmvnorm
-#' @import odin
+#' @import odin.dust
 #' @import parallel
 #' @importFrom R.utils fileAccess
 #' @importFrom stats cov dexp dnbinom dnorm rbinom runif
@@ -29,7 +29,7 @@ t_infectious <- 5 #Time cases remain infectious
 #-------------------------------------------------------------------------------
 #' @title Model_Run
 #'
-#' @description Run SEIRV model
+#' @description Run SEIRV model - TODO: add option for odin.dust parallelism
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
 #' for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
@@ -49,46 +49,49 @@ t_infectious <- 5 #Time cases remain infectious
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param n_particles number of particles to use
+#' @param n_threads number of threads to use
+#' @param output_type Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only
 #' '
 #' @export
 #'
-Model_Run <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,years_data=c(1940:1941),
-                               mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0) {
+Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data = list(),year0 = 1940,
+                      years_data = c(1940:1941),mode_start = 0,vaccine_efficacy = 1.0,start_SEIRV = list(),dt = 1.0,
+                      n_particles = 1, n_threads = 1, output_type = "full") {
 
-  pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,vaccine_efficacy,
-                                start_SEIRV,dt)
+  x <- SEIRV_Model$new(pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,
+                                            vaccine_efficacy,start_SEIRV,dt),
+                       time = 1, n_particles = n_particles, n_threads = n_threads)
 
-  x <- SEIRV_Model$new(FOI_spillover=pars$FOI_spillover,R0=pars$R0,vacc_rate_annual=pars$vacc_rate_annual,
-                       steps_inc=pars$steps_inc,steps_lat=pars$steps_lat,steps_inf=pars$steps_inf,
-                       Cas0=pars$Cas0,Exp0=pars$Exp0,Inf0=pars$Inf0,N_age=pars$N_age,Rec0=pars$Rec0,Sus0=pars$Sus0,
-                       Vac0=pars$Vac0,dP1_all=pars$dP1_all,dP2_all=pars$dP2_all,n_years=pars$n_years,
-                       year0=pars$year0,vaccine_efficacy=pars$vaccine_efficacy,dt=pars$dt)
-
-  n_nv=4 #Number of non-vector outputs
+  n_nv=3 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
   t_pts_all=c(1:((max(years_data)+1-year0)*(365/dt))) #All output time points
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
   n_steps=length(t_pts_all) #Total number of output time points
   step0=(years_data[1]-year0)*(365/dt) #Step at which data starts being saved for final output
   t_pts_out=n_steps-step0 #Number of time points in final output data
+  dimensions=c(N_age,n_particles,t_pts_out)
 
-  x_res <- x$run(n_steps)
-  t_pts=c((step0+1):n_steps)
-  if(step0==0){x_res[1,3]=year0}
+  x_res <- array(NA, dim = c(n_data_pts, n_particles, t_pts_out))
+  for(t in step0:n_steps){
+    x_res[,,t-step0] <- x$run(t)
+  }
+  if(step0==0){x_res[2,,1]=rep(year0,n_particles)}
 
-  #if(output_type=="full"){
-  return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
-              S=array(x_res[t_pts,c((1+n_nv):(N_age+n_nv))],dim=c(t_pts_out,N_age)),
-              E=array(x_res[t_pts,c((N_age+1+n_nv):((2*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              I=array(x_res[t_pts,c(((2*N_age)+1+n_nv):((3*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              R=array(x_res[t_pts,c(((3*N_age)+1+n_nv):((4*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              V=array(x_res[t_pts,c(((4*N_age)+1+n_nv):((5*N_age)+n_nv))],dim=c(t_pts_out,N_age)),
-              C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
-  #}
-  # if(output_type=="case"){
-  #   return(list(day=x_res[t_pts,2],year=x_res[t_pts,3],FOI_total=x_res[t_pts,4],
-  #               C=array(x_res[t_pts,c(((5*N_age)+1+n_nv):((6*N_age)+n_nv))],dim=c(t_pts_out,N_age))))
-  # }
+  output_data=list(day=x_res[1,,],year=x_res[2,,])#,FOI_total=x_res[3,,]/dt)
+
+  if(output_type=="full" || output_type=="sero"){
+    output_data$S=array(x_res[c((1+n_nv):(N_age+n_nv)),,],dim=dimensions)
+    output_data$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),,],dim=dimensions)
+    output_data$I=array(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),,],dim=dimensions)
+    output_data$R=array(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),,],dim=dimensions)
+    output_data$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),,],dim=dimensions)
+  }
+  if(output_type=="full" || output_type=="case"){
+    output_data$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),,],dim=dimensions)
+  }
+
+  return(output_data)
 }
 #-------------------------------------------------------------------------------
 #' @title Parameter setup
@@ -128,17 +131,10 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     assert_that(is.null(start_SEIRV$S)==FALSE,msg="When mode_start=2, start_SEIRV data is required")
   }
   assert_that(years_data[1]>=year0,msg="First data year must be greater than or equal to year0")
-  # assert_that(is.integer(years_data) &&
-  #               all(years_data[c(2:length(years_data))]-years_data[c(1:(length(years_data)-1))]),
-  #             msg="years_data must be iterative vector of years")
   assert_that(max(years_data)+1-years_data[1]<=n_years,msg="Period of years_data must lie within population data")
   vacc_initial=vacc_data[1,]
   assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year)")
   inv_365=1.0/365.0
-
-  steps_inc=ceiling(t_incubation/dt)
-  steps_lat=ceiling(t_latent/dt)
-  steps_inf=ceiling(t_infectious/dt)
 
   P0=Cas0=Sus0=Exp0=Inf0=Rec0=Vac0=rep(0,N_age)
   dP1_all=dP2_all=vacc_rates=array(rep(0,N_age*n_years),dim=c(N_age,n_years))
@@ -187,14 +183,15 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     Vac0=P0*vacc_initial
   }
 
-  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,steps_inc=steps_inc,steps_lat=steps_lat,
-              steps_inf=steps_inf,Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
-              dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt))
+  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,
+              Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
+              dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt,
+              t_incubation=t_incubation,t_latent=t_latent,t_infectious=t_infectious))
 }
 #-------------------------------------------------------------------------------
 #' @title Generate_Dataset
 #'
-#' @description Generate serological and/or annual case/death data
+#' @description Generate serological and/or annual case/death data - TODO: add option(s) for parallelism
 #'
 #' @details This function is used to generate serological, annual case/death and/or annual outbreak risk data based
 #'   on observed or dummy data sets; it is normally used by single_like_calc() and data_match_single() functions
@@ -214,11 +211,13 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param n_reps number of stochastic repetitions
 #' '
 #' @export
 #'
-Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_sero_data=NULL,obs_case_data=NULL,
-                                      vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,mode_start=1,dt=1.0){
+Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),obs_sero_data = NULL,obs_case_data = NULL,
+                             vaccine_efficacy = 1.0,p_rep_severe = 1.0,p_rep_death = 1.0,mode_start = 1,dt = 1.0,
+                             n_reps = 1){
 
   assert_that(input_data_check(input_data),
               msg=paste("Input data must be in standard format",
@@ -254,12 +253,16 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
   #Model all regions and save relevant output data
   for(n_region in 1:n_regions){
     #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
+    if(input_data$flag_case[n_region]==1){
+      if(input_data$flag_sero[n_region]==1){output_type="full"} else{output_type="case"}
+    } else {output_type="sero"}
 
     #Run model
-    model_output=Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data=input_data$vacc_data[n_region,,],
-                                    pop_data=input_data$pop_data[n_region,,],year0=input_data$years_labels[1],
-                                    years_data=c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
-                                    mode_start,vaccine_efficacy,dt=dt)
+    model_output = Model_Run(FOI_values[n_region],R0_values[n_region],vacc_data = input_data$vacc_data[n_region,,],
+                             pop_data = input_data$pop_data[n_region,,],year0 = input_data$years_labels[1],
+                             years_data = c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
+                             mode_start,vaccine_efficacy,dt = dt,n_particles = n_reps,n_threads = n_reps,
+                             output_type = output_type)
     #cat("\n\t\tFinished modelling region ",n_region)
     t_pts=length(model_output$year)
 
@@ -270,14 +273,13 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
       n_years_outbreak=length(case_line_list)
 
       rep_cases=rep_deaths=rep(0,n_years_outbreak)
-      for(n_year in 1:n_years_outbreak){
+      for(n_year in 1:n_years_outbreak){ #TODO - Add functionality for n_reps>1
         pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-        #pts=match(years_outbreak[n_year],model_output$year)
-        infs=sum(model_output$C[pts,])
-        severe_infs=infs*p_severe_inf
-        deaths=severe_infs*p_death_severe_inf
-        rep_deaths[n_year]=round(deaths*p_rep_death)
-        rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
+        infs=sum(model_output$C[,,pts])
+        severe_infs=rbinom(infs,p_severe_inf)          #TODO - Add alternate calculation for deterministic mode
+        deaths=rbinom(severe_infs, p_death_severe_inf) #TODO - Add alternate calculation for deterministic mode
+        rep_deaths[n_year]=rbinom(deaths,p_rep_death)  #TODO - Add alternate calculation for deterministic mode
+        rep_cases[n_year]=rep_deaths[n_year]+rbinom((severe_infs-deaths),p_rep_severe)  #TODO - Add alternate
       }
 
       model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
@@ -294,13 +296,7 @@ Generate_Dataset <- function(input_data=list(),FOI_values=c(),R0_values=c(),obs_
     model_output<-NULL
   }
 
-  if(any(input_data$flag_sero>0)){
-    model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
-    #cat("\n\n\t\tSero samples:\t",model_sero_data$samples,"\n\t\tSero pos:\t",model_sero_data$positives,sep="\t")
-    # model_sero_data$sero[is.infinite(model_sero_data$sero)]=0.0
-    # model_sero_data$sero[is.na(model_sero_data$sero)]=0.0
-    # model_sero_data$sero[is.nan(model_sero_data$sero)]=0.0
-  }
+  if(any(input_data$flag_sero>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
               model_death_values=model_death_values))
@@ -401,6 +397,7 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param flag_reporting Flag indicating whether to output number of reported severe and fatal cases
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param n_reps #TBA
 #' @param enviro_data enviro_data Data frame containing values of environmental covariates; set to NULL if not in use
 #' @param R0_fixed_values Values of R0 to use if not being taken from parameter distribution
 #' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
@@ -411,10 +408,10 @@ param_calc_enviro <- function(enviro_coeffs=c(),enviro_covar_values=c()){
 #'
 #' @export
 #'
-total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_data=list(),start_SEIRV=NULL,
-                                  years_data=c(),mode_start=1,flag_reporting=FALSE,dt=5.0,
-                                  enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
-                                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,cluster=NULL){
+total_burden_estimate <- function(type = "FOI+R0 enviro",param_dist = list(),input_data = list(),start_SEIRV = NULL,
+                                  years_data = c(),mode_start = 1,flag_reporting = FALSE,dt = 5.0,n_reps = 1,
+                                  enviro_data = NULL,R0_fixed_values = NULL,vaccine_efficacy = NULL,
+                                  p_rep_severe = NULL,p_rep_death = NULL,m_FOI_Brazil = 1.0,cluster = NULL){
 
   assert_that(input_data_check(input_data),msg="Input data must be in standard format (TBA)")
   assert_that(all(input_data$region_labels==enviro_data$region)==TRUE) #TODO - msg
@@ -470,10 +467,10 @@ total_burden_estimate <- function(type="FOI+R0 enviro",param_dist=list(),input_d
                                E=start_SEIRV$E[,n_region,n_param_set],I=start_SEIRV$I[,n_region,n_param_set],
                                R=start_SEIRV$R[,n_region,n_param_set],V=start_SEIRV$V[,n_region,n_param_set])
         } else {start_SEIRV_set=NULL}
-        case_data <- case_data_generate(FOI_values[n_region],R0_values[n_region],
-                                        vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
-                                        year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),
-                                        mode_start,vaccine_efficacy_set,start_SEIRV_set,dt)
+        case_data <- Model_Run(FOI_values[n_region],R0_values[n_region],
+                               vacc_data=input_data$vacc_data[n_region,,],pop_data=input_data$pop_data[n_region,,],
+                               year0=input_data$years_labels[1],years_data=c(years_data[1]:(max(years_data)+1)),
+                               mode_start,vaccine_efficacy_set,start_SEIRV_set,dt)
         t_pts=length(case_data$year)
 
         for(n_year in 1:n_years){

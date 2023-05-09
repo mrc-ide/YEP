@@ -15,7 +15,7 @@ people for whom vaccination status unknown)}
 }
 \description{
 Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
-and year(s)
+and year(s) - TODO: add functionality for multiple repetitions/particles
 }
 \details{
 Takes in information on minimum and maximum ages of desired range(s), year(s) for which to calculate

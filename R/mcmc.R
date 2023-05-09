@@ -46,6 +46,7 @@
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
 #' @param dt time increment in days (must be 1 or 5)
+#' @param n_reps Number of times to repeat calculations to get average likelihood at each step
 #' @param enviro_data Data frame containing values of environmental covariates; set to NULL if not in use
 #' @param R0_fixed_values Values of R0 to use if only FOI is subject to fitting (i.e. type set to "FOI" or "FOI
 #'   enviro"); set to NULL if not in use
@@ -59,7 +60,7 @@
 #'
 MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                  filename_prefix="Chain",Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,
-                 prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
+                 prior_type="zero",dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,cluster=NULL){
 
   #Check that initial, minimum and maximum parameters are in vectors of same sizes
@@ -95,7 +96,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 
   #Set up list of invariant parameter values to supply to other functions
   const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
-                  mode_start=mode_start,prior_type=prior_type,dt=dt,enviro_data=enviro_data,
+                  mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
                   R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
                   p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
@@ -187,7 +188,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @param adapt = 0/1 flag indicating which type of calculation to use for proposition value
 #' @param like_current = Current accepted likelihood value
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt=dt,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
+#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
 #'   m_FOI_Brazil,cluster)
 #'
 #' @export
@@ -241,7 +242,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt=dt,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
+#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
 #'   m_FOI_Brazil,cluster)
 #'
 #' @export
@@ -317,7 +318,8 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
     #Generate modelled data over all regions
     if(is.null(const_list$cluster)){
       dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
-                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt)
+                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,
+                                  const_list$n_reps)
     } else {
       dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
                                   vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,
@@ -625,6 +627,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
 #' @param dt time increment in days (must be 1 or 5)
+#' @param n_reps Number of repetitions
 #' @param enviro_data Values of environmental variables (if in use)
 #' @param R0_fixed_values Values of R0 to use if not being varied
 #' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
@@ -638,7 +641,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                             type=NULL,log_params_min=NULL,log_params_max=NULL,input_data=list(),
                             obs_sero_data=list(),obs_case_data=list(),
-                            mode_start=0,prior_type="zero",dt=1.0,enviro_data=NULL,R0_fixed_values=c(),
+                            mode_start=0,prior_type="zero",dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),
                             vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
                             cluster=NULL){
 
@@ -672,7 +675,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
     all_param_sets <- lhs(n=n_param_sets,rect=cbind(log_params_min,log_params_max))
     results=data.frame()
     const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
-                    mode_start=mode_start,prior_type=prior_type,dt=dt,enviro_data=enviro_data,
+                    mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
                     R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
                     p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
 
