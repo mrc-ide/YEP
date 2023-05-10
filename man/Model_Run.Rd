@@ -17,7 +17,8 @@ Model_Run(
   dt = 1,
   n_particles = 1,
   n_threads = 1,
-  output_type = "full"
+  output_type = "full",
+  deterministic = FALSE
 )
 }
 \arguments{
@@ -42,13 +43,15 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+\item{dt}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{n_particles}{number of particles to use}
 
 \item{n_threads}{number of threads to use}
 
-\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only
+\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only}
+
+\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
 '}
 }
 \description{

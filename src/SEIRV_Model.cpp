@@ -168,12 +168,12 @@ public:
     real_type FOI_spillover;
     std::vector<real_type> Inf0;
     std::vector<real_type> initial_C;
-    real_type initial_day;
     std::vector<real_type> initial_E;
     real_type initial_FOI_total;
     std::vector<real_type> initial_I;
     std::vector<real_type> initial_R;
     std::vector<real_type> initial_S;
+    real_type initial_time;
     std::vector<real_type> initial_V;
     real_type initial_year;
     int N_age;
@@ -217,7 +217,7 @@ public:
   }
   std::vector<real_type> initial(size_t step, rng_state_type& rng_state) {
     std::vector<real_type> state(shared->dim_C + shared->dim_E + shared->dim_I + shared->dim_R + shared->dim_S + shared->dim_V + 3);
-    state[0] = shared->initial_day;
+    state[0] = shared->initial_time;
     state[1] = shared->initial_year;
     state[2] = shared->initial_FOI_total;
     std::copy(shared->initial_S.begin(), shared->initial_S.end(), state.begin() + 3);
@@ -229,13 +229,13 @@ public:
     return state;
   }
   void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
-    const real_type day = state[0];
+    const real_type time = state[0];
     const real_type * S = state + 3;
     const real_type * E = state + shared->offset_variable_E;
     const real_type * I = state + shared->offset_variable_I;
     const real_type * R = state + shared->offset_variable_R;
     const real_type * V = state + shared->offset_variable_V;
-    state_next[0] = day + shared->dt;
+    state_next[0] = time + shared->dt;
     real_type year_i = dust::math::floor(((step + 1) * shared->dt) / (real_type) 365) + 1;
     state_next[1] = year_i + shared->year0 - 1;
     for (int i = 1; i <= shared->N_age; ++i) {
@@ -538,7 +538,7 @@ dust::pars_type<SEIRV_Model> dust_pars<SEIRV_Model>(cpp11::list user) {
   auto shared = std::make_shared<SEIRV_Model::shared_type>();
   SEIRV_Model::internal_type internal;
   shared->FOI_max = 1;
-  shared->initial_day = 0;
+  shared->initial_time = 0;
   shared->Pmin = static_cast<real_type>(1e-99);
   shared->dt = NA_REAL;
   shared->FOI_spillover = NA_REAL;
@@ -649,7 +649,7 @@ dust::pars_type<SEIRV_Model> dust_pars<SEIRV_Model>(cpp11::list user) {
 template <>
 cpp11::sexp dust_info<SEIRV_Model>(const dust::pars_type<SEIRV_Model>& pars) {
   const std::shared_ptr<const SEIRV_Model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"day", "year", "FOI_total", "S", "E", "I", "R", "V", "C"});
+  cpp11::writable::strings nms({"time", "year", "FOI_total", "S", "E", "I", "R", "V", "C"});
   cpp11::writable::list dim(9);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});

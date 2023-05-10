@@ -15,7 +15,8 @@ Generate_Dataset(
   p_rep_death = 1,
   mode_start = 1,
   dt = 1,
-  n_reps = 1
+  n_reps = 1,
+  deterministic = FALSE
 )
 }
 \arguments{
@@ -44,7 +45,9 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
 
-\item{n_reps}{number of stochastic repetitions
+\item{n_reps}{number of stochastic repetitions}
+
+\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
 '}
 }
 \description{

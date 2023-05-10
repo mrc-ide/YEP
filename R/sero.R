@@ -3,7 +3,7 @@
 #' @title sero_calculate
 #'
 #' @description Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
-#' range - TODO: add functionality for multiple repetitions/particles
+#' range - TODO: add functionality for multiple repetitions/particles (currently gives average over particles)
 #'
 #' @details Takes in information on minimum and maximum ages of desired range, year(s) for which to calculate
 #' seroprevalence, factor representing proportion of patients with unknown vaccine status, and SEIRV model output
@@ -115,7 +115,7 @@ sero_calculate2 <- function(sero_data=list(),model_data=list()){
 #' data, and compares modelled and observed data, calculating logarithmic likelihood of observing the latter given the
 #' former, using a binomial formula.
 #'
-#' @param model_data = Output of Basic_Model_Run_OD or Full_Model_Run_OD
+#' @param model_data = Output of Model_Run
 #' @param obs_sero_data = Seroprevalence data for comparison, by year and age group, in format
 #'   no. samples/no. positives
 #' '

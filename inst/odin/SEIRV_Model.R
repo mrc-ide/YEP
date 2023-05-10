@@ -6,6 +6,8 @@
 
 #Parameters
 dt <- user() #Time increment in days
+initial(time) <- 0 #Initial value of time in days
+update(time) <- time + dt
 FOI_spillover <- user() #Spillover force of infection (per day)
 R0 <- user() #Basic reproduction number
 N_age <- user() #Number of age categories
@@ -48,7 +50,6 @@ inv_P[1:N_age] <- 1.0/P[i]
 vacc_rate[1:N_age] <- vacc_rate_annual[i,as.integer(year_i)]*vaccine_efficacy*dt*P[i] #Total no. vaccinations by age
 
 #Updates to output values at each time increment
-update(day) <- day + dt
 update(year) <- year_i + year0 - 1
 update(FOI_total) <- FOI_sum
 update(S[1]) <- max(Pmin,S[1] - E_new[1] - vacc_rate[1]*S[1]*inv_P_nV[1] + dP1[1] - (dP2[1]*S[1]*inv_P[1]))
@@ -62,7 +63,6 @@ update(V[2:N_age]) <- max(Pmin,V[i] + vacc_rate[i] + (dP1[i]*V[i-1]*inv_P[i-1]) 
 update(C[1:N_age]) <- I_new[i]
 
 #Initial values
-initial(day) <- 0
 initial(year) <- year0-1
 initial(FOI_total) <- FOI_spillover
 initial(S[1:N_age]) <- Sus0[i]
