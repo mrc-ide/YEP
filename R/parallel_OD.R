@@ -4,8 +4,8 @@
 #' @description Run SEIRV model for multiple regions
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
-#' for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-#' values, infection numbers and total force of infection values.
+#' for multiple regions over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
+#' values, infection numbers and/or total force of infection values.
 #'
 #' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
 #' @param R0 Vector of values of basic reproduction number for urban spread of infection

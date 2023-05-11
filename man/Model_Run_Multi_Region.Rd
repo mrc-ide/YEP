@@ -59,6 +59,6 @@ Run SEIRV model for multiple regions
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
-for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-values, infection numbers and total force of infection values.
+for multiple regions over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
+values, infection numbers and/or total force of infection values.
 }

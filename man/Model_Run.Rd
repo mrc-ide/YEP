@@ -34,7 +34,7 @@ Model_Run(
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only}
+\item{output_type}{Type of data to output: "full" = SEIRVC + FOI, "case" = C only, "sero" = SEIRV only}
 
 \item{year0}{First year in population/vaccination data}
 
@@ -55,10 +55,10 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 '}
 }
 \description{
-Run SEIRV model - TODO: add option for odin.dust parallelism
+Run SEIRV model for single region (Model_Run_Multi_Region can be used to run multiple regions in parallel)
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
 for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-values, infection numbers and total force of infection values.
+values, infection numbers and/or total force of infection values.
 }
