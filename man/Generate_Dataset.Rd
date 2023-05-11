@@ -14,6 +14,7 @@ Generate_Dataset(
   p_rep_severe = 1,
   p_rep_death = 1,
   mode_start = 1,
+  start_SEIRV = NULL,
   dt = 1,
   n_reps = 1,
   deterministic = FALSE
@@ -42,6 +43,8 @@ deaths}
 If mode_start=0, only vaccinated individuals
 If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
 If mode_start=2, use SEIRV input in list from previous run(s)}
+
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
 
 \item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
 

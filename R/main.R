@@ -214,6 +214,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
@@ -221,8 +222,8 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @export
 #'
 Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),obs_sero_data = NULL,obs_case_data = NULL,
-                             vaccine_efficacy = 1.0,p_rep_severe = 1.0,p_rep_death = 1.0,mode_start = 1,dt = 1.0,
-                             n_reps = 1, deterministic = FALSE){
+                             vaccine_efficacy = 1.0,p_rep_severe = 1.0,p_rep_death = 1.0,mode_start = 1,
+                             start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE){
 
   assert_that(input_data_check(input_data),
               msg=paste("Input data must be in standard format",
@@ -240,6 +241,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   n_regions=length(input_data$region_labels)
   assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions")
   assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
+  if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
+                                msg="Number of start_SEIRV datasets must match number of regions")}
 
   if(is.null(input_data$flag_sero)){input_data=input_data_process(input_data,obs_sero_data,obs_case_data)}
 
