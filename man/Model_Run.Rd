@@ -34,7 +34,8 @@ Model_Run(
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{output_type}{Type of data to output: "full" = SEIRVC + FOI, "case" = C only, "sero" = SEIRV only}
+\item{output_type}{Type of data to output: "full" = SEIRVC + FOI for all steps, "case" = annual new infections (C),
+"sero" = annual SEIRV, "case+sero" = annual SEIRVC}
 
 \item{year0}{First year in population/vaccination data}
 
