@@ -107,11 +107,11 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       }
     }
     if(output_type=="case+sero" || output_type=="case"){
-      output_data$C=array(0,dim=dimensions)
+      output_data$C=array(0,dim=c(n_particles,n_years))
       for(n_year in 1:n_years){
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
-          output_data$C[,n_p,n_year]=rowSums(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
+          output_data$C[n_p,n_year]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
         }
       }
     }
@@ -351,7 +351,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
       rep_cases=rep_deaths=rep(0,n_years_outbreak)
       for(n_year in 1:n_years_outbreak){ #TODO - Add functionality for n_reps>1
         pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-        infs=sum(model_output$C[,,pts])
+        infs=model_output$C[pts]
         if(deterministic){
           severe_infs=floor(infs)*p_severe_inf
           deaths=severe_infs*p_death_severe_inf
