@@ -73,7 +73,6 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
                                             vaccine_efficacy,start_SEIRV,dt),
                        time = 0, n_particles = n_particles, n_threads = n_threads, deterministic = deterministic)
 
-
   x_res <- array(NA, dim = c(n_data_pts, n_particles, t_pts_out))
   for(step in step_begin:step_end){
     x_res[,,step-step_begin+1] <- x$run(step)
@@ -91,19 +90,19 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
     output_data$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),,],dim=dimensions)
     output_data$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),,],dim=dimensions)
   } else {
-    dimensions=c(n_particles,t_pts_out/365)
-    output_data=list(year=years_data)
     n_years=length(years_data)
+    dimensions=c(N_age,n_particles,n_years)
+    output_data=list(year=years_data)
     if(output_type=="case+sero" || output_type=="sero"){
       output_data$V=output_data$R=output_data$I=output_data$E=output_data$S=array(0,dim=dimensions)
       for(n_year in 1:n_years){
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
-          output_data$S[n_p,n_year]=mean(x_res[c((1+n_nv):(N_age+n_nv)),n_p,pts])
-          output_data$E[n_p,n_year]=mean(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p,pts])
-          output_data$I[n_p,n_year]=mean(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p,pts])
-          output_data$R[n_p,n_year]=mean(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p,pts])
-          output_data$V[n_p,n_year]=mean(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p,pts])
+          output_data$S[,n_p,n_year]=rowMeans(x_res[c((1+n_nv):(N_age+n_nv)),n_p,pts])
+          output_data$E[,n_p,n_year]=rowMeans(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p,pts])
+          output_data$I[,n_p,n_year]=rowMeans(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p,pts])
+          output_data$R[,n_p,n_year]=rowMeans(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p,pts])
+          output_data$V[,n_p,n_year]=rowMeans(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p,pts])
         }
       }
     }
@@ -112,7 +111,7 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       for(n_year in 1:n_years){
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
-          output_data$C[n_p,n_year]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
+          output_data$C[,n_p,n_year]=rowMeans(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
         }
       }
     }
