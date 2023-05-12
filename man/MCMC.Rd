@@ -24,6 +24,8 @@ MCMC(
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
+  deterministic = FALSE,
+  mode_parallel = "none",
   cluster = NULL
 )
 }
@@ -93,7 +95,14 @@ enviro"); set to NULL if not in use}
 
 \item{m_FOI_Brazil}{Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
 
-\item{cluster}{Cluster of threads to use for multithreading; set to NULL if not using multithreading
+\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
+
+\item{mode_parallel}{Set mode for parallelization, if any:
+If mode_parallel="none", no parallelization
+If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
+If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types}
+
+\item{cluster}{Cluster of threads to use if mode_parallel="clusterMap"
 '}
 }
 \description{

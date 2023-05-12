@@ -54,14 +54,21 @@
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
-#' @param cluster Cluster of threads to use for multithreading; set to NULL if not using multithreading
+#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param mode_parallel Set mode for parallelization, if any:
+#'   If mode_parallel="none", no parallelization
+#'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
+#'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
+#' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
 #' '
 #' @export
 #'
-MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
-                 filename_prefix="Chain",Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,
-                 prior_type="zero",dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,
-                 p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,cluster=NULL){
+MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,filename_prefix="Chain",
+                 Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,prior_type="zero",dt=1.0,
+                 n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_rep_severe=NULL,
+                 p_rep_death=NULL,m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
+
+  assert_that(is.logical(deterministic))
 
   #Check that initial, minimum and maximum parameters are in vectors of same sizes
   n_params=length(log_params_ini)
@@ -95,10 +102,10 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
                        R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,m_FOI_Brazil)
 
   #Set up list of invariant parameter values to supply to other functions
-  const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
-                  mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
-                  R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
-                  p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
+  const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,mode_start=mode_start,
+                  prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,R0_fixed_values=R0_fixed_values,
+                  vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,
+                  m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
 
   ### find posterior probability at start ###
   cat("\nIteration 0",sep="")
@@ -189,7 +196,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @param like_current = Current accepted likelihood value
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
 #'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
-#'   m_FOI_Brazil,cluster)
+#'   m_FOI_Brazil,deterministic, mode_parallel, cluster)
 #'
 #' @export
 #'
@@ -243,7 +250,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
 #'   deaths
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
 #'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
-#'   m_FOI_Brazil,cluster)
+#'   m_FOI_Brazil,deterministic, mode_parallel, cluster)
 #'
 #' @export
 #'
@@ -316,15 +323,9 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     #cat("\n\tGenerating dataset")
     #Generate modelled data over all regions
-    if(is.null(const_list$cluster)){
-      dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
-                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,const_list$dt,
-                                  const_list$n_reps)
-    } else {
-      dataset <- Generate_Dataset_Threaded(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,
-                                  vaccine_efficacy,p_rep_severe,p_rep_death,const_list$mode_start,
-                                  const_list$dt,const_list$cluster)
-    }
+    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                                p_rep_severe,p_rep_death,const_list$mode_start,start_SEIRV=NULL,const_list$dt,
+                                const_list$n_reps,const_list$deterministic,const_list$mode_parallel,const_list$cluster)
     #cat("\n\tDataset generation completed")
 
     #Likelihood of observing serological data
