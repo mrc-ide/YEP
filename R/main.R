@@ -111,7 +111,7 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       for(n_year in 1:n_years){
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
-          output_data$C[,n_p,n_year]=rowMeans(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
+          output_data$C[,n_p,n_year]=rowSums(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
         }
       }
     }
@@ -297,9 +297,11 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel=="pars_multi"){
     years_data_all=c(min(input_data$year_data_begin):max(input_data$year_end))
+    if(any(input_data$flag_sero==1)){if(any(input_data$flag_case==1)){output_type="case+sero"} else{
+      output_type="sero"}} else {output_type="case"}
     model_output_all=Model_Run_Multi_Region(FOI_spillover = FOI_values,R0 = R0_values,
                                             vacc_data = input_data$vacc_data,pop_data = input_data$pop_data,
-                                            years_data = years_data_all,start_SEIRV=start_SEIRV,output_type = "full",
+                                            years_data = years_data_all,start_SEIRV=start_SEIRV,output_type = output_type,
                                             year0 = input_data$years_labels[1],mode_start = mode_start,
                                             vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
                                             n_threads = n_reps*n_regions,deterministic = deterministic)

@@ -60,20 +60,59 @@ Model_Run_Multi_Region <- function(FOI_spillover = c(),R0 = c(),vacc_data = list
 
   output_data=list()
   for(i in 1:n_regions){
-    n_p=c(1:n_particles)+(n_particles*(i-1))
-    output_data[[i]]=list(day=x_res[1,n_p[1],],year=x_res[2,n_p[1],])
+    n_p2=c(1:n_particles)+(n_particles*(i-1))
+    # output_data[[i]]=list(day=x_res[1,n_p[1],],year=x_res[2,n_p[1],])
+    # if(output_type=="full"){
+    #   output_data[[i]]$FOI_total=array(x_res[3,n_p,]/dt,dim=c(n_particles,t_pts_out))
+    # }
+    # if(output_type=="full" || output_type=="sero"){
+    #   output_data[[i]]$S=array(x_res[c((1+n_nv):(N_age+n_nv)),n_p,],dim=dimensions)
+    #   output_data[[i]]$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),,],dim=dimensions)
+    #   output_data[[i]]$I=array(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p,],dim=dimensions)
+    #   output_data[[i]]$R=array(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p,],dim=dimensions)
+    #   output_data[[i]]$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p,],dim=dimensions)
+    # }
+    # if(output_type=="full" || output_type=="case"){
+    #   output_data[[i]]$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,],dim=dimensions)
+    # }
+    #--------------------------------------------------------------------------------------------
     if(output_type=="full"){
-      output_data[[i]]$FOI_total=array(x_res[3,n_p,]/dt,dim=c(n_particles,t_pts_out))
-    }
-    if(output_type=="full" || output_type=="sero"){
-      output_data[[i]]$S=array(x_res[c((1+n_nv):(N_age+n_nv)),n_p,],dim=dimensions)
-      output_data[[i]]$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),,],dim=dimensions)
-      output_data[[i]]$I=array(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p,],dim=dimensions)
-      output_data[[i]]$R=array(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p,],dim=dimensions)
-      output_data[[i]]$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p,],dim=dimensions)
-    }
-    if(output_type=="full" || output_type=="case"){
-      output_data[[i]]$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,],dim=dimensions)
+      dimensions=c(N_age,n_particles,t_pts_out)
+      output_data[[i]]=list(day=x_res[1,n_p2[1],],year=x_res[2,n_p2[1],])
+      output_data[[i]]$FOI_total=array(x_res[3,n_p2,]/dt,dim=c(n_particles,t_pts_out))
+      output_data[[i]]$S=array(x_res[c((1+n_nv):(N_age+n_nv)),n_p2,],dim=dimensions)
+      output_data[[i]]$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p2,],dim=dimensions)
+      output_data[[i]]$I=array(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p2,],dim=dimensions)
+      output_data[[i]]$R=array(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p2,],dim=dimensions)
+      output_data[[i]]$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p2,],dim=dimensions)
+      output_data[[i]]$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p2,],dim=dimensions)
+    } else {
+      n_years=length(years_data)
+      dimensions=c(N_age,n_particles,n_years)
+      output_data[[i]]=list(year=years_data)
+      if(output_type=="case+sero" || output_type=="sero"){
+        output_data[[i]]$V=output_data[[i]]$R=output_data[[i]]$I=output_data[[i]]$E=output_data[[i]]$S=array(0,
+                                                                                                             dim=dimensions)
+        for(n_year in 1:n_years){
+          pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
+          for(n_p in n_p2[1:n_particles]){
+            output_data[[i]]$S[,n_p,n_year]=rowMeans(x_res[c((1+n_nv):(N_age+n_nv)),n_p,pts])
+            output_data[[i]]$E[,n_p,n_year]=rowMeans(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p,pts])
+            output_data[[i]]$I[,n_p,n_year]=rowMeans(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p,pts])
+            output_data[[i]]$R[,n_p,n_year]=rowMeans(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p,pts])
+            output_data[[i]]$V[,n_p,n_year]=rowMeans(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p,pts])
+          }
+        }
+      }
+      if(output_type=="case+sero" || output_type=="case"){
+        output_data[[i]]$C=array(0,dim=dimensions)
+        for(n_year in 1:n_years){
+          pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
+          for(n_p in 1:n_particles){
+            output_data[[i]]$C[,n_p,n_year]=rowSums(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p2[n_p],pts])
+          }
+        }
+      }
     }
   }
 
