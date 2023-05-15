@@ -9,7 +9,8 @@ sero_calculate(
   age_max = 101,
   years = NULL,
   vc_factor = 0,
-  data = list()
+  data = list(),
+  n_p = 1
 )
 }
 \arguments{
@@ -21,12 +22,14 @@ sero_calculate(
 
 \item{vc_factor}{= Proportion of patients tested for whom vaccine status unknown}
 
-\item{data}{= Output of Model_Run
+\item{data}{= Output of Basic_Model_Run or Full_Model_Run}
+
+\item{n_p}{= Particle to select from data
 '}
 }
 \description{
 Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
-range - TODO: add functionality for multiple repetitions/particles (currently gives average over particles)
+range
 }
 \details{
 Takes in information on minimum and maximum ages of desired range, year(s) for which to calculate

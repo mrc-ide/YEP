@@ -1,4 +1,4 @@
-# YEP
+# YEP - Yellow Fever Epidemic Prevention
 
 A package for running a dynamic SEIRV model of yellow fever, creating input data and processing output data.
 

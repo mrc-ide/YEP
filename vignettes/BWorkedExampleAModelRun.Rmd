@@ -1,0 +1,84 @@
+---
+title: "Worked Example 1 - Single Model Run"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Worked Example 1 - Single Model Run}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This worked example demonstrates how to set up and carry out a single run of the model for a single region. 
+
+The model of yellow fever used in YEP is an age-stratified SEIRV model in which the number of people in each age group in groups S (susceptible), E (exposed), I (infectious), R (recovered) and V (vaccinated) is computed at each time point, with changes in population also incorporated. The number of new infections (individuals moving from group S to group E) at each time point is calculated stochastically using the total force of infection (FOI) as a binomial probability. Full details of the model are currently being prepared for publication; please contact [Keith Fraser](https://www.imperial.ac.uk/people/keith.fraser) for a detailed description.
+
+Population and vaccination data is stored in a list object as described in [Guide 1 - Inputs](https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html). Here we load an example data set for multiple regions and extract the vaccination and population data for the first included region:
+
+```{r,eval=FALSE}
+library(YEP)
+input_data <- readRDS(file = paste(path.package("YEP"), 
+                                   "/exdata/input_data_example.Rds", sep = ""))
+vacc_data <- input_data$vacc_data[1, , ]
+pop_data <- input_data$pop_data[1, , ]  
+```
+
+We set the other input parameters to the functions which run the model as follows. Here we set the spillover FOI and basic reproduction number directly; they may alternatively be calculated from environmental covariates as described in [Guide 2 - Calculating Parameters From Environmental Data](https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html). The mode_start variable is used to set the initial conditions in one of 3 ways. The n_particles variable is used to run the model multiple times for the same inputs; the results can be compared and/or combined to test and/or average out the effects of the stochasticity of the model. The n_threads variable is used to set the number of particles run in parallel (subject to the limitations of the computer being used).
+
+```{r,eval=FALSE}
+# Force of infection due to spillover from sylvatic reservoir
+FOI_spillover <- 1.0e-8             
+# Basic reproduction number for urban spread of infection
+R0 <- 1.5             
+# Year(s) for which data is to be output
+years_data <- c(2000)
+# SEIRV data from end of a previous run to use as input (if mode_start = 2; not 
+# used here and hence set to NULL)
+start_SEIRV <- NULL    
+# TBA
+output_type <- "full"             
+# First year in population/vaccination data (here taken from the input data set; 
+# if the population and vaccination data is set manually, this similarly needs 
+# to be set manually)
+year0 <- input_data$years_labels[1]
+# Flag indicating how to set initial population immunity level in addition to
+# vaccination
+# If mode_start = 0, only vaccinated individuals are immune (R = 0)
+# If mode_start = 1, shift some non-vaccinated individuals into recovered to 
+# give herd immunity (R = 1 - 1/R0)
+# If mode_start = 2, use SEIRV input in list from previous run(s), set using
+# start_SEIRV variable
+mode_start <- 1  
+# Proportional vaccine efficacy (from 0 to 1); probability of vaccination 
+# successfully providing immunity (i.e. moving vaccinated individual to group V)
+vaccine_efficacy <- 1.0       
+# Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+dt <- 1.0            
+# Number of particles to run
+n_particles <- 10     
+# Number of threads to run
+n_threads <- 1   
+# TBA
+deterministic <- FALSE
+```
+
+We use the Model_Run() function to run the model for the inputs above:
+
+```{r,eval=FALSE}
+test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
+                   start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
+                   dt, n_particles, n_threads, deterministic)
+```
+
+The output of Model_Run(), when output_type is set to "full", includes, for each particle, date information, the total force of infection FOI_total at each data point, the numbers of people in groups S, E, I, R and V at each time point organized by age group, and the number of newly infectious people (C) at each time point organized by age group. We use the plot_model function from the YFDaux package to display values of S, R and V (added together across all age groups) over time, with error bars to show the variation between particles caused by stochasticity if relevant.
+
+```{r,eval=FALSE}
+library(YFDaux)
+plot <- plot_model_output(test1)
+print(plot)
+```

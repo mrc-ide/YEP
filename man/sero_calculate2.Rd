@@ -4,18 +4,20 @@
 \alias{sero_calculate2}
 \title{sero_calculate2}
 \usage{
-sero_calculate2(sero_data = list(), model_data = list())
+sero_calculate2(sero_data = list(), model_data = list(), n_p = 1)
 }
 \arguments{
 \item{sero_data}{= Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 people for whom vaccination status unknown)}
 
-\item{model_data}{= Output of Model_Run
+\item{model_data}{= Output of Basic_Model_Run or Full_Model_Run}
+
+\item{n_p}{= Particle to select from model_data
 '}
 }
 \description{
 Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
-and year(s) - TODO: add functionality for multiple repetitions/particles
+and year(s)
 }
 \details{
 Takes in information on minimum and maximum ages of desired range(s), year(s) for which to calculate

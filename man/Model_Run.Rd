@@ -56,7 +56,7 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 '}
 }
 \description{
-Run SEIRV model for single region (Model_Run_Multi_Region can be used to run multiple regions in parallel)
+Run SEIRV model for single region (Model_Run_Multi can be used to run multiple regions in parallel)
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
