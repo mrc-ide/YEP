@@ -58,11 +58,11 @@ age_max <- 15
 years <- c(1990:2000)  
 # Fraction of the population (from 0 to 1) for whom vaccination status is unknown
 vc_factor <- 0    
-# Particle to select from model_data
-n_particle <- 1   
-seroprevalence <- sero_calculate(age_min, age_max, years, vc_factor, model_data, 
-                                 n_particle)
-matplot(x=years,y=seroprevalence,type="b",pch=1,xlab="Year",ylab="Seroprevalence")
+seroprevalence <- array (NA, dim = c(n_years,n_particles))
+for(n_p in 1:n_particles){
+seroprevalence[,n_p] <- sero_calculate(age_min, age_max, years, vc_factor, model_data,n_p)
+}
+matplot(x=years,y=seroprevalence,type="p",pch=1,col=1,xlab="Year",ylab="Seroprevalence")
 ```
 
 Annual reported severe and fatal case data is generated from C, the output data on the number of new infectious individuals at each time point. The actual number of severe and fatal cases is calculated stochastically using the variables p_severe_inf (the probability of an infection leading to severe symptoms) and p_death_severe_inf (the probability that a severe infection with lead to death). The values set for these below (0.12 and 0.39, taken from [TBA - link to source for values]) are incorporated into the package as global variables. The number of reported severe and fatal cases is then calculated stochastically using the variables p_rep_severe (probability of a severe case being reported in public health figures, usually meaning lab-confirmed cases) and p_rep_death (probability of a fatal case being reported). The total number of reported cases (rep_cases in the output data frame annual_data below) is the sum of reported severe cases and reported fatal cases (so it will always be equal to or greater than the number of reported deaths).
@@ -73,26 +73,33 @@ p_death_severe_inf=0.39
 p_rep_severe=0.05
 p_rep_death=0.1
 n_years=length(years)
-annual_data=list(rep_cases=rep(NA,n_years),rep_deaths=rep(NA,n_years))
-for(n_year in 1:n_years){
-  infs=sum(model_data$C[,n_particle,model_data$year==years[n_year]])
-  severe_infs=rbinom(1,floor(infs),p_severe_inf)
-  deaths=rbinom(1,severe_infs,p_death_severe_inf)
-  annual_data$rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-  annual_data$rep_cases[n_year]=annual_data$rep_deaths[n_year] + rbinom(1,severe_infs-deaths,p_rep_severe)
+annual_data=list(rep_cases=array(NA,dim=c(n_years,n_particles)),
+                 rep_deaths=array(NA,dim=c(n_years,n_particles)))
+for(n_p in 1:n_particles){
+  for(n_year in 1:n_years){
+    infs=sum(model_data$C[,n_p,model_data$year==years[n_year]])
+    severe_infs=rbinom(1,floor(infs),p_severe_inf)
+    deaths=rbinom(1,severe_infs,p_death_severe_inf)
+    annual_data$rep_deaths[n_year,n_p]=rbinom(1,deaths,p_rep_death)
+    annual_data$rep_cases[n_year,n_p]=annual_data$rep_deaths[n_year] + rbinom(1,severe_infs-deaths,p_rep_severe)
+  }
 }
-matplot(x=years,y=annual_data$rep_cases,type="b",pch=1,xlab="Year",ylab="Individuals")
-matplot(x=years,y=annual_data$rep_deaths,type="b",pch=1,col=2,add=TRUE)
-legend("topright",legend=c("Reported cases","Reported deaths"),lty=c(1,1),
-       pch=c(1,1),col=c(1,2))
+matplot(x=years,y=annual_data$rep_cases,type="p",pch=1,col=1,xlab="Year",ylab="Individuals")
+matplot(x=years,y=annual_data$rep_deaths,type="p",pch=2,col=2,add=TRUE)
+legend("topright",legend=c("Reported cases","Reported deaths"),pch=c(1,2),col=c(1,2))
 ```
 
-Outbreak occurrence data can be calculated from annual reported case data; if the case count for a given year is greater than zero, it is flagged as a year in which one or more outbreaks will be reported and the outbreak occurrence value is set to 1; otherwise, it is 0.
+Outbreak probability data can be calculated from annual reported case data; if the case count for a given year is greater than zero, it is flagged as a year in which one or more outbreaks will be reported. [TBA]
 
 ```{r,eval=FALSE}
-outbreak_occurrence=rep(0,n_years)
+outbreak_probability=rep(0,n_years)
+dprob=1.0/n_particles
 for(n_year in 1:n_years){
-  if(annual_data$rep_cases[n_year]>0){outbreak_occurrence[n_year]=1}
+  for(n_p in 1:n_particles){
+    if(annual_data$rep_cases[n_year,n_p]>0){
+      outbreak_probability[n_year]=outbreak_probability[n_year]+dprob
+    }
+  }
 }
-barplot(height=outbreak_occurrence,names.arg=years)
+barplot(height=outbreak_probability,names.arg=years)
 ```

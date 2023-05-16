@@ -28,7 +28,7 @@ vacc_data <- input_data$vacc_data[1, , ]
 pop_data <- input_data$pop_data[1, , ]  
 ```
 
-We set the other input parameters to the functions which run the model as follows. Here we set the spillover FOI and basic reproduction number directly; they may alternatively be calculated from environmental covariates as described in [Guide 2 - Calculating Parameters From Environmental Data](https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html). The mode_start variable is used to set the initial conditions in one of 3 ways. The n_particles variable is used to run the model multiple times for the same inputs; the results can be compared and/or combined to test and/or average out the effects of the stochasticity of the model. The n_threads variable is used to set the number of particles run in parallel (subject to the limitations of the computer being used).
+We set the other input parameters to the functions which run the model as follows. Here we set the spillover FOI and basic reproduction number directly; they may alternatively be calculated from environmental covariates as described in [Guide 2 - Calculating Parameters From Environmental Data](https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html). The mode_start variable is used to set the initial conditions in one of 3 ways. The n_particles variable is used to run the model multiple times for the same inputs; the results can be compared and/or combined to test and/or average out the effects of the stochasticity of the model. The n_threads variable is used to set the number of particles run in parallel (subject to the limitations of the computer being used). [TBA - link to odin.dust documentation]
 
 ```{r,eval=FALSE}
 # Force of infection due to spillover from sylvatic reservoir
@@ -79,6 +79,16 @@ The output of Model_Run(), when output_type is set to "full", includes, for each
 
 ```{r,eval=FALSE}
 library(YFDaux)
+plot <- plot_model_output(test1)
+print(plot)
+```
+
+The model can be run in deterministic mode [TBA]:
+
+```{r,eval=FALSE}
+test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
+                   start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
+                   dt, n_particles, n_threads, deterministic=TRUE)
 plot <- plot_model_output(test1)
 print(plot)
 ```

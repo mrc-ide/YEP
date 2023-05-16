@@ -1,5 +1,5 @@
 ---
-title: "Worked Example 1 - Single Model Run"
+title: "Worked Example 2 - Running Model For Multiple Parameter Sets"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Worked Example 2 - Running Model For Multiple Parameter Sets}
@@ -14,55 +14,35 @@ knitr::opts_chunk$set(
 )
 ```
 
-This worked example demonstrates how to [TBA]
+This worked example demonstrates how to run the model for multiple sets of input parameters in parallel. Sets of input parameters can represent different regions (with different population, vaccination and spillover FOI and R0 inputs), the same region under different burden conditions (with different spillover FOI and R0 inputs), or the same region in different vaccination scenarios (with different vaccination inputs).
+
+[TBA - Link to odin.dust documentation on running multiple parameter sets]
+
+We load input data in the appropriate format as in [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html). Here we want to run the model for all 25 regions listed.
 
 ```{r,eval=FALSE}
 library(YEP)
 input_data <- readRDS(file = paste(path.package("YEP"), 
                                    "/exdata/input_data_example.Rds", sep = ""))
+vacc_data <- input_data$vacc_data
+pop_data <- input_data$pop_data 
 n_regions <- length(input_data$region_labels)
 ```
 
-[TBA]
+We set up the inputs in a similar manner to Worked Example 1, but here the spillover FOI and R0 inputs are vectors with lengths equal to the number of parameter sets to run (here equal to the number of regions) and vacc_data and pop_data are 3-dimensional arrays instead of 2-dimensional ones, with the first dimension being the parameter sets (regions here). If mode_start = 2, start_SEIRV should be a [TBA].
 
 ```{r,eval=FALSE}
-# Force of infection due to spillover from sylvatic reservoir
 FOI_spillover <- rep(1.0e-8,n_regions)
-# Basic reproduction number for urban spread of infection
 R0 <- rep(1.5,n_regions)
-# TBA
-vacc_data <- input_data$vacc_data
-# TBA
-pop_data <- input_data$pop_data 
-# Year(s) for which data is to be output
 years_data <- c(2000)
-# SEIRV data from end of a previous run to use as input (if mode_start = 2; not 
-# used here and hence set to NULL)
-start_SEIRV <- NULL    
-# TBA
-output_type <- "full"             
-# First year in population/vaccination data (here taken from the input data set; 
-# if the population and vaccination data is set manually, this similarly needs 
-# to be set manually)
+start_SEIRV <- NULL   
+output_type <- "full"      
 year0 <- input_data$years_labels[1]
-# Flag indicating how to set initial population immunity level in addition to
-# vaccination
-# If mode_start = 0, only vaccinated individuals are immune (R = 0)
-# If mode_start = 1, shift some non-vaccinated individuals into recovered to 
-# give herd immunity (R = 1 - 1/R0)
-# If mode_start = 2, use SEIRV input in list from previous run(s), set using
-# start_SEIRV variable
 mode_start <- 1  
-# Proportional vaccine efficacy (from 0 to 1); probability of vaccination 
-# successfully providing immunity (i.e. moving vaccinated individual to group V)
-vaccine_efficacy <- 1.0       
-# Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+vaccine_efficacy <- 1.0    
 dt <- 1.0            
-# Number of particles to run
-n_particles <- 10     
-# Number of threads to run
-n_threads <- 1   
-# TBA
+n_particles <- 5    
+n_threads <- n_regions*n_particles 
 deterministic <- FALSE
 ```
 
@@ -72,4 +52,12 @@ We use the Model_Run_Multi() function to run the model for the inputs above:
 test1 <- Model_Run_Multi(FOI_spillover, R0, vacc_data, pop_data, years_data,
                          start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
                          dt, n_particles, n_threads, deterministic)
+```
+
+The output is a list with a length equal to the number of parameter sets, where each entry is a set of SEIRV data in the same format as the output of Model_Run().
+
+```{r,eval=FALSE}
+library(YFDaux)
+plot <- plot_model_output(test1[[1]])
+print(plot)
 ```

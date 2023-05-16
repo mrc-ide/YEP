@@ -57,7 +57,6 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
   return(sero_values)
 }
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
 #' @title sero_calculate2
 #'
 #' @description Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
@@ -78,7 +77,6 @@ sero_calculate2 <- function(sero_data=list(),model_data=list(),n_p=1){
   assert_that(is.data.frame(sero_data))
   assert_that(is.list(model_data))
   assert_that(is.null(model_data$S)==FALSE) #TODO - Improve model_data check
-  assert_that(n_p>0 && is.integer(n_p),msg="Selected particle number must be a positive integer")
   assert_that(n_p<=dim(model_data$S)[2],msg="Specified particle number is unavailable")
 
   nrows=nrow(sero_data)
@@ -88,7 +86,7 @@ sero_calculate2 <- function(sero_data=list(),model_data=list(),n_p=1){
     ages=c((sero_data$age_min[i]+1):sero_data$age_max[i])
     year=sero_data$year[i]
     vc_factor=sero_data$vc_factor[i]
-    n_t=which(model_data$year[n_p,]==year)
+    n_t=which(model_data$year==year)
     S_sum=sum(model_data$S[ages,n_p,n_t])
     E_sum=sum(model_data$E[ages,n_p,n_t])
     I_sum=sum(model_data$I[ages,n_p,n_t])

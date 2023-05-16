@@ -361,6 +361,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                         " (see [TBA] )"))
+  if(is.null(input_data$flag_sero)){input_data=input_data_process(input_data,obs_sero_data,obs_case_data)}
   assert_that(any(is.null(obs_sero_data)==FALSE,is.null(obs_case_data)==FALSE),
               msg="Need at least one of obs_sero_data or obs_case_data")
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
@@ -373,6 +374,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
 
+  inv_reps=1/n_reps
   n_regions=length(input_data$region_labels)
   assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions")
   assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
@@ -479,9 +481,11 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     #Compile seroprevalence data if necessary
     if(input_data$flag_sero[n_region]==1){
       sero_line_list=input_data$sero_line_list[[n_region]]
-      sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
-      model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
-      model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
+      for(n_rep in 1:n_reps){
+        sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
+        model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
+        model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
+      }
     }
     model_output<-NULL
   }
@@ -489,8 +493,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 
   if(any(input_data$flag_sero>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
   if(any(input_data$flag_case>0)){
-    model_case_values=model_case_values/n_reps
-    model_death_values=model_death_values/n_reps
+    model_case_values=model_case_values*inv_reps
+    model_death_values=model_death_values*inv_reps
   }
 
   return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,

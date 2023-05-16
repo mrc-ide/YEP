@@ -4,10 +4,14 @@
 # time point (separated by increment dt) and also numbers of new infections and total force of infection at each
 # time point.
 
-#Parameters
 dt <- user() #Time increment in days
 initial(time) <- 0 #Initial value of time in days
 update(time) <- time + dt
+
+#Parameters
+t_incubation <- user() #TBA
+t_latent <- user() #TBA
+t_infectious <- user() #TBA
 FOI_spillover <- user() #Spillover force of infection (per day)
 R0 <- user() #Basic reproduction number
 N_age <- user() #Number of age categories
@@ -16,9 +20,6 @@ vaccine_efficacy <- user() #Proportion of vaccinations which successfully protec
 
 #initial conditions
 year0 <- user()  #Starting year
-t_incubation <- user() #TBA
-t_latent <- user() #TBA
-t_infectious <- user() #TBA
 Sus0[] <- user() #Susceptible population by age group at start
 Exp0[] <- user() #Exposed population by age group at start
 Inf0[] <- user() #Infectious population by age group at start

@@ -36,17 +36,46 @@ enviro_coeffs <- read.csv(file = paste(path.package("YEP"),
 # Seroprevalence data for comparison, by region, year & age group, in format 
 # no. samples/no. positives
 obs_sero_data <- read.csv(file = paste(path.package("YEP"), 
-                                    "/exdata/obs_sero_data_example_single.csv",
+                                    "/exdata/obs_sero_data_example.csv",
                                        sep = ""), header = TRUE)  
 # Annual reported case/death data for comparison, by region and year, in format 
 # no. cases/no. deaths  
 obs_case_data <- read.csv(file = paste(path.package("YEP"), 
-                                    "/exdata/obs_case_data_example_single.csv",
+                                    "/exdata/obs_case_data_example.csv",
                                        sep = ""), header = TRUE)   
-# Outbreak Y/N data for comparison, by region and year, in format 
-# 0 = no outbreaks, 1 = 1 or more outbreak(s) (here simply set to NULL) 
-obs_outbreak_data <- NULL
-              
+```
+
+We calculate values of spillover FOI and R0 as described in [TBA]:
+
+```{r,eval=FALSE}
+n_regions <- nrow(enviro_data)
+FOI_values=R0_values=rep(NA,n_regions)
+for(n_region in 1:n_regions){
+ FOI_R0_values <- param_calc_enviro(enviro_coeffs = enviro_coeffs[1, ], 
+                  enviro_covar_values = enviro_data[n_region,c(2:ncol(enviro_data))])
+ FOI_values[n_region] <- FOI_R0_values$FOI
+ R0_values[n_region] <- FOI_R0_values$R0
+}
+```
+
+[TBA]
+
+```{r,eval=FALSE}
+vaccine_efficacy <- 1.0 
+p_rep_severe <- 0.05
+p_rep_death <- 0.1
+mode_start <- 1     
+start_SEIRV <- NULL       
+dt <- 1.0            
+n_reps <- 5    
+deterministic <- FALSE
+```
+
+[TBA]
+
+```{r,eval=FALSE}
+dataset1 <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                            p_rep_severe,p_rep_death,mode_start,start_SEIRV,dt,n_reps,deterministic,"none",NULL)
 ```
 
 [TBA]

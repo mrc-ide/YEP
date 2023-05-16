@@ -1,8 +1,8 @@
 ---
-title: "Worked Example 5 - Parameter Estimation Using Markov Chain Monte Carlo Functions"
+title: "Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Worked Example 5 - Parameter Estimation Using Markov Chain Monte Carlo Functions}
+  %\VignetteIndexEntry{Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
