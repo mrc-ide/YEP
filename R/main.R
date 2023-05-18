@@ -269,7 +269,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   inv_365=1.0/365.0
 
   P0=Cas0=Sus0=Exp0=Inf0=Rec0=Vac0=rep(0,N_age)
-  dP1_all=dP2_all=vacc_rates=array(rep(0,N_age*n_years),dim=c(N_age,n_years))
+  dP1_all=dP2_all=vacc_rates=array(NA,dim=c(N_age,n_years))
   for(i in 1:N_age){
     P0[i]=max(1.0,pop_data[1,i]) #Set all population values to nonzero minimum to avoid NaN values
   }

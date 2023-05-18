@@ -16,34 +16,49 @@ knitr::opts_chunk$set(
 
 This vignette describes how to use the package to calculate the likelihood of observing particular epidemiological data based on a particular set of input parameters. This is used to estimate parameter values within a Bayesian framework via Markov chain Monte Carlo sampling, as described in [Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions](https://mrc-ide.github.io/YEP/articles/BWorkedExampleDMCMC.html).
 
-Data is loaded in the same manner as in [Worked Example 2 - Generating Epidemiological Data Sets](https://mrc-ide.github.io/YEP/articles/BWorkedExampleCDataGenerate.html):
+Data is loaded in the same manner as in [Worked Example 3 - Generating Epidemiological Data Sets](https://mrc-ide.github.io/YEP/articles/BWorkedExampleCDataGenerate.html):
 
 ```{r,eval=FALSE}
 library(YEP)
-input_data <- readRDS(file = paste(path.package("YEP"),
-                                   "/exdata/input_data_example.Rds",sep = ""))
-enviro_data <- read.csv(file = paste(path.package("YEP"),
-                                     "/exdata/enviro_data_example.csv",
-                                     sep = ""),header = TRUE)
-enviro_coeffs <- read.csv(file = paste(path.package("YEP"),
+input_data <- readRDS(file = paste(path.package("YEP"), 
+                                  "/exdata/input_data_example.Rds", sep = ""))
+enviro_data <- read.csv(file = paste(path.package("YEP"), 
+                                  "/exdata/enviro_data_example.csv", sep = ""),
+                        header = TRUE)
+enviro_coeffs <- read.csv(file = paste(path.package("YEP"), 
                                        "/exdata/enviro_coeffs_example.csv",
-                                       sep = ""),header = TRUE)
-# Seroprevalence data for comparison, by region, year & age group, in format no. 
-# samples/no. positives
-obs_sero_data <- read.csv(file = paste(path.package("YEP"),
-                                       "/exdata/obs_sero_data_example_single.csv",
-                                       sep=""),header = TRUE)  
-# Annual reported case/death data for comparison, by region and year, in format 
-# no. cases/no. deaths  
-obs_case_data <- read.csv(file = paste(path.package("YEP"),
-                                       "/exdata/obs_case_data_example_single.csv",
-                                       sep = ""),header = TRUE) 
+                                       sep = ""), header = TRUE)
+obs_sero_data <- read.csv(file = paste(path.package("YEP"), 
+                                    "/exdata/obs_sero_data_example.csv",
+                                       sep = ""), header = TRUE)
+obs_case_data <- read.csv(file = paste(path.package("YEP"), 
+                                    "/exdata/obs_case_data_example.csv",
+                                       sep = ""), header = TRUE) 
+n_regions <- nrow(enviro_data)
+FOI_values=R0_values=rep(NA,n_regions)
+for(n_region in 1:n_regions){
+ FOI_R0_values <- param_calc_enviro(enviro_coeffs = enviro_coeffs[1, ], 
+                  enviro_covar_values = enviro_data[n_region,c(2:ncol(enviro_data))])
+ FOI_values[n_region] <- FOI_R0_values$FOI
+ R0_values[n_region] <- FOI_R0_values$R0
+}
+vaccine_efficacy <- 1.0 
+p_rep_severe <- 0.05
+p_rep_death <- 0.1
+mode_start <- 1     
+start_SEIRV <- NULL       
+dt <- 1.0            
+n_reps <- 1    
+deterministic <- TRUE
+mode_parallel <- "none"
+cluster <- NULL
 ```
 
-Modelled data to use for the likelihood calculation is created using Generate_Dataset() as in Worked Example 2:
+Modelled data to use for the likelihood calculation is created using Generate_Dataset() as in Worked Example 3:
 
 ```{r,eval=FALSE}
-#[TBA]
+model_data <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                            p_rep_severe,p_rep_death,mode_start,start_SEIRV,dt,n_reps,deterministic,mode_parallel,cluster)
 ```
 
 The likelihood of the observed serological data based on the epidemiological parameters is calculated using a gamma distribution, with (for each line of data) the modelled seroprevalence as the probability of "success", the number of samples for the specified region, age range and year as the number of "observations", and the number of positive tests as the number of "successes".

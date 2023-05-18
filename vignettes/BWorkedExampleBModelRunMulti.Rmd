@@ -18,7 +18,7 @@ This worked example demonstrates how to run the model for multiple sets of input
 
 [TBA - Link to odin.dust documentation on running multiple parameter sets]
 
-We load input data in the appropriate format as in [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html). Here we want to run the model for all 25 regions listed.
+We load input data in the appropriate format (see [Guide 1 - Inputs](https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)) as in [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html). Here we want to run the model for all 25 regions listed.
 
 ```{r,eval=FALSE}
 library(YEP)
