@@ -5,8 +5,7 @@ Version: 0.1.0
 Authors@R: person("Keith", "Fraser", email = "keith.fraser@imperial.ac.uk", role = c("aut", "cre"))
 Maintainers@R: person("Keith", "Fraser", email = "keith.fraser@imperial.ac.uk", role = c("aut", "cre"))
 Description: A package for running a dynamic, deterministic SEIRV model of yellow fever, creating input data and processing output data.
-Depends: 
-    R (>= 4.2.0)
+Depends: R (>= 4.2.0)
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -25,13 +24,13 @@ Imports:
     tgp,
     truncdist,
     utils
+Suggests: 
+    knitr,
+    parallel,
+    rmarkdown
 SystemRequirements: C++11
 Remotes:
     mrc-ide/dust,
     mrc-ide/odin,
     mrc-ide/odin.dust
-Suggests: 
-    knitr,
-    parallel,
-    rmarkdown
 VignetteBuilder: knitr

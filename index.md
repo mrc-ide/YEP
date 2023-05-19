@@ -3,7 +3,7 @@
 
 For a more detailed overview of the purpose and uses of the package, please read the Introduction article (TBA).
 
-Additional packages ([YellowFeverDynamics](https://github.com/mrc-ide/YellowFeverDynamics) and [YFDaux](https://github.com/mrc-ide/YFDaux)) provide additional functions for running alternative versions of the model and carrying out more specialized tasks (YellowFeverDynamics) and processing model output (YFDaux).
+Additional packages ([YellowFeverDynamics](https://github.com/mrc-ide/YellowFeverDynamics) and [YEPaux](https://github.com/mrc-ide/YEPaux)) provide additional functions for running alternative versions of the model and carrying out more specialized tasks (YellowFeverDynamics) and processing model output (YEPaux).
 
 These packages are all currently under construction/overhaul.
 
