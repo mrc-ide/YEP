@@ -456,26 +456,28 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
       years_outbreak=obs_case_data$year[case_line_list]
       n_years_outbreak=length(case_line_list)
 
-      rep_cases=rep_deaths=rep(0,n_years_outbreak)
-      for(n_year in 1:n_years_outbreak){ #TODO - Add functionality for n_reps>1
-        pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-        infs=model_output$C[pts]
-        if(deterministic){
-          severe_infs=floor(infs)*p_severe_inf
-          deaths=severe_infs*p_death_severe_inf
-          rep_deaths[n_year]=round(deaths*p_rep_death)
-          rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
+      for(n_rep in 1:n_reps){
+        rep_cases=rep_deaths=rep(0,n_years_outbreak)
+        for(n_year in 1:n_years_outbreak){
+          pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
+          infs=model_output$C[pts]
+          if(deterministic){
+            severe_infs=floor(infs)*p_severe_inf
+            deaths=severe_infs*p_death_severe_inf
+            rep_deaths[n_year]=round(deaths*p_rep_death)
+            rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
 
-        } else {
-          severe_infs=rbinom(1,floor(infs),p_severe_inf)
-          deaths=rbinom(1,severe_infs,p_death_severe_inf)
-          rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-          rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,floor(severe_infs-deaths),p_rep_severe)
+          } else {
+            severe_infs=rbinom(1,floor(infs),p_severe_inf)
+            deaths=rbinom(1,severe_infs,p_death_severe_inf)
+            rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
+            rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,floor(severe_infs-deaths),p_rep_severe)
+          }
         }
-      }
 
-      model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
-      model_death_values[case_line_list]=model_death_values[case_line_list]+rep_deaths
+        model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
+        model_death_values[case_line_list]=model_death_values[case_line_list]+rep_deaths
+      }
     }
 
     #Compile seroprevalence data if necessary
