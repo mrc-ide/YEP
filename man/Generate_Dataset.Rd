@@ -11,6 +11,8 @@ Generate_Dataset(
   obs_sero_data = NULL,
   obs_case_data = NULL,
   vaccine_efficacy = 1,
+  p_severe_inf = 0.12,
+  p_death_severe_inf = 0.39,
   p_rep_severe = 1,
   p_rep_death = 1,
   mode_start = 1,
@@ -36,6 +38,10 @@ positives}
 deaths}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
+
+\item{p_severe_inf}{Probability of an infection being severe}
+
+\item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
 \item{p_rep_severe}{Probability of reporting of a severe but non-fatal infection}
 

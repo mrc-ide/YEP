@@ -51,6 +51,8 @@
 #' @param R0_fixed_values Values of R0 to use if only FOI is subject to fitting (i.e. type set to "FOI" or "FOI
 #'   enviro"); set to NULL if not in use
 #' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)
@@ -65,8 +67,8 @@
 #'
 MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,filename_prefix="Chain",
                  Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,prior_type="zero",dt=1.0,
-                 n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_rep_severe=NULL,
-                 p_rep_death=NULL,m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
+                 n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_severe_inf=0.12,p_death_severe_inf=0.39,
+                 p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
 
   assert_that(is.logical(deterministic))
 
@@ -104,8 +106,9 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   #Set up list of invariant parameter values to supply to other functions
   const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,mode_start=mode_start,
                   prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,R0_fixed_values=R0_fixed_values,
-                  vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,
-                  m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
+                  vaccine_efficacy=vaccine_efficacy,p_severe_inf=p_severe_inf,p_death_severe_inf=p_death_severe_inf,
+                  p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,
+                  mode_parallel=mode_parallel,cluster=cluster)
 
   ### find posterior probability at start ###
   cat("\nIteration 0",sep="")
@@ -195,7 +198,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @param adapt = 0/1 flag indicating which type of calculation to use for proposition value
 #' @param like_current = Current accepted likelihood value
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
+#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,
 #'   m_FOI_Brazil,deterministic, mode_parallel, cluster)
 #'
 #' @export
@@ -249,7 +252,7 @@ MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_ca
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param const_list = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,
+#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,
 #'   m_FOI_Brazil,deterministic, mode_parallel, cluster)
 #'
 #' @export
@@ -323,8 +326,8 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     #cat("\n\tGenerating dataset")
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
-                                p_rep_severe,p_rep_death,const_list$mode_start,start_SEIRV=NULL,const_list$dt,
+    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,const_list$p_severe_inf,
+                                const_list$p_death_severe_inf,p_rep_severe,p_rep_death,const_list$mode_start,start_SEIRV=NULL,const_list$dt,
                                 const_list$n_reps,const_list$deterministic,const_list$mode_parallel,const_list$cluster)
     #cat("\n\tDataset generation completed")
 

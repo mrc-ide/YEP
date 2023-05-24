@@ -21,6 +21,8 @@ MCMC(
   enviro_data = NULL,
   R0_fixed_values = NULL,
   vaccine_efficacy = NULL,
+  p_severe_inf = 0.12,
+  p_death_severe_inf = 0.39,
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
@@ -88,6 +90,10 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 enviro"); set to NULL if not in use}
 
 \item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
+
+\item{p_severe_inf}{Probability of an infection being severe}
+
+\item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
 \item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
 

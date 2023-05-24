@@ -1,8 +1,6 @@
 # R file for general functions in YEP package
 #------------------------------------------------
-#Global variables
-p_severe_inf=0.12 #Probability that an infection is severe
-p_death_severe_inf=0.39 #Probability that a severe infection becomes fatal
+# Global variables
 t_incubation <- 5 #Time for cases to incubate in mosquito
 t_latent <- 5 #Latent period before cases become infectious
 t_infectious <- 5 #Time cases remain infectious
@@ -41,8 +39,12 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param pop_data Population in each age group by year
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
-#' @param output_type Type of data to output: "full" = SEIRVC + FOI for all steps, "case" = annual new infections (C),
-#'   "sero" = annual SEIRV, "case+sero" = annual SEIRVC
+#' @param output_type Type of data to output:
+#'   "full" = SEIRVC + FOI for all steps and ages
+#'   "case" = annual total new infections (C) summed across all ages
+#'   "sero" = annual SEIRV summed across all ages
+#'   "case+sero" = annual SEIRVC summed across all ages
+#'   "case_alt" = annual total new infections not combined by age
 #' @param year0 First year in population/vaccination data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
@@ -91,10 +93,9 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
     output_data$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),,],dim=dimensions)
   } else {
     n_years=length(years_data)
-    dimensions=c(N_age,n_particles,n_years)
     output_data=list(year=years_data)
     if(output_type=="case+sero" || output_type=="sero"){
-      output_data$V=output_data$R=output_data$I=output_data$E=output_data$S=array(0,dim=dimensions)
+      output_data$V=output_data$R=output_data$I=output_data$E=output_data$S=array(0,dim=c(N_age,n_particles,n_years))
       for(n_year in 1:n_years){
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
@@ -112,6 +113,15 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
         pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
         for(n_p in 1:n_particles){
           output_data$C[n_p,n_year]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
+        }
+      }
+    }
+    if(output_type=="case_alt"){
+      output_data$C=array(0,dim=c(N_age,n_particles,n_years))
+      for(n_year in 1:n_years){
+        pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
+        for(n_p in 1:n_particles){
+          output_data$C[,n_p,n_year]=rowSums(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
         }
       }
     }
@@ -336,6 +346,8 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param vaccine_efficacy Fractional vaccine efficacy
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
 #' @param p_rep_death Probability of reporting of a fatal infection
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
@@ -355,8 +367,8 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @export
 #'
 Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),obs_sero_data = NULL,obs_case_data = NULL,
-                             vaccine_efficacy = 1.0,p_rep_severe = 1.0,p_rep_death = 1.0,mode_start = 1,
-                             start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE, mode_parallel = "none",
+                             vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,p_rep_death = 1.0,
+                             mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE, mode_parallel = "none",
                              cluster = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
