@@ -638,6 +638,8 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of FOI in Brazil regions
+#' @param deterministic TBA
+#' @param mode_parallel TBA
 #' @param cluster Cluster of threads to use if multithreading to be used; set to NULL otherwise
 #' '
 #' @export
@@ -647,7 +649,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
                             obs_sero_data=list(),obs_case_data=list(),
                             mode_start=0,prior_type="zero",dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),
                             vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
-                            cluster=NULL){
+                            deterministic=TRUE,mode_parallel="none",cluster=NULL){
 
   #TODO - Add assertthat functions
   assert_that(length(log_params_min)==length(log_params_max))
@@ -681,7 +683,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
     const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
                     mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
                     R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
-                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,cluster=cluster)
+                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
 
     for(set in 1:n_param_sets){
       #if(set %% 10 == 0){cat("\n")}

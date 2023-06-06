@@ -24,6 +24,8 @@ mcmc_prelim_fit(
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
+  deterministic = TRUE,
+  mode_parallel = "none",
   cluster = NULL
 )
 }
@@ -76,6 +78,10 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 \item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
 
 \item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions}
+
+\item{deterministic}{TBA}
+
+\item{mode_parallel}{TBA}
 
 \item{cluster}{Cluster of threads to use if multithreading to be used; set to NULL otherwise
 '}
