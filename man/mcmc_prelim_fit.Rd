@@ -21,6 +21,8 @@ mcmc_prelim_fit(
   enviro_data = NULL,
   R0_fixed_values = c(),
   vaccine_efficacy = NULL,
+  p_severe_inf = 0.12,
+  p_death_severe_inf = 0.39,
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
@@ -72,6 +74,10 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 \item{R0_fixed_values}{Values of R0 to use if not being varied}
 
 \item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
+
+\item{p_severe_inf}{TBA}
+
+\item{p_death_severe_inf}{TBA}
 
 \item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
 

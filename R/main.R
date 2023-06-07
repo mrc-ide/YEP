@@ -155,7 +155,7 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param dt Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
-#' @param n_particles number of particles to use
+#' @param n_particles number of particles to use (up to 20)
 #' @param n_threads number of threads to use
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' '
@@ -167,6 +167,7 @@ Model_Run_Multi <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(),pop_
                                    deterministic = FALSE) {
 
   #TODO Add assert_that functions
+  assert_that(n_particles<=20)
 
   n_nv=3 #Number of non-vector outputs
   N_age=length(pop_data[1,1,]) #Number of age groups

@@ -54,16 +54,17 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{n_reps}{Number of repetitions (used to set number of particles and threads)}
 
-\item{division}{Number of particles to run in one go}
+\item{division}{Number of particles to run in one go (up to 20)}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
 '}
 }
 \description{
-Run SEIRV model for single region (Model_Run_Multi can be used to run multiple regions in parallel)
+Run SEIRV model for single region for large number of repetitions
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
-for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-values, infection numbers and/or total force of infection values.
+for one region over a specified time period for a number of repetitions and outputs time-dependent SEIRV
+values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
+running a large number of repetitions (>20).
 }

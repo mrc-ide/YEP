@@ -635,6 +635,8 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @param enviro_data Values of environmental variables (if in use)
 #' @param R0_fixed_values Values of R0 to use if not being varied
 #' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+#' @param p_severe_inf TBA
+#' @param p_death_severe_inf TBA
 #' @param p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
 #' @param p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
 #' @param m_FOI_Brazil Multiplier of FOI in Brazil regions
@@ -644,11 +646,10 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' '
 #' @export
 #'
-mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
-                            type=NULL,log_params_min=NULL,log_params_max=NULL,input_data=list(),
-                            obs_sero_data=list(),obs_case_data=list(),
-                            mode_start=0,prior_type="zero",dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),
-                            vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
+mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,log_params_min=NULL,log_params_max=NULL,
+                            input_data=list(),obs_sero_data=list(),obs_case_data=list(),mode_start=0,prior_type="zero",
+                            dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),vaccine_efficacy=NULL,
+                            p_severe_inf = 0.12, p_death_severe_inf = 0.39,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
                             deterministic=TRUE,mode_parallel="none",cluster=NULL){
 
   #TODO - Add assertthat functions
@@ -682,14 +683,19 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,
     results=data.frame()
     const_list=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
                     mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
-                    R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,p_rep_severe=p_rep_severe,
-                    p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
+                    R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,
+                    p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
+                    p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,
+                    deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
 
     for(set in 1:n_param_sets){
       #if(set %% 10 == 0){cat("\n")}
       #cat(set,"\t",sep="")
       cat("\n\tSet: ",set,sep="")
       log_params_prop=all_param_sets[set,]
+      FOI_R0_data=mcmc_FOI_R0_setup(type,prior_type,regions,log_params_prop,
+                                    enviro_data,R0_fixed_values,log_params_min,
+                                    log_params_max)
 
       cat("\n\tParams: ",signif(log_params_prop,3))
 

@@ -1,11 +1,12 @@
 #-------------------------------------------------------------------------------
 #' @title Model_Run2
 #'
-#' @description Run SEIRV model for single region (Model_Run_Multi can be used to run multiple regions in parallel)
+#' @description Run SEIRV model for single region for large number of repetitions
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
-#' for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-#' values, infection numbers and/or total force of infection values.
+#' for one region over a specified time period for a number of repetitions and outputs time-dependent SEIRV
+#' values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
+#' running a large number of repetitions (>20).
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Basic reproduction number for urban spread of infection
@@ -27,7 +28,7 @@
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param dt Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
-#' @param division Number of particles to run in one go
+#' @param division Number of particles to run in one go (up to 20)
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' '
 #' @export
@@ -35,7 +36,8 @@
 Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data = list(),years_data = c(1940:1941),
                       start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
                       vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10, deterministic = FALSE) {
-  
+
+  assert_that(division<=20)
   n_particles0=min(division,n_reps)
   n_threads=min(division,n_particles0)
   n_divs=ceiling(n_reps/division)
@@ -44,14 +46,14 @@ Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data 
   } else {
     n_particles_list=c(rep(n_particles0,n_divs-1),n_reps-(division*(n_divs-1)))
   }
-  
+
   n_nv=3 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
   n_data_pts=(6*N_age)+n_nv #Number of data values per time point in output
   step_begin=((years_data[1]-year0)*(365/dt)) #Step at which data starts being saved for final output
   step_end=((max(years_data)+1-year0)*(365/dt))-1 #Step at which to end
   t_pts_out=step_end-step_begin+1 #Number of time points in final output data
-  
+
   if(output_type=="full"){
     dimensions=c(N_age,n_reps,t_pts_out)
     output_data=list(day=x_res[1,1,],year=x_res[2,1,],FOI_total=array(NA,c(n_reps,t_pts_out)),
@@ -70,21 +72,21 @@ Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data 
       output_data$C=array(0,dim=c(N_age,n_reps,n_years))
     }
   }
-  
+
   for(div in 1:n_divs){
     n_particles=n_particles_list[div]
     if(div==1){n_p0=0}else{n_p0=sum(n_particles_list[c(1:(div-1))])}
-    
+
     x <- SEIRV_Model$new(pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,
                                               vaccine_efficacy,start_SEIRV,dt),
                          time = 0, n_particles = n_particles, n_threads = n_threads, deterministic = deterministic)
-    
+
     x_res <- array(NA, dim = c(n_data_pts, n_particles, t_pts_out))
     for(step in step_begin:step_end){
       x_res[,,step-step_begin+1] <- x$run(step)
     }
     if(step_begin==0){x_res[2,,1]=rep(year0,n_particles)}
-    
+
     if(output_type=="full"){
       n_p_values=c(1:n_particles)+n_p0
       dimensions=c(N_age,n_particles,t_pts_out)
@@ -128,8 +130,8 @@ Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data 
         }
       }
     }
-    
+
   }
-  
+
   return(output_data)
 }

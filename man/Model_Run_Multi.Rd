@@ -47,7 +47,7 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{dt}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
-\item{n_particles}{number of particles to use}
+\item{n_particles}{number of particles to use (up to 20)}
 
 \item{n_threads}{number of threads to use}
 

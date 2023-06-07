@@ -140,6 +140,8 @@ input_data_check <- function(input_data=list()){
 input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_data=NULL){
 
   assert_that(input_data_check(input_data))
+  assert_that(max(obs_sero_data$year)<max(input_data$years_labels))
+  assert_that(max(obs_case_data$year)<max(input_data$years_labels))
   N_age=length(input_data$age_labels)
   n_years=length(input_data$years_labels)
 
