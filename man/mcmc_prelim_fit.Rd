@@ -21,9 +21,13 @@ mcmc_prelim_fit(
   enviro_data = NULL,
   R0_fixed_values = c(),
   vaccine_efficacy = NULL,
+  p_severe_inf = 0.12,
+  p_death_severe_inf = 0.39,
   p_rep_severe = NULL,
   p_rep_death = NULL,
   m_FOI_Brazil = 1,
+  deterministic = TRUE,
+  mode_parallel = "none",
   cluster = NULL
 )
 }
@@ -71,11 +75,19 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 
 \item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
 
+\item{p_severe_inf}{TBA}
+
+\item{p_death_severe_inf}{TBA}
+
 \item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
 
 \item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
 
 \item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions}
+
+\item{deterministic}{TBA}
+
+\item{mode_parallel}{TBA}
 
 \item{cluster}{Cluster of threads to use if multithreading to be used; set to NULL otherwise
 '}
