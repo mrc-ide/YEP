@@ -75,10 +75,10 @@ test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
                    dt, n_particles, n_threads, deterministic)
 ```
 
-The output of Model_Run(), when output_type is set to "full", includes, for each particle, date information, the total force of infection FOI_total at each data point, the numbers of people in groups S, E, I, R and V at each time point organized by age group, and the number of newly infectious people (C) at each time point organized by age group. We use the plot_model function from the YFDaux package to display values of S, R and V (added together across all age groups) over time, with error bars to show the variation between particles caused by stochasticity if relevant.
+The output of Model_Run(), when output_type is set to "full", includes, for each particle, date information, the total force of infection FOI_total at each data point, the numbers of people in groups S, E, I, R and V at each time point organized by age group, and the number of newly infectious people (C) at each time point organized by age group. We use the plot_model function from the YEPaux package to display values of S, R and V (added together across all age groups) over time, with error bars to show the variation between particles caused by stochasticity if relevant.
 
 ```{r,eval=FALSE}
-library(YFDaux)
+library(YEPaux)
 plot <- plot_model_output(test1)
 print(plot)
 ```

@@ -27,7 +27,7 @@ t_infectious <- 5 #Time cases remain infectious
 #-------------------------------------------------------------------------------
 #' @title Model_Run
 #'
-#' @description Run SEIRV model for single region (Model_Run_Multi can be used to run multiple regions in parallel)
+#' @description Run SEIRV model for single region (Model_Run_Multi_Input can be used to run multiple regions in parallel)
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
 #' for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
@@ -132,7 +132,7 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
   return(output_data)
 }
 #-------------------------------------------------------------------------------
-#' @title Model_Run_Multi
+#' @title Model_Run_Multi_Input
 #'
 #' @description Run SEIRV model for multiple parameter sets
 #'
@@ -162,7 +162,7 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
 #' '
 #' @export
 #'
-Model_Run_Multi <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(),pop_data = list(),
+Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(),pop_data = list(),
                                    years_data = c(1940:1941),start_SEIRV = list(), output_type = "full", year0 = 1940,
                                    mode_start = 0,vaccine_efficacy = 1.0,dt = 1.0,n_particles = 1, n_threads = 1,
                                    deterministic = FALSE) {
@@ -178,9 +178,9 @@ Model_Run_Multi <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(),pop_
   t_pts_out=step_end-step_begin+1 #Number of time points in final output data
   dimensions=c(N_age,n_particles,t_pts_out)
 
-  n_regions=length(FOI_spillover)
+  n_param_sets=length(FOI_spillover)
   pars=list()
-  for(i in 1:n_regions){
+  for(i in 1:n_param_sets){
     pars[[i]]=parameter_setup(FOI_spillover[i],R0[i],vacc_data[i,,],pop_data[i,,],year0,years_data,mode_start,
                               vaccine_efficacy,start_SEIRV[[i]],dt)
   }
@@ -188,14 +188,14 @@ Model_Run_Multi <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(),pop_
   x <- SEIRV_Model$new(pars,time = 1, n_particles = n_particles, n_threads = n_threads, deterministic = deterministic,
                        pars_multi = TRUE)
 
-  x_res <- array(NA, dim = c(n_data_pts, n_particles*n_regions, t_pts_out))
+  x_res <- array(NA, dim = c(n_data_pts, n_particles*n_param_sets, t_pts_out))
   for(step in step_begin:step_end){
     x_res[,,step-step_begin+1] <- x$run(step)
   }
-  if(step_begin==0){x_res[2,,1]=rep(year0,n_particles*n_regions)}
+  if(step_begin==0){x_res[2,,1]=rep(year0,n_particles*n_param_sets)}
 
   output=list()
-  for(i in 1:n_regions){
+  for(i in 1:n_param_sets){
     n_p2=c(1:n_particles)+(n_particles*(i-1))
     if(output_type=="full"){
       dimensions=c(N_age,n_particles,t_pts_out)
@@ -336,9 +336,9 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #-------------------------------------------------------------------------------
 #' @title Generate_Dataset
 #'
-#' @description Generate serological and/or annual case/death data - TODO: add option(s) for parallelism
+#' @description Generate serological and/or annual case/death data
 #'
-#' @details This function is used to generate serological, annual case/death and/or annual outbreak risk data based
+#' @details This function is used to generate serological and/or annual case/death based
 #'   on observed or dummy data sets; it is normally used by single_like_calc() and data_match_single() functions
 #'
 #' @param input_data List of population and vaccination data for multiple regions
@@ -381,6 +381,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
               msg="Need at least one of obs_sero_data or obs_case_data")
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   if(is.null(obs_case_data)==FALSE){
+    assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
+    assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,msg="Fatality rate of serious infections must be between 0 and 1")
     assert_that(p_rep_severe >=0.0 && p_rep_severe <=1.0,
                 msg="Severe infection reporting probability must be between 0 and 1")
     assert_that(p_rep_death >=0.0 && p_rep_death <=1.0,
@@ -395,8 +397,6 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
   if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
                                 msg="Number of start_SEIRV datasets must match number of regions")}
-
-  if(is.null(input_data$flag_sero)){input_data=input_data_process(input_data,obs_sero_data,obs_case_data)}
 
   #Set up data structures to take modelled data corresponding to observed data
   if(is.null(obs_sero_data)){model_sero_data=NULL} else {
@@ -422,12 +422,12 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     years_data_all=c(min(input_data$year_data_begin):max(input_data$year_end))
     if(any(input_data$flag_sero==1)){if(any(input_data$flag_case==1)){output_type="case+sero"} else{
       output_type="sero"}} else {output_type="case"}
-    model_output_all=Model_Run_Multi(FOI_spillover = FOI_values,R0 = R0_values,
-                                     vacc_data = input_data$vacc_data,pop_data = input_data$pop_data,
-                                     years_data = years_data_all,start_SEIRV=start_SEIRV,output_type = output_type,
-                                     year0 = input_data$years_labels[1],mode_start = mode_start,
-                                     vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
-                                     n_threads = n_reps*n_regions,deterministic = deterministic)
+    model_output_all=Model_Run_Multi_Input(FOI_spillover = FOI_values,R0 = R0_values,
+                                            vacc_data = input_data$vacc_data, pop_data = input_data$pop_data,
+                                            years_data = years_data_all, start_SEIRV=start_SEIRV,output_type = output_type,
+                                            year0 = input_data$years_labels[1],mode_start = mode_start,
+                                            vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
+                                            n_threads = n_reps*n_regions,deterministic = deterministic)
   }
   if(mode_parallel=="clusterMap"){
     vacc_data_subsets=pop_data_subsets=years_data_sets=list() #TODO - change input data?

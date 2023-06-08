@@ -46,10 +46,10 @@ n_threads <- n_regions*n_particles
 deterministic <- FALSE
 ```
 
-We use the Model_Run_Multi() function to run the model for the inputs above:
+We use the Model_Run_Multi_Input() function to run the model for the inputs above:
 
 ```{r,eval=FALSE}
-test1 <- Model_Run_Multi(FOI_spillover, R0, vacc_data, pop_data, years_data,
+test1 <- Model_Run_Multi_Input(FOI_spillover, R0, vacc_data, pop_data, years_data,
                          start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
                          dt, n_particles, n_threads, deterministic)
 ```
@@ -57,7 +57,7 @@ test1 <- Model_Run_Multi(FOI_spillover, R0, vacc_data, pop_data, years_data,
 The output is a list with a length equal to the number of parameter sets, where each entry is a set of SEIRV data in the same format as the output of Model_Run().
 
 ```{r,eval=FALSE}
-library(YFDaux)
+library(YEPaux)
 plot <- plot_model_output(test1[[1]])
 print(plot)
 ```

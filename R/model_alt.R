@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-#' @title Model_Run2
+#' @title Model_Run_Many_Reps
 #'
 #' @description Run SEIRV model for single region for large number of repetitions
 #'
@@ -29,13 +29,12 @@
 #' @param dt Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
 #' @param division Number of particles to run in one go (up to 20)
-#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' '
 #' @export
 #'
-Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data = list(),years_data = c(1940:1941),
-                      start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
-                      vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10, deterministic = FALSE) {
+Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data = list(),years_data = c(1940:1941),
+                                start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
+                                vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10) {
 
   assert_that(division<=20)
   n_particles0=min(division,n_reps)
@@ -79,7 +78,7 @@ Model_Run2 <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data 
 
     x <- SEIRV_Model$new(pars=parameter_setup(FOI_spillover,R0,vacc_data,pop_data,year0,years_data,mode_start,
                                               vaccine_efficacy,start_SEIRV,dt),
-                         time = 0, n_particles = n_particles, n_threads = n_threads, deterministic = deterministic)
+                         time = 0, n_particles = n_particles, n_threads = n_threads, deterministic = FALSE)
 
     x_res <- array(NA, dim = c(n_data_pts, n_particles, t_pts_out))
     for(step in step_begin:step_end){
