@@ -693,9 +693,6 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
       #cat(set,"\t",sep="")
       cat("\n\tSet: ",set,sep="")
       log_params_prop=all_param_sets[set,]
-      FOI_R0_data=mcmc_FOI_R0_setup(type,prior_type,regions,log_params_prop,
-                                    enviro_data,R0_fixed_values,log_params_min,
-                                    log_params_max)
 
       cat("\n\tParams: ",signif(log_params_prop,3))
 
