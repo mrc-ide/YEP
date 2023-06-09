@@ -173,11 +173,12 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
   regions2=regions1[input_regions_check]
   n_regions2=length(regions2)
 
-  if(n_regions2==n_regions1 && is.null(input_data$year_data_begin)==FALSE){
-    #Skip steps if the input data already has the same set of regions and the cross-reference tables
-    #assert_that() #Check all tables present
-    return(input_data)
-  }else{
+  # #TODO - fix mechanism for skipping if update not needed
+  # if(n_regions2==n_regions1 && is.null(input_data$year_data_begin)==FALSE){
+  #   #Skip steps if the input data already has the same set of regions and the cross-reference tables
+  #   #assert_that() #Check all tables present
+  #   return(input_data)
+  # }else{
 
     blank=rep(0,n_regions2)
     flag_sero=flag_case=year_end=blank
@@ -217,7 +218,7 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
                 pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
                 year_data_begin=year_data_begin,year_end=year_end,flag_sero=flag_sero,flag_case=flag_case,
                 sero_line_list=sero_line_list,case_line_list=case_line_list))
-  }
+  #}
 }
 
 #-------------------------------------------------------------------------------
