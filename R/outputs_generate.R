@@ -28,12 +28,12 @@
 #' @export
 #'
 Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),template = NULL,
-                             vaccine_efficacy = 1.0, mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1,
-                             deterministic = FALSE, mode_parallel = "none",cluster = NULL){
+                                  vaccine_efficacy = 1.0, mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1,
+                                  deterministic = FALSE, mode_parallel = "none",cluster = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
-  if(is.null(input_data$flag_sero)){input_data=input_data_process(input_data,template,NULL)}
+  input_data=input_data_process(input_data,template,NULL)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
@@ -47,7 +47,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 
   #Set up data structures to take modelled data
   blank=rep(0,nrow(template))
-  model_sero_data=data.frame(samples=blank,positives=blank,sero=blank)
+  model_sero_data=list(samples=blank,positives=blank,sero=blank)
 
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel=="pars_multi"){
@@ -76,7 +76,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
   }
   #if(mode_parallel=="hybrid") #Potential future option combining parallelization types
 
-  #Save relevant output data from each region
+  # Save relevant output data from each region
   for(n_region in 1:n_regions){
 
     #Run model if not using parallelization
@@ -147,7 +147,7 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
-  if(is.null(input_data$flag_case)){input_data=input_data_process(input_data,NULL,template)}
+  input_data=input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
   assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,
@@ -290,7 +290,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
-  if(is.null(input_data$flag_case)){input_data=input_data_process(input_data,NULL,template)}
+  input_data=input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
   assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,

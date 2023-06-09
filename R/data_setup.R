@@ -27,14 +27,14 @@ create_input_data <- function(vacc_data=list(),pop_data=list(),regions=c(),years
   assert_that(all(regions==sort(regions)),msg="Regions must be ordered by name")
   assert_that(is.numeric(years))
   assert_that(ncol(pop_data)==ncol(vacc_data),msg="Numbers of columns in vaccination and population data must match")
-  vacc_regions=names(table(vacc_data[,1]))
+  vacc_regions=unique(vacc_data[,1])
   assert_that(all(vacc_regions==sort(vacc_regions)),msg="Regions must be ordered by name in vaccination data")
-  vacc_years=names(table(vacc_data[,2]))
+  vacc_years=unique(vacc_data[,2])
   assert_that(all(regions %in% vacc_regions),msg="All specified regions must appear in vaccination data")
   assert_that(all(years %in% vacc_years),msg="All specified years must appear in vaccination data")
-  pop_regions=names(table(pop_data[,1]))
+  pop_regions=unique(pop_data[,1])
   assert_that(all(pop_regions==sort(pop_regions)),msg="Regions must be ordered by name in population data")
-  pop_years=names(table(pop_data[,2]))
+  pop_years=unique(pop_data[,2])
   assert_that(all(regions %in% pop_regions),msg="All specified regions must appear in population data")
   assert_that(all(years %in% pop_years),msg="All specified years must appear in population data")
 
@@ -139,78 +139,85 @@ input_data_check <- function(input_data=list()){
 #'
 input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_data=NULL){
 
-  assert_that(input_data_check(input_data))
-  assert_that(max(obs_sero_data$year)<max(input_data$years_labels))
-  assert_that(max(obs_case_data$year)<max(input_data$years_labels))
+  assert_that(input_data_check(input_data),msg="Input data must be in correct format")
+  if(is.null(obs_sero_data)==FALSE){
+    assert_that(max(obs_sero_data$year)<max(input_data$years_labels),msg="Input data years must encompass sero data range")
+  }
+  if(is.null(obs_case_data)==FALSE){
+    assert_that(max(obs_case_data$year)<max(input_data$years_labels),msg="Input data years must encompass case data range")
+  }
   N_age=length(input_data$age_labels)
   n_years=length(input_data$years_labels)
 
-  regions_input_data=input_data$region_labels
-  assert_that(all(regions_input_data==sort(regions_input_data)),msg="Region labels must be in alphabetical order")
-  regions_sero_com=names(table(obs_sero_data$region))
-  regions_case_com=names(table(obs_case_data$region))
+  regions1=input_data$region_labels
+  n_regions1=length(regions1)
+  assert_that(all(regions1==sort(regions1)),msg="Region labels must be in alphabetical order")
+  regions_sero_com=unique(obs_sero_data$region)
+  regions_case_com=unique(obs_case_data$region)
   regions_sero_unc=regions_case_unc=c()
 
   for(region in regions_sero_com){regions_sero_unc=append(regions_sero_unc,strsplit(region,",")[[1]])}
   for(region in regions_case_com){regions_case_unc=append(regions_case_unc,strsplit(region,",")[[1]])}
-  regions_sero_unc=names(table(regions_sero_unc))
-  regions_case_unc=names(table(regions_case_unc))
-  regions_all_data_unc=names(table(c(regions_sero_unc,regions_case_unc)))
+  regions_sero_unc=unique(regions_sero_unc)
+  regions_case_unc=unique(regions_case_unc)
+  regions_all_data_unc=unique(c(regions_sero_unc,regions_case_unc))
 
   for(region in regions_all_data_unc){
-    if(region %in% regions_input_data==FALSE){
+    if(region %in% regions1==FALSE){
       cat("\nInput data error - ",region," does not appear in input data\n",sep="")
       stop()
     }
   }
 
-  input_regions_check=regions_input_data %in% regions_all_data_unc
-  regions_input_data_new=regions_input_data[input_regions_check]
-  n_regions_input_data=length(regions_input_data_new)
+  input_regions_check=regions1 %in% regions_all_data_unc
+  regions2=regions1[input_regions_check]
+  n_regions2=length(regions2)
 
-  #TODO - Skip steps below if the input data already has the same set of regions and the cross-reference tables
+  if(n_regions2==n_regions1 && is.null(input_data$year_data_begin)==FALSE){
+    #Skip steps if the input data already has the same set of regions and the cross-reference tables
+    #assert_that() #Check all tables present
+    return(input_data)
+  }else{
 
-  blank=rep(0,n_regions_input_data)
-  flag_sero=flag_case=year_end=blank
-  year_data_begin=rep(Inf,n_regions_input_data)
-  sero_line_list=case_line_list=list()
-  for(i in 1:n_regions_input_data){
-    region=regions_input_data_new[i]
-    if(region %in% regions_sero_unc){
-      flag_sero[i]=1
-      sero_line_list[[i]]=c(0)
-      for(j in 1:nrow(obs_sero_data)){
-        if(grepl(region,obs_sero_data$region[j])==TRUE){
-          sero_line_list[[i]]=append(sero_line_list[[i]],j)
-          year_data_begin[i]=min(obs_sero_data$year[j],year_data_begin[i])
-          year_end[i]=max(obs_sero_data$year[j],year_end[i])
+    blank=rep(0,n_regions2)
+    flag_sero=flag_case=year_end=blank
+    year_data_begin=rep(Inf,n_regions2)
+    sero_line_list=case_line_list=list()
+    for(i in 1:n_regions2){
+      region=regions2[i]
+      if(region %in% regions_sero_unc){
+        flag_sero[i]=1
+        sero_line_list[[i]]=c(0)
+        for(j in 1:nrow(obs_sero_data)){
+          if(grepl(region,obs_sero_data$region[j])==TRUE){
+            sero_line_list[[i]]=append(sero_line_list[[i]],j)
+            year_data_begin[i]=min(obs_sero_data$year[j],year_data_begin[i])
+            year_end[i]=max(obs_sero_data$year[j],year_end[i])
+          }
         }
+        sero_line_list[[i]]=sero_line_list[[i]][c(2:length(sero_line_list[[i]]))]
       }
-      sero_line_list[[i]]=sero_line_list[[i]][c(2:length(sero_line_list[[i]]))]
-    }
-    if(region %in% regions_case_unc){
-      flag_case[i]=1
-      case_line_list[[i]]=c(0)
-      for(j in 1:nrow(obs_case_data)){
-        if(grepl(region,obs_case_data$region[j])==TRUE){
-          case_line_list[[i]]=append(case_line_list[[i]],j)
-          year_data_begin[i]=min(obs_case_data$year[j],year_data_begin[i])
-          year_end[i]=max(obs_case_data$year[j],year_end[i])
+      if(region %in% regions_case_unc){
+        flag_case[i]=1
+        case_line_list[[i]]=c(0)
+        for(j in 1:nrow(obs_case_data)){
+          if(grepl(region,obs_case_data$region[j])==TRUE){
+            case_line_list[[i]]=append(case_line_list[[i]],j)
+            year_data_begin[i]=min(obs_case_data$year[j],year_data_begin[i])
+            year_end[i]=max(obs_case_data$year[j],year_end[i])
+          }
         }
+        case_line_list[[i]]=case_line_list[[i]][c(2:length(case_line_list[[i]]))]
       }
-      case_line_list[[i]]=case_line_list[[i]][c(2:length(case_line_list[[i]]))]
     }
+
+    return(list(region_labels=input_data$region_labels[input_regions_check],
+                years_labels=input_data$years_labels,age_labels=input_data$age_labels,
+                vacc_data=array(input_data$vacc_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
+                pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
+                year_data_begin=year_data_begin,year_end=year_end,flag_sero=flag_sero,flag_case=flag_case,
+                sero_line_list=sero_line_list,case_line_list=case_line_list))
   }
-  n_regions=length(input_regions_check[input_regions_check==TRUE])
-
-  input_data_new=list(region_labels=input_data$region_labels[input_regions_check],
-                      years_labels=input_data$years_labels,age_labels=input_data$age_labels,
-                      vacc_data=array(input_data$vacc_data[input_regions_check,,],dim=c(n_regions,n_years,N_age)),
-                      pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions,n_years,N_age)),
-                      year_data_begin=year_data_begin,year_end=year_end,flag_sero=flag_sero,flag_case=flag_case,
-                      sero_line_list=sero_line_list,case_line_list=case_line_list)
-
-  return(input_data_new)
 }
 
 #-------------------------------------------------------------------------------
