@@ -475,7 +475,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
         rep_cases=rep_deaths=rep(0,n_years_outbreak)
         for(n_year in 1:n_years_outbreak){
           pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-          infs=model_output$C[pts]
+          infs=sum(model_output$C[n_rep,pts])
           if(deterministic){
             severe_infs=floor(infs)*p_severe_inf
             deaths=severe_infs*p_death_severe_inf
@@ -499,7 +499,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     if(input_data$flag_sero[n_region]==1){
       sero_line_list=input_data$sero_line_list[[n_region]]
       for(n_rep in 1:n_reps){
-        sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output)
+        sero_results=sero_calculate2(obs_sero_data[sero_line_list,],model_output,n_rep)
         model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
         model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
       }

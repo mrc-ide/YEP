@@ -96,7 +96,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     #Compile seroprevalence data
     sero_line_list=input_data$sero_line_list[[n_region]]
     for(n_rep in 1:n_reps){
-      sero_results=sero_calculate2(template[sero_line_list,],model_output)
+      sero_results=sero_calculate2(template[sero_line_list,],model_output,n_rep)
       model_sero_data$samples[sero_line_list]=model_sero_data$samples[sero_line_list]+sero_results$samples
       model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
     }
@@ -215,14 +215,14 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 
     #Compile case data
     case_line_list=input_data$case_line_list[[n_region]]
-    years_outbreak=template$year[case_line_list]
-    n_years_outbreak=length(case_line_list)
+    years_case=template$year[case_line_list]
+    n_years_case=length(case_line_list)
 
     for(n_rep in 1:n_reps){
-      rep_cases=rep_deaths=rep(0,n_years_outbreak)
-      for(n_year in 1:n_years_outbreak){
-        pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-        infs=model_output$C[pts]
+      rep_cases=rep_deaths=rep(0,n_years_case)
+      for(n_year in 1:n_years_case){
+        pts=c(1:t_pts)[model_output$year==years_case[n_year]]
+        infs=sum(model_output$C[n_rep,pts])
         if(deterministic){
           severe_infs=floor(infs)*p_severe_inf
           deaths=severe_infs*p_death_severe_inf
@@ -260,8 +260,7 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #' @param input_data List of population and vaccination data for multiple regions
 #' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
 #' @param R0_values Values for each region of the basic reproduction number for human-human transmission
-#' @param template Annual reported case/death data for comparison, by region and year, in format no. cases/no.
-#'   deaths
+#' @param template Burden data in VIMC format, with regions, years and age ranges
 #' @param vaccine_efficacy Fractional vaccine efficacy
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
@@ -308,14 +307,14 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
                                 msg="Number of start_SEIRV datasets must match number of regions")}
 
   #Set up data structures to take modelled data
-  model_case_values=model_death_values=rep(0,nrow(template))
+  model_case_values=model_death_values=model_dalys_values=rep(0,nrow(template))
 
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel=="pars_multi"){
     years_data_all=c(min(input_data$year_data_begin):max(input_data$year_end))
     model_output_all=Model_Run_Multi_Input(FOI_spillover = FOI_values,R0 = R0_values,
                                            vacc_data = input_data$vacc_data, pop_data = input_data$pop_data,
-                                           years_data = years_data_all, start_SEIRV=start_SEIRV,output_type = "case",
+                                           years_data = years_data_all, start_SEIRV=start_SEIRV,output_type = "case_alt",
                                            year0 = input_data$years_labels[1],mode_start = mode_start,
                                            vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
                                            n_threads = n_reps*n_regions,deterministic = deterministic)
@@ -331,7 +330,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
     model_output_all=clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
-                                MoreArgs=list(output_type="case", year0 = input_data$years_labels[1],mode_start = mode_start,
+                                MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],mode_start = mode_start,
                                               vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
                                               n_threads = 1 ,deterministic = deterministic))
   }
@@ -346,7 +345,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
       model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(input_data$year_data_begin[n_region]:input_data$year_end[n_region]),
-                               start_SEIRV=start_SEIRV[[n_region]],output_type = "case",
+                               start_SEIRV=start_SEIRV[[n_region]],output_type = "case_alt",
                                year0 = input_data$years_labels[1],mode_start = mode_start,
                                vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,n_threads = n_reps,
                                deterministic = deterministic)
@@ -354,34 +353,30 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
     } else {
       model_output = model_output_all[[n_region]]
     }
-    t_pts=length(model_output$year)
+    t_pts_all=c(1:length(model_output$year))
 
     #Compile case data
     case_line_list=input_data$case_line_list[[n_region]]
-    years_outbreak=template$year[case_line_list]
-    n_years_outbreak=length(case_line_list)
+    years_case=template$year[case_line_list]
+    n_years_case=length(case_line_list)
 
     for(n_rep in 1:n_reps){
-      rep_cases=rep_deaths=rep(0,n_years_outbreak)
-      for(n_year in 1:n_years_outbreak){
-        pts=c(1:t_pts)[model_output$year==years_outbreak[n_year]]
-        infs=model_output$C[pts]
+      cases=dalys=deaths=rep(0,n_years_case)
+      for(n_year in 1:n_years_case){
+        t_pts=t_pts_all[model_output$year==years_case[n_year]]
+        age_pts=c(1:101) #TBC - Currently just uses all ages
+        infs=sum(model_output$C[age_pts,n_rep,t_pts])
         if(deterministic){
-          severe_infs=floor(infs)*p_severe_inf
-          deaths=severe_infs*p_death_severe_inf
-          rep_deaths[n_year]=round(deaths*p_rep_death)
-          rep_cases[n_year]=rep_deaths[n_year]+round((severe_infs-deaths)*p_rep_severe)
-
+          cases[n_year]=floor(infs)*p_severe_inf
+          deaths[n_year]=cases[n_year]*p_death_severe_inf
         } else {
-          severe_infs=rbinom(1,floor(infs),p_severe_inf)
-          deaths=rbinom(1,severe_infs,p_death_severe_inf)
-          rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-          rep_cases[n_year]=rep_deaths[n_year]+rbinom(1,floor(severe_infs-deaths),p_rep_severe)
+          cases[n_year]=rbinom(1,floor(infs),p_severe_inf)
+          deaths[n_year]=rbinom(1,cases[n_year],p_death_severe_inf)
         }
       }
 
-      model_case_values[case_line_list]=model_case_values[case_line_list]+rep_cases
-      model_death_values[case_line_list]=model_death_values[case_line_list]+rep_deaths
+      model_case_values[case_line_list]=model_case_values[case_line_list]+cases
+      model_death_values[case_line_list]=model_death_values[case_line_list]+deaths
     }
 
     model_output<-NULL
@@ -390,5 +385,5 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
 
-  return(list(model_case_values=model_case_values,model_death_values=model_death_values))
+  return(list(cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values))
 }

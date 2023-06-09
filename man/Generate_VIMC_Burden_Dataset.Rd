@@ -30,8 +30,7 @@ Generate_VIMC_Burden_Dataset(
 
 \item{R0_values}{Values for each region of the basic reproduction number for human-human transmission}
 
-\item{template}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
-deaths}
+\item{template}{Burden data in VIMC format, with regions, years and age ranges}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
 
