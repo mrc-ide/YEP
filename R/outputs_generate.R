@@ -104,7 +104,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     model_output<-NULL
     gc()
   }
-  if(is.null(model_output_all)==FALSE){
+  if(mode_parallel!="none"){
     model_output_all<-NULL
     gc()
   }
@@ -251,7 +251,7 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     model_output<-NULL
     gc()
   }
-  if(is.null(model_output_all)==FALSE){
+  if(mode_parallel!="none"){
     model_output_all<-NULL
     gc()
   }
@@ -395,7 +395,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     model_output<-NULL
     gc()
   }
-  if(is.null(model_output_all)==FALSE){
+  if(mode_parallel!="none"){
     model_output_all<-NULL
     gc()
   }
