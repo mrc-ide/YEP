@@ -12,8 +12,7 @@ Generate_VIMC_Burden_Dataset(
   vaccine_efficacy = 1,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
-  p_rep_severe = 1,
-  p_rep_death = 1,
+  YLD_per_case = 0.006486,
   mode_start = 1,
   start_SEIRV = NULL,
   dt = 1,
@@ -30,7 +29,7 @@ Generate_VIMC_Burden_Dataset(
 
 \item{R0_values}{Values for each region of the basic reproduction number for human-human transmission}
 
-\item{template}{Burden data in VIMC format, with regions, years and age ranges}
+\item{template}{Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy for each line}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
 
@@ -38,9 +37,7 @@ Generate_VIMC_Burden_Dataset(
 
 \item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
-\item{p_rep_severe}{Probability of reporting of a severe but non-fatal infection}
-
-\item{p_rep_death}{Probability of reporting of a fatal infection}
+\item{YLD_per_case}{TBA}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals

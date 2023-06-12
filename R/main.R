@@ -513,8 +513,10 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     model_output<-NULL
     gc()
   }
-  model_output_all<-NULL
-  gc()
+  if(is.null(model_output_all)==FALSE){
+    model_output_all<-NULL
+    gc()
+  }
 
   if(any(input_data$flag_sero>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
   if(any(input_data$flag_case>0)){

@@ -104,8 +104,10 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     model_output<-NULL
     gc()
   }
-  model_output_all<-NULL
-  gc()
+  if(is.null(model_output_all)==FALSE){
+    model_output_all<-NULL
+    gc()
+  }
   model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
 
   return(model_sero_data)
@@ -249,8 +251,10 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     model_output<-NULL
     gc()
   }
-  model_output_all<-NULL
-  gc()
+  if(is.null(model_output_all)==FALSE){
+    model_output_all<-NULL
+    gc()
+  }
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
 
@@ -391,8 +395,10 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     model_output<-NULL
     gc()
   }
-  model_output_all<-NULL
-  gc()
+  if(is.null(model_output_all)==FALSE){
+    model_output_all<-NULL
+    gc()
+  }
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
   model_dalys_values=(model_case_values*YLD_per_case)+(model_death_values*template$life_exp)
