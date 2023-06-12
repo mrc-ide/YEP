@@ -55,7 +55,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
 
   if(output_type=="full"){
     dimensions=c(N_age,n_reps,t_pts_out)
-    output_data=list(day=x_res[1,1,],year=x_res[2,1,],FOI_total=array(NA,c(n_reps,t_pts_out)),
+    output_data=list(day=rep(NA,t_pts_out),year=rep(NA,t_pts_out),FOI_total=array(NA,c(n_reps,t_pts_out)),
                      S=array(NA,dim=dimensions),E=array(NA,dim=dimensions),I=array(NA,dim=dimensions),
                      R=array(NA,dim=dimensions),V=array(NA,dim=dimensions),C=array(NA,dim=dimensions))
   } else {
@@ -89,6 +89,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
     if(output_type=="full"){
       n_p_values=c(1:n_particles)+n_p0
       dimensions=c(N_age,n_particles,t_pts_out)
+      output_data$day=x_res[1,1,]
+      output_data$year=x_res[2,1,]
       output_data$FOI_total[n_p_values,]=array(x_res[3,,]/dt,dim=c(n_particles,t_pts_out))
       output_data$S[,n_p_values,]=array(x_res[c((1+n_nv):(N_age+n_nv)),,],dim=dimensions)
       output_data$E[,n_p_values,]=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),,],dim=dimensions)
@@ -129,7 +131,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
         }
       }
     }
-
+    x_res<-NULL
+    gc()
   }
 
   return(output_data)

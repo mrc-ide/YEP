@@ -128,6 +128,8 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       }
     }
   }
+  x_res <- NULL
+  gc()
 
   return(output_data)
 }
@@ -235,6 +237,8 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
       }
     }
   }
+  x_res <- NULL
+  gc()
 
   return(output)
 }
@@ -379,14 +383,16 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   if(is.null(input_data$flag_sero)){input_data=input_data_process(input_data,obs_sero_data,obs_case_data)}
   assert_that(any(is.null(obs_sero_data)==FALSE,is.null(obs_case_data)==FALSE),
               msg="Need at least one of obs_sero_data or obs_case_data")
-  assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
+  if(is.null(obs_sero_data)==FALSE){
+    assert_that(all(c("age_min","age_max","samples","positives","vc_factor","region") %in% names(obs_sero_data)))
+  }
   if(is.null(obs_case_data)==FALSE){
+    assert_that(all(c("region","year","cases") %in% names(obs_case_data)))
+    #TODO - Flag if "deaths" in header
     assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
     assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,msg="Fatality rate of serious infections must be between 0 and 1")
-    assert_that(p_rep_severe >=0.0 && p_rep_severe <=1.0,
-                msg="Severe infection reporting probability must be between 0 and 1")
-    assert_that(p_rep_death >=0.0 && p_rep_death <=1.0,
-                msg="Fatal infection reporting probability must be between 0 and 1")
+    assert_that(p_rep_severe >=0.0 && p_rep_severe <=1.0,msg="Severe infection reporting probability must be between 0 and 1")
+    assert_that(p_rep_death >=0.0 && p_rep_death <=1.0,msg="Fatal infection reporting probability must be between 0 and 1")
   }
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
@@ -505,8 +511,10 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
       }
     }
     model_output<-NULL
+    gc()
   }
   model_output_all<-NULL
+  gc()
 
   if(any(input_data$flag_sero>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
   if(any(input_data$flag_case>0)){

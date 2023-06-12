@@ -33,6 +33,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
+  assert_that(all(c("age_min","age_max","samples","positives","vc_factor","region") %in% names(template)))
   input_data=input_data_process(input_data,template,NULL)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
@@ -101,8 +102,10 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
       model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
     }
     model_output<-NULL
+    gc()
   }
   model_output_all<-NULL
+  gc()
   model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
 
   return(model_sero_data)
@@ -147,6 +150,8 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
+  assert_that(all(c("region","year","cases") %in% names(template)))
+  #TODO - Set flag if "deaths" in template header
   input_data=input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
@@ -242,8 +247,10 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
     }
 
     model_output<-NULL
+    gc()
   }
   model_output_all<-NULL
+  gc()
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
 
@@ -260,12 +267,11 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #' @param input_data List of population and vaccination data for multiple regions
 #' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
 #' @param R0_values Values for each region of the basic reproduction number for human-human transmission
-#' @param template Burden data in VIMC format, with regions, years and age ranges
+#' @param template Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy for each line
 #' @param vaccine_efficacy Fractional vaccine efficacy
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
-#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
-#' @param p_rep_death Probability of reporting of a fatal infection
+#' @param YLD_per_case TBA
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
@@ -282,20 +288,18 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #' '
 #' @export
 #'
-Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),template = NULL,
-                                         vaccine_efficacy = 1.0,p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                                         p_rep_severe = 1.0, p_rep_death = 1.0, mode_start = 1, start_SEIRV = NULL,
-                                         dt = 1.0,n_reps = 1, deterministic = FALSE,mode_parallel = "none",cluster = NULL){
+Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
+                                         vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                                         YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
+                                         dt = 1.0, n_reps = 1, deterministic = FALSE,mode_parallel = "none",cluster = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
+  assert_that(all(c("region","year","age_min","age_max","life_exp") %in% names(template)))
   input_data=input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0 and 1")
   assert_that(p_severe_inf >=0.0 && p_severe_inf <=1.0,msg="Severe infection rate must be between 0 and 1")
-  assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,
-              msg="Fatality rate of serious infections must be between 0 and 1")
-  assert_that(p_rep_severe >=0.0 && p_rep_severe <=1.0,msg="Severe infection reporting probability must be between 0 and 1")
-  assert_that(p_rep_death >=0.0 && p_rep_death <=1.0,msg="Fatal infection reporting probability must be between 0 and 1")
+  assert_that(p_death_severe_inf >=0.0 && p_death_severe_inf <=1.0,msg="Fatality rate of serious infections must be between 0 and 1")
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
 
@@ -358,21 +362,26 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
     #Compile case data
     case_line_list=input_data$case_line_list[[n_region]]
     years_case=template$year[case_line_list]
-    n_years_case=length(case_line_list)
+    n_lines=length(case_line_list)
 
     for(n_rep in 1:n_reps){
-      cases=dalys=deaths=rep(0,n_years_case)
-      for(n_year in 1:n_years_case){
-        t_pts=t_pts_all[model_output$year==years_case[n_year]]
-        age_pts=c(1:101) #TBC - Currently just uses all ages
+      cases=dalys=deaths=rep(0,n_lines)
+      for(n_line in 1:n_lines){
+        line=case_line_list[n_line]
+        year=years_case[n_line]
+        t_pts=t_pts_all[model_output$year==years_case[n_line]]
+        n_age_min=match(template$age_min[line],input_data$age_labels)
+        n_age_max=match(template$age_max[line],input_data$age_labels)
+        age_pts=c(n_age_min:n_age_max) #TBC - Currently just uses all ages
         infs=sum(model_output$C[age_pts,n_rep,t_pts])
         if(deterministic){
-          cases[n_year]=floor(infs)*p_severe_inf
-          deaths[n_year]=cases[n_year]*p_death_severe_inf
+          cases[n_line]=floor(infs)*p_severe_inf
+          deaths[n_line]=cases[n_line]*p_death_severe_inf
         } else {
-          cases[n_year]=rbinom(1,floor(infs),p_severe_inf)
-          deaths[n_year]=rbinom(1,cases[n_year],p_death_severe_inf)
+          cases[n_line]=rbinom(1,floor(infs),p_severe_inf)
+          deaths[n_line]=rbinom(1,cases[n_line],p_death_severe_inf)
         }
+        dalys[n_line]=(cases[n_line]*YLD_per_case)
       }
 
       model_case_values[case_line_list]=model_case_values[case_line_list]+cases
@@ -380,10 +389,13 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(),FOI_values = c(),R0
     }
 
     model_output<-NULL
+    gc()
   }
   model_output_all<-NULL
+  gc()
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
+  model_dalys_values=(model_case_values*YLD_per_case)+(model_death_values*template$life_exp)
 
   return(list(cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values))
 }
