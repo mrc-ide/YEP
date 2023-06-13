@@ -128,8 +128,8 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       }
     }
   }
-  x_res <- NULL
-  gc()
+  # x_res <- NULL
+  # gc()
 
   return(output_data)
 }
@@ -237,8 +237,8 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
       }
     }
   }
-  x_res <- NULL
-  gc()
+  # x_res <- NULL
+  # gc()
 
   return(output)
 }
@@ -510,13 +510,13 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
         model_sero_data$positives[sero_line_list]=model_sero_data$positives[sero_line_list]+sero_results$positives
       }
     }
-    model_output<-NULL
-    gc()
+    # model_output<-NULL
+    # gc()
   }
-  if(mode_parallel!="none"){
-    model_output_all<-NULL
-    gc()
-  }
+  # if(mode_parallel!="none"){
+  #   model_output_all<-NULL
+  #   gc()
+  # }
 
   if(any(input_data$flag_sero>0)){model_sero_data$sero=model_sero_data$positives/model_sero_data$samples}
   if(any(input_data$flag_case>0)){
