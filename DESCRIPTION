@@ -34,3 +34,4 @@ Remotes:
     mrc-ide/odin,
     mrc-ide/odin.dust
 VignetteBuilder: knitr
+URL: https://mrc-ide.github.io/YEP/
