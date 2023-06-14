@@ -12,7 +12,7 @@ MCMC_step(
   chain_cov = 1,
   adapt = 0,
   like_current = -Inf,
-  const_list = list()
+  consts = list()
 )
 }
 \arguments{
@@ -33,9 +33,9 @@ deaths}
 
 \item{like_current}{= Current accepted likelihood value}
 
-\item{const_list}{= List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,
-m_FOI_Brazil,deterministic, mode_parallel, cluster)}
+\item{consts}{= List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
+mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,
+p_rep_severe,p_rep_death,m_FOI_Brazil,deterministic, mode_parallel, cluster)}
 }
 \description{
 Single MCMC step - one or more regions
