@@ -92,7 +92,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   if(is.null(enviro_data)==FALSE){
     for(region in regions){assert_that(region %in% enviro_data$region)}
     enviro_data=subset(enviro_data,enviro_data$region %in% regions)
-    }
+  }
 
   #Label parameters according to order and fitting type
   param_names=create_param_labels(type,input_data,enviro_data,extra_params)
@@ -101,7 +101,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   #Run checks to ensure that number of parameters is correct for fitting type and number of regions/environmental
   #covariates
   checks<-mcmc_checks(log_params_ini,n_regions,type,log_params_min,log_params_max,prior_type,enviro_data,
-                       R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,m_FOI_Brazil)
+                      R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,m_FOI_Brazil)
 
   #Set up list of invariant parameter values to supply to other functions
   consts=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,mode_start=mode_start,
@@ -110,25 +110,45 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
               p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,
               mode_parallel=mode_parallel,cluster=cluster)
 
-  ### find posterior probability at start ###
-  cat("\nIteration 0",sep="")
-  out = MCMC_step(log_params=log_params_ini,input_data,obs_sero_data,obs_case_data,
-                   chain_cov=1,adapt=0,like_current=-Inf,consts)
-
   #MCMC setup
   chain=chain_prop=posterior_current=posterior_prop=flag_accept=chain_cov_all=NULL
   burnin = min(2*n_params, Niter)
   fileIndex = 0
+  log_params=log_params_ini
   chain_cov=1
+  adapt=0
+  like_current=-Inf
 
   #Iterative fitting
   for (iter in 1:Niter){
+
+    #cat("\n\tGenerating new parameter values")
+    #Propose new parameter values
+    log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
+
+    #cat("\n\tCalculating likelihood")
+    #Calculate likelihood using single_like_calc function
+    like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
+    #cat("\n\tLikelihood calculated")
+
+    if(is.finite(like_prop)==FALSE) {
+      p_accept = -Inf
+    } else {
+      p_accept = like_prop - like_current
+      if(is.na(p_accept) ){ p_accept = -Inf}
+    }
+
+    ## accept/reject step:
+    tmp = runif(1)
+    if(tmp<min(exp(p_accept),1)) { # accept:
+      log_params = log_params_prop
+      like_current = like_prop
+      accept = 1
+    } else { # reject:
+      accept = 0
+    }
+
     #save current step
-    log_params = out$log_params
-    log_params_prop=out$log_params_prop
-    like_current = out$like_current
-    like_prop=out$like_prop
-    accept = out$accept
     chain = rbind(chain, log_params)
     chain_prop=rbind(chain_prop,log_params_prop)
     posterior_current=rbind(posterior_current,like_current)
@@ -147,13 +167,13 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     }
 
     #Output chain to file every 10 iterations; start new file every 10,000 iterations
-    if (iter %% 1 == 0){
+    if (iter %% 10 == 0){
       if (iter %% 10000 == 0){fileIndex  = iter/10000}
 
       filename=paste(filename_prefix,fileIndex,".csv",sep="")
       if(file.exists(filename)==FALSE){file.create(filename)}
       lines=min((fileIndex * 10000+1),iter):iter
-      cat("\nIteration ",iter,sep="")
+      #cat("\nIteration ",iter,sep="")
       data_out<-cbind(posterior_current,posterior_prop,exp(chain),flag_accept,exp(chain_prop),chain_cov_all)[lines,]
       if(fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
     }
@@ -166,13 +186,10 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
       adapt = 0
       chain_cov = 1
     }
-
-    #Next iteration in chain
-    out = MCMC_step(log_params,input_data,obs_sero_data,obs_case_data,chain_cov,adapt,like_current,
-                     consts)
   }
+
   #Get final parameter values
-  param_out=exp(out$log_params)
+  param_out=exp(log_params)
   names(param_out)=names(log_params_ini)
 
   return(param_out)
