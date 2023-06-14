@@ -73,5 +73,7 @@ Generate serological and/or annual case/death data
 }
 \details{
 This function is used to generate serological and/or annual case/death based on observed or dummy data sets;
-it is normally used by the single_like_calc() and data_match_single() functions.
+it is normally used by the single_like_calc() and data_match_single() functions. The separate Generate_Sero_dataset
+and Generate_Case_Dataset functions can be used when only one or the other type is required; this function exists
+to cover instances where serological and case data may need to be generated for the same region.
 }
