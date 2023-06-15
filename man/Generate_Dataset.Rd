@@ -8,8 +8,8 @@ Generate_Dataset(
   input_data = list(),
   FOI_values = c(),
   R0_values = c(),
-  obs_sero_data = NULL,
-  obs_case_data = NULL,
+  sero_template = NULL,
+  case_template = NULL,
   vaccine_efficacy = 1,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
@@ -27,15 +27,14 @@ Generate_Dataset(
 \arguments{
 \item{input_data}{List of population and vaccination data for multiple regions}
 
-\item{FOI_values}{Values for each region of the force of infection due to spillover from sylvatic reservoir}
+\item{FOI_values}{Vector of values of the force of infection due to spillover from sylvatic reservoir}
 
-\item{R0_values}{Values for each region of the basic reproduction number for human-human transmission}
+\item{R0_values}{Vector of values of the basic reproduction number for human-human transmission}
 
-\item{obs_sero_data}{Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
-positives}
+\item{sero_template}{Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
+and number of samples}
 
-\item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
-deaths}
+\item{case_template}{Annual reported case/death data template - data frame with region and year}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
 
@@ -54,7 +53,7 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
 
-\item{dt}{Time increment in days to use in model (should be either 1.0 or 5.0 days)}
+\item{dt}{Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)}
 
 \item{n_reps}{number of stochastic repetitions}
 
@@ -69,11 +68,13 @@ If mode_parallel="clusterMap", all regions run in parallel with different time p
 '}
 }
 \description{
-Generate serological and/or annual case/death data
+Generate annual serological and/or case/death data
 }
 \details{
-This function is used to generate serological and/or annual case/death based on observed or dummy data sets;
-it is normally used by the single_like_calc() and data_match_single() functions. The separate Generate_Sero_dataset
-and Generate_Case_Dataset functions can be used when only one or the other type is required; this function exists
+This function is used to generate annual serological and/or case/death data based on templates;
+it is normally used by the single_like_calc() function. The separate Generate_Sero_dataset and
+Generate_Case_Dataset functions can be used when only one or the other type is required; this function exists
 to cover instances where serological and case data may need to be generated for the same region.
+
+[TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 }

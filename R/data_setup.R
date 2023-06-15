@@ -254,3 +254,67 @@ input_data_truncate <- function(input_data=list(),regions_new=c()){
 
   return(input_data_new)
 }
+#-------------------------------------------------------------------------------
+#' @title regions_breakdown
+#'
+#' @description Break down regions from datasets to get list of unique regions
+#'
+#' @details Takes in vector of region labels, potentially including labels which contain more than one region (e.g.
+#'   labels for countrywide data with all adm1 level regions as one label separated by comma) and produces an alphabetically
+#'   ordered list of region labels, breaking down comma-separated groups.
+#'
+#'   For example, supplying a vector where all labels are "BRA.1_1,BRA.2_1,BRA.3_1" will return a vector of length 3
+#'   - c("BRA.1_1","BRA.2_1","BRA.3_1").
+#'
+#' @param region_labels Vector of region labels
+#'
+#' @export
+#'
+regions_breakdown <- function(region_labels=c()){
+  #TODO - assert_that
+
+  region_labels_unique=unique(region_labels)
+
+  regions_out=c()
+  for(region in region_labels_unique){regions_out=append(regions_out,strsplit(region,",")[[1]])}
+  regions_out=sort(regions_out)
+
+  return(regions_out)
+}
+#-------------------------------------------------------------------------------
+#' @title template_region_xref
+#'
+#' @description [TBA]
+#'
+#' @details [TBA]
+#'
+#' @param template [TBA]
+#' @param regions [TBA]
+#'
+#' @export
+#'
+template_region_xref <- function(template=list(),regions=c()){
+  #TODO - assert_that functions
+
+  n_lines=nrow(template)
+  n_regions=length(regions)
+  output=list(line_list=list(),year_data_begin=rep(Inf,n_regions),year_end=rep(-Inf,n_regions))
+
+  for(n_region in 1:n_regions){
+    region=regions[n_region]
+    output$line_list[[n_region]]=NA
+    flag_started=FALSE
+    for(n_line in 1:n_lines){
+      if(grepl(region,template$region[n_line])==TRUE){
+        if(flag_started){output$line_list[[n_region]]=append(output$line_list[[n_region]],n_line)} else {
+          output$line_list[[n_region]]=c(n_line)
+          flag_started=TRUE
+        }
+        output$year_data_begin[n_region]=min(template$year[n_line],output$year_data_begin[n_region])
+        output$year_end[n_region]=max(template$year[n_line],output$year_end[n_region])
+      }
+    }
+  }
+
+  return(output)
+}
