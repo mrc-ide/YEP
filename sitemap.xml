@@ -118,6 +118,9 @@
     <loc>https://mrc-ide.github.io/YEP/reference/parameter_setup.html</loc>
   </url>
   <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/regions_breakdown.html</loc>
+  </url>
+  <url>
     <loc>https://mrc-ide.github.io/YEP/reference/sero_calculate.html</loc>
   </url>
   <url>
@@ -128,5 +131,8 @@
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/single_like_calc.html</loc>
+  </url>
+  <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/template_region_xref.html</loc>
   </url>
 </urlset>
