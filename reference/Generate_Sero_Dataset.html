@@ -70,7 +70,8 @@
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  deterministic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mode_parallel <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  output_frame <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -128,7 +129,12 @@ If mode_parallel="clusterMap", all regions run in parallel with different time p
 
 
 <dt>cluster</dt>
-<dd><p>Cluster of threads to use if mode_parallel="clusterMap"
+<dd><p>Cluster of threads to use if mode_parallel="clusterMap"</p></dd>
+
+
+<dt>output_frame</dt>
+<dd><p>Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+  or calculated values only (if FALSE)
 '</p></dd>
 
 </dl></div>
