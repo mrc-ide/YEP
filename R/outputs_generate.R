@@ -36,13 +36,15 @@
 #'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 #'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
 #' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
+#' @param output_frame Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+#'   or calculated values only (if FALSE)
 #' '
 #' @export
 #'
 Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),sero_template = NULL,case_template = NULL,
                              vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,
                              p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE,
-                             mode_parallel = "none",cluster = NULL){
+                             mode_parallel = "none",cluster = NULL,output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -197,16 +199,16 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     model_death_values=model_death_values*inv_reps
   }
 
-  # if(output_flag==0){ #Minimal output for MCMC
+  if(output_frame) { #Output complete frames of data
+    return(list(model_sero_data=data.frame(region=sero_template$region,year=sero_template$year,
+                                           age_min=sero_template$age_min,age_max=sero_template$age_max,
+                                           samples=sero_template$samples,positives=sero_template$samples*model_sero_data$sero),
+                model_case_data=data.frame(region=case_template$region,year=case_template$year,
+                                           cases=model_case_values,deaths=model_death_values)))
+  } else { #Minimal output for MCMC
     return(list(model_sero_values=model_sero_data$sero,model_case_values=model_case_values,
                 model_death_values=model_death_values))
-  # } else { #TBA - Option for outputting complete frame of data
-  #   return(list(model_sero_data=data.frame(region=sero_template$region,year=sero_template$year,
-  #                                          age_min=sero_template$age_min,age_max=sero_template$age_max,
-  #                                          samples=sero_template$samples,positives=sero_template$samples*model_sero_data$sero),
-  #               model_case_data=data.frame(region=case_template$region,year=case_template$year,
-  #                                          cases=model_case_values,deaths=model_death_values)))
-  # }
+  }
 }
 #-------------------------------------------------------------------------------
 #' @title Generate_Sero_Dataset
@@ -235,12 +237,14 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 #'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
 #' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
+#' @param output_frame Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+#'   or calculated values only (if FALSE)
 #' '
 #' @export
 #'
 Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),template = NULL,
                                   vaccine_efficacy = 1.0, mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1,
-                                  deterministic = FALSE, mode_parallel = "none",cluster = NULL){
+                                  deterministic = FALSE, mode_parallel = "none",cluster = NULL, output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
@@ -321,13 +325,14 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
   }
   model_sero_data$sero=model_sero_data$positives/model_sero_data$samples
 
-  # if(output_flag==0){ #Minimal output for MCMC
+  if(output_frame){ #Output complete frame of data
+    return(data.frame(region=template$region,year=template$year,
+                      age_min=template$age_min,age_max=template$age_max,
+                      samples=template$samples,positives=template$samples*model_sero_data$sero))
+  } else
+  { #Minimal output for MCMC
     return(model_sero_data)
-  # } else { #TBA - Option for outputting complete frame of data
-  #   return(data.frame(region=template$region,year=template$year,
-  #                     age_min=template$age_min,age_max=template$age_max,
-  #                     samples=template$samples,positives=template$samples*model_sero_data$sero))
-  # }
+  }
 }
 #-------------------------------------------------------------------------------
 #' @title Generate_Case_Dataset
@@ -359,13 +364,15 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 #'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
 #' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
-#' '
+#' @param output_frame Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+#'   or calculated values only (if FALSE)
+#'
 #' @export
 #'
 Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),template = NULL,vaccine_efficacy = 1.0,
                                   p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,p_rep_death = 1.0,
                                   mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE,
-                                  mode_parallel = "none",cluster = NULL){
+                                  mode_parallel = "none",cluster = NULL, output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see [TBA] )"))
@@ -474,13 +481,12 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
 
-  # if(output_flag==0){ #Minimal output for MCMC
+  if(output_frame) { #Output complete frame of data
+    return(data.frame(region=template$region,year=template$year,
+                      cases=model_case_values,deaths=model_death_values))
+  } else { #Minimal output for MCMC
     return(list(model_case_values=model_case_values,model_death_values=model_death_values))
-  # } else { #TBA - Option for outputting complete frame of data
-  #   return(data.frame(region=template$region,year=template$year,
-  #                     cases=model_case_values,deaths=model_death_values))
-  # }
-
+  }
 }
 #-------------------------------------------------------------------------------
 #' @title Generate_VIMC_Burden_Dataset
@@ -598,14 +604,14 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     n_lines=length(case_line_list_region)
 
     for(n_rep in 1:n_reps){
-      cases=dalys=deaths=rep(0,n_lines)
+      cases=deaths=rep(0,n_lines)
       for(n_line in 1:n_lines){
         line=case_line_list_region[n_line]
         year=years_case[n_line]
         t_pts=t_pts_all[model_output$year==years_case[n_line]]
-        n_age_min=match(template$age_min[line],input_data$age_labels)
-        n_age_max=match(template$age_max[line],input_data$age_labels)
-        age_pts=c(n_age_min:n_age_max) #TBC - Currently just uses all ages
+        n_age_min=findInterval(template$age_min[line],input_data$age_labels)
+        n_age_max=findInterval(template$age_max[line],input_data$age_labels)
+        age_pts=c(n_age_min:n_age_max)
         infs=sum(model_output$C[age_pts,n_rep,t_pts])
         if(deterministic){
           cases[n_line]=floor(infs)*p_severe_inf
@@ -614,7 +620,6 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
           cases[n_line]=rbinom(1,floor(infs),p_severe_inf)
           deaths[n_line]=rbinom(1,cases[n_line],p_death_severe_inf)
         }
-        dalys[n_line]=(cases[n_line]*YLD_per_case)
       }
 
       model_case_values[case_line_list_region]=model_case_values[case_line_list_region]+cases
@@ -624,8 +629,9 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
 
   model_case_values=model_case_values*inv_reps
   model_death_values=model_death_values*inv_reps
-  model_dalys_values=(model_case_values*YLD_per_case)+(model_death_values*template$life_exp)
+  model_YLL_values=model_death_values*template$life_exp
+  model_dalys_values=(model_case_values*YLD_per_case)+model_YLL_values
 
   return(data.frame(region=template$region,year=template$year,age_min=template$age_min,age_max=template$age_max,
-                    cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values))
+                    cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values,YLL=model_YLL_values))
 }
