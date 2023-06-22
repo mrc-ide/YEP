@@ -277,7 +277,7 @@ regions_breakdown <- function(region_labels=c()){
 
   regions_out=c()
   for(region in region_labels_unique){regions_out=append(regions_out,strsplit(region,",")[[1]])}
-  regions_out=sort(regions_out)
+  regions_out=unique(sort(regions_out))
 
   return(regions_out)
 }
