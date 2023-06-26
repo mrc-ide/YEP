@@ -39,7 +39,8 @@ Model_Run(
 "case" = annual total new infections (C) summed across all ages
 "sero" = annual SEIRV summed across all ages
 "case+sero" = annual SEIRVC summed across all ages
-"case_alt" = annual total new infections not combined by age}
+"case_alt" = annual total new infections not combined by age
+"case_alt2" = total new infections for all steps}
 
 \item{year0}{First year in population/vaccination data}
 

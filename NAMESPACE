@@ -2,6 +2,7 @@
 
 export(Generate_Case_Dataset)
 export(Generate_Dataset)
+export(Generate_Multiple_Datasets)
 export(Generate_Sero_Dataset)
 export(Generate_VIMC_Burden_Dataset)
 export(MCMC)

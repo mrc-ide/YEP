@@ -21,7 +21,7 @@ Generate_Sero_Dataset(
 )
 }
 \arguments{
-\item{input_data}{List of population and vaccination data for multiple regions}
+\item{input_data}{List of population and vaccination data for multiple regions in standard format [TBA]}
 
 \item{FOI_values}{Values for each region of the force of infection due to spillover from sylvatic reservoir}
 

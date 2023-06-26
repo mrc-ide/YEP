@@ -34,7 +34,7 @@ Model_Run_Multi_Input(
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input, for each parameter set}
 
-\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only}
+\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only #TODO - Add case_alt+case_alt2}
 
 \item{year0}{First year in population/vaccination data}
 
