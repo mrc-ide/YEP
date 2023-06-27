@@ -111,50 +111,32 @@ sero_calculate2 <- function(sero_data=list(),model_data=list(),n_p=1){
   return(output_frame)
 }
 #-------------------------------------------------------------------------------
-# [TODO: CHANGE AND IF NECESSARY CREATE SEPARATE FUNCTION FOR OTHER DATA FORMATS]
-#' @title sero_compare
+#' @title sero_data_compare
 #'
-#' @description Take model results, calculate seroprevalence for comparison with observed seroprevalence and
-#' calculate likelihood (single region, multiple years/age ranges)
+#' @description Take seroprevalence results from dataset generation functions, compare comparison with
+#' observed/template seroprevalence data and calculate likelihood
 #'
-#' @details Takes in SEIRV model output data and observed seroprevalence data, calculates seroprevalence from modelled
-#' data, and compares modelled and observed data, calculating logarithmic likelihood of observing the latter given the
-#' former, using a binomial formula.
+#' @details [TBA]
 #'
-#' @param model_data = Output of Model_Run
-#' @param obs_sero_data = Seroprevalence data for comparison, by year and age group, in format
+#' @param model_sero_values Seroprevalence values from dataset generation function (no. positives/no. samples)
+#' @param obs_sero_data Seroprevalence data for comparison, by year and age group, in format
 #'   no. samples/no. positives
 #' '
 #' @export
 #'
-sero_compare <- function(model_data=list(),obs_sero_data=list()){
+sero_data_compare <- function(model_sero_values=c(),obs_sero_data=list()){
 
-  assert_that(is.null(model_data$S)==FALSE) #TODO - Improve model_data checking
-  # assert_that(is.null(model_data$E)==FALSE)
-  # assert_that(is.null(model_data$I)==FALSE)
-  # assert_that(is.null(model_data$R)==FALSE)
-  # assert_that(is.null(model_data$V)==FALSE)
-  assert_that(is.null(obs_sero_data$year)==FALSE) #TODO - Improve obs_sero_data checking
-  # assert_that(is.null(obs_sero_data$age_min)==FALSE)
-  # assert_that(is.null(obs_sero_data$age_max)==FALSE)
-  # assert_that(is.null(obs_sero_data$samples)==FALSE)
-  # assert_that(is.null(obs_sero_data$positives)==FALSE)
-  # assert_that(is.null(obs_sero_data$vc_factor)==FALSE)
+  #TODO - Add assert_that functions
 
-  n_lines=length(obs_sero_data$year)
-  model_sero_data=rep(0,n_lines)
+  #Eliminate values which can cause -Inf results
+  model_sero_values[model_sero_values>1.0]=1.0
+  model_sero_values[is.infinite(model_sero_values)]=0.0
+  sero_rev=1.0-model_sero_values
+  sero_rev[sero_rev<0.0]=0.0
 
-  for(i in 1:n_lines){
-    model_sero_data[i]=sero_calculate(obs_sero_data$age_min[i],obs_sero_data$age_max[i],
-                                        obs_sero_data$year[i],obs_sero_data$vc_factor[i],model_data)
-  }
-  model_sero_data[is.na(model_sero_data)]=0
-  model_sero_data[is.infinite(model_sero_data)]=0
+  sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
+    lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+obs_sero_data$positives*log(model_sero_values)+
+    (obs_sero_data$samples-obs_sero_data$positives)*log(sero_rev)
 
-  LogLikelihood = sum(lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)
-                      -lgamma(obs_sero_data$samples-obs_sero_data$positives+1) +
-                        obs_sero_data$positives*log(model_sero_data) +
-                        (obs_sero_data$samples-obs_sero_data$positives)*log(1.0-model_sero_data))
-
-  return(LogLikelihood)
+  return(sero_like_values)
 }

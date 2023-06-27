@@ -195,70 +195,12 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   return(param_out)
 }
 #-------------------------------------------------------------------------------
-#' @title MCMC_step
-#'
-#' @description Single MCMC step - one or more regions
-#'
-#' @details This function runs a single step in a Markov chain set up using the function mcmc(). It proposes a
-#' set of parameters using the param_prop_setup() function, calculates the likelihood of observing the observed data
-#' based on that proposed parameter set, accepts or rejects the proposed parameter set based on the calculated
-#' likelihood and existing chain information, then returns the next line of information for the chain to mcmc().
-#'
-#' @param log_params Varied parameters (log values of actual parameters)
-#' @param input_data List of population and vaccination data for multiple regions (created using data input creation
-#'   code and usually loaded from RDS file)
-#' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
-#'   positives
-#' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
-#'   deaths
-#' @param chain_cov = Chain covariance
-#' @param adapt = 0/1 flag indicating which type of calculation to use for proposition value
-#' @param like_current = Current accepted likelihood value
-#' @param consts = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,
-#'   p_rep_severe,p_rep_death,m_FOI_Brazil,deterministic, mode_parallel, cluster)
-#'
-#' @export
-#'
-MCMC_step <- function(log_params=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
-                       chain_cov=1,adapt=0,like_current=-Inf,consts=list()) {
-
-  #cat("\n\tGenerating new parameter values")
-  #Propose new parameter values
-  log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
-
-  #cat("\n\tCalculating likelihood")
-  #Calculate likelihood using single_like_calc function
-  like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
-  #cat("\n\tLikelihood calculated")
-
-  if(is.finite(like_prop)==FALSE) {
-    p_accept = -Inf
-  } else {
-    p_accept = like_prop - like_current
-    if(is.na(p_accept) ){ p_accept = -Inf}
-  }
-
-  ## accept/reject step:
-  tmp = runif(1)
-  if(tmp<min(exp(p_accept),1)) { # accept:
-    log_params = log_params_prop
-    like_current = like_prop
-    accept = 1
-  } else { # reject:
-    accept = 0
-  }
-
-  return(list(log_params=log_params,log_params_prop=log_params_prop,like_current=like_current,like_prop=like_prop,
-              accept=accept))
-}
-#-------------------------------------------------------------------------------
 #' @title single_like_calc
 #'
 #' @description Function which calculates and outputs likelihood of observing simulated data
 #'
 #' @details This function calculates the total likelihood of observing a set of observations (across multiple
-#' regions and data types) for a given proposed parameter set.
+#' regions and data types) for a given proposed parameter set. [TBA]
 #'
 #' @param log_params_prop Proposed values of varied parameters (natural logarithm of actual parameters)
 #' @param input_data List of population and vaccination data for multiple regions (created using data input
@@ -344,36 +286,40 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
-      dataset$model_sero_values[dataset$model_sero_values>1.0]=1.0
-      dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
-      sero_rev=1.0-dataset$model_sero_values
-      sero_rev[sero_rev<0.0]=0.0
-      #cat("\n\t",signif(dataset$model_sero_values,3),"\n\t",signif(sero_rev,3),"\n",sep="\t")
-      sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
-        lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
-        obs_sero_data$positives*log(dataset$model_sero_values)+
-        (obs_sero_data$samples-obs_sero_data$positives)*log(sero_rev)
+      # dataset$model_sero_values[dataset$model_sero_values>1.0]=1.0
+      # dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
+      # sero_rev=1.0-dataset$model_sero_values
+      # sero_rev[sero_rev<0.0]=0.0
+      # sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
+      #   lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
+      #   obs_sero_data$positives*log(dataset$model_sero_values)+
+      #   (obs_sero_data$samples-obs_sero_data$positives)*log(sero_rev)
+      sero_like_values=sero_data_compare(dataset$model_sero_values,obs_sero_data)
     }
     #Likelihood of observing annual case/death data
     if(is.null(obs_case_data)==FALSE){
-      model_case_values=dataset$model_case_values
-      model_death_values=dataset$model_death_values
-      for(i in 1:length(model_case_values)){
-        model_case_values[i]=max(model_case_values[i],0.1)
-        model_death_values[i]=max(model_death_values[i],0.1)
-      }
-      cases_like_values=dnbinom(x=obs_case_data$cases,mu=model_case_values,
-                                size=rep(1,length(obs_case_data$cases)),log=TRUE)
+      # model_case_values=dataset$model_case_values
+      # model_death_values=dataset$model_death_values
+      # for(i in 1:length(model_case_values)){
+      #   model_case_values[i]=max(model_case_values[i],0.1)
+      #   model_death_values[i]=max(model_death_values[i],0.1)
+      # }
+      # cases_like_values=dnbinom(x=obs_case_data$cases,mu=model_case_values,
+      #                           size=rep(1,length(obs_case_data$cases)),log=TRUE)
+      # if(is.null(obs_case_data$deaths)==FALSE){
+      #   deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
+      #                              size=rep(1,length(obs_case_data$deaths)),log=TRUE)
+      # } else {deaths_like_values=0}
+      cases_like_values=case_data_compare(dataset$model_case_values,obs_case_data$cases)
       if(is.null(obs_case_data$deaths)==FALSE){
-        deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
-                                   size=rep(1,length(obs_case_data$deaths)),log=TRUE)
+        deaths_like_values=case_data_compare(dataset$model_death_values,obs_case_data$deaths)
       } else {deaths_like_values=0}
     }
 
     likelihood=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
                      sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
-    dataset<-NULL
-    gc()
+    # dataset<-NULL
+    # gc()
 
   } else {likelihood=-Inf}
 

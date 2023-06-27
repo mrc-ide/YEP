@@ -34,5 +34,5 @@ Function which calculates and outputs likelihood of observing simulated data
 }
 \details{
 This function calculates the total likelihood of observing a set of observations (across multiple
-regions and data types) for a given proposed parameter set.
+regions and data types) for a given proposed parameter set. [TBA]
 }
