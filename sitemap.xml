@@ -67,9 +67,6 @@
     <loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/MCMC_step.html</loc>
-  </url>
-  <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Model_Run.html</loc>
   </url>
   <url>
@@ -79,16 +76,13 @@
     <loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Multi_Input.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/cases_compare.html</loc>
+    <loc>https://mrc-ide.github.io/YEP/reference/case_data_compare.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/create_input_data.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/create_param_labels.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/deaths_compare.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/index.html</loc>
@@ -130,7 +124,7 @@
     <loc>https://mrc-ide.github.io/YEP/reference/sero_calculate2.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/sero_compare.html</loc>
+    <loc>https://mrc-ide.github.io/YEP/reference/sero_data_compare.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/single_like_calc.html</loc>
