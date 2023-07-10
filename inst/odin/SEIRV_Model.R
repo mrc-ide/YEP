@@ -15,7 +15,7 @@ t_infectious <- user() #TBA
 FOI_spillover <- user() #Spillover force of infection (per day)
 R0 <- user() #Basic reproduction number
 N_age <- user() #Number of age categories
-vacc_rate_annual[,] <- user() #Daily rate of vaccination by age and year
+vacc_rate_daily[,] <- user() #Daily rate of vaccination by age and year
 vaccine_efficacy <- user() #Proportion of vaccinations which successfully protect the recipient
 
 
@@ -59,7 +59,7 @@ inv_P_nV[1:N_age] <- 1.0/P_nV[i]
 P[1:N_age] <- P_nV[i] + V[i] #Total population by age group (excluding E+I)
 P_tot <- sum(P) #Total overall population (excluding E+I)
 inv_P[1:N_age] <- 1.0/P[i]
-vacc_rate[1:N_age] <- vacc_rate_annual[i,as.integer(year_i)]*vaccine_efficacy*dt*P[i] #Total no. vaccinations by age
+vacc_rate[1:N_age] <- vacc_rate_daily[i,as.integer(year_i)]*vaccine_efficacy*dt*P[i] #Total no. vaccinations by age
 
 
 
@@ -140,6 +140,6 @@ dim(Vac0) <- N_age
 dim(Cas0) <- N_age
 dim(dP1_all) <- c(N_age, n_years)
 dim(dP2_all) <- c(N_age, n_years)
-dim(vacc_rate_annual) <- c(N_age, n_years)
+dim(vacc_rate_daily) <- c(N_age, n_years)
 
 
