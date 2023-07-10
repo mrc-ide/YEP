@@ -500,7 +500,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     Vac0=P0*vacc_initial
   }
 
-  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_annual=vacc_rates,
+  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_daily=vacc_rates,
               Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
               dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt,
               t_incubation=t_incubation,t_latent=t_latent,t_infectious=t_infectious))
