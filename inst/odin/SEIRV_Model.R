@@ -21,6 +21,7 @@ vaccine_efficacy <- user() #Proportion of vaccinations which successfully protec
 
 
 
+
 #Initial conditions-------------------------------------------------------------
 year0 <- user()  #Starting year
 Sus0[] <- user() #Susceptible population by age group at start
@@ -41,8 +42,12 @@ rate1 <- dt/(t_incubation+t_latent) # TBA
 rate2 <- dt/t_infectious # TBA
 
 
+
+
+
 beta <- (R0*dt)/t_infectious #Daily exposure rate
 FOI_sum <-  min(FOI_max,beta*(sum(I)/P_tot) + (FOI_spillover*dt)) #Total force of infection
+
 year_i <- floor(((step+1)*dt)/365) + 1 #Number of years since start, as integer
 
 dP1[1:N_age] <- dP1_all[i, as.integer(year_i)]*dt #Increase in population by age group over 1 time increment
@@ -82,7 +87,11 @@ update(FOI_total) <- FOI_sum
 update(S[1]) <- max(Pmin,S[1] - E_new[1] - vacc_rate[1]*S[1]*inv_P_nV[1] + dP1[1] - (dP2[1]*S[1]*inv_P[1]))
 update(S[2:N_age]) <- max(Pmin,S[i] - E_new[i] - vacc_rate[i]*S[i]*inv_P_nV[i] + (dP1[i]*S[i-1]*inv_P[i-1]) - (dP2[i]*S[i]*inv_P[i]))
 update(E[1:N_age]) <- max(Pmin,E[i] + E_new[i] - I_new[i])
+
+
 update(I[1:N_age]) <- max(Pmin,I[i] + I_new[i] - R_new[i])
+
+
 update(R[1]) <- max(Pmin,R[1] + R_new[1] - vacc_rate[1]*R[1]*inv_P_nV[1] - (dP2[1]*R[1]*inv_P[1]))
 update(R[2:N_age]) <- max(Pmin,R[i] + R_new[i] - vacc_rate[i]*R[i]*inv_P_nV[i] + (dP1[i]*R[i-1]*inv_P[i-1]) - (dP2[i]*R[i]*inv_P[i]))
 update(V[1]) <- max(Pmin,V[1] + vacc_rate[1] - (dP2[1]*V[1]*inv_P[1]))
@@ -103,7 +112,9 @@ initial(FOI_total) <- FOI_spillover
 
 initial(S[1:N_age]) <- Sus0[i]
 initial(E[1:N_age]) <- Exp0[i]
+
 initial(I[1:N_age]) <- Inf0[i]
+
 initial(R[1:N_age]) <- Rec0[i]
 initial(V[1:N_age]) <- Vac0[i]
 initial(C[1:N_age]) <- Cas0[i]
@@ -112,25 +123,26 @@ initial(C[1:N_age]) <- Cas0[i]
 #Dimensions---------------------------------------------------------------------
 dim(S) <- N_age
 dim(E) <- N_age
+
 dim(I) <- N_age
+
 dim(R) <- N_age
 dim(V) <- N_age
 dim(C) <- N_age
-
-
 
 dim(dP1)<-N_age
 dim(dP2)<-N_age
 dim(E_new) <- N_age
 dim(I_new) <- N_age
 dim(R_new) <- N_age
+
+
+
 dim(P_nV) <- N_age
 dim(inv_P_nV) <- N_age
 dim(P) <- N_age
 dim(inv_P) <- N_age
 dim(vacc_rate) <- N_age
-
-
 
 dim(Sus0) <- N_age
 dim(Exp0) <- N_age
