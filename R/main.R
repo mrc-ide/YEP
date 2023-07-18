@@ -293,13 +293,13 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
                                 vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10) {
 
   assert_that(division<=20)
-  n_particles0=min(division,n_reps)
-  n_threads=min(division,n_particles0)
+  n_particleS_0=min(division,n_reps)
+  n_threads=min(division,n_particleS_0)
   n_divs=ceiling(n_reps/division)
   if(n_divs==1){
-    n_particles_list=n_particles0
+    n_particles_list=n_particleS_0
   } else {
-    n_particles_list=c(rep(n_particles0,n_divs-1),n_reps-(division*(n_divs-1)))
+    n_particles_list=c(rep(n_particleS_0,n_divs-1),n_reps-(division*(n_divs-1)))
   }
 
   n_nv=3 #Number of non-vector outputs
@@ -453,7 +453,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year)")
   inv_365=1.0/365.0
 
-  P0=Cas0=Sus0=Exp0=Inf0=Rec0=Vac0=rep(0,N_age)
+  P0=S_0=E_0=I_0=R_0=V_0=rep(0,N_age)
   dP1_all=dP2_all=vacc_rates=array(NA,dim=c(N_age,n_years))
   for(i in 1:N_age){
     P0[i]=max(1.0,pop_data[1,i]) #Set all population values to nonzero minimum to avoid NaN values
@@ -471,7 +471,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   }
 
   if(mode_start==0){
-    Sus0=P0*(1.0-vacc_initial)
+    S_0=P0*(1.0-vacc_initial)
   }
   if(mode_start==1)
   {
@@ -482,27 +482,26 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     }
     for(i in 1:N_age){
       if(vacc_initial[i]<herd_immunity){
-        Rec0[i]=P0[i]*(herd_immunity-vacc_initial[i])
-        Sus0[i]=P0[i]*(1.0-herd_immunity)
+        R_0[i]=P0[i]*(herd_immunity-vacc_initial[i])
+        S_0[i]=P0[i]*(1.0-herd_immunity)
       } else {
-        Sus0[i]=P0[i]*(1.0-vacc_initial[i])
+        S_0[i]=P0[i]*(1.0-vacc_initial[i])
       }
     }
   }
   if(mode_start==2){
-    Sus0=start_SEIRV$S
-    Exp0=start_SEIRV$E
-    Inf0=start_SEIRV$I
-    Rec0=start_SEIRV$R
-    Vac0=start_SEIRV$V
-    Cas0=rep(0,N_age)
+    S_0=start_SEIRV$S
+    E_0=start_SEIRV$E
+    I_0=start_SEIRV$I
+    R_0=start_SEIRV$R
+    V_0=start_SEIRV$V
   } else {
-    Vac0=P0*vacc_initial
+    V_0=P0*vacc_initial
   }
 
-  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_daily=vacc_rates,
-              Cas0=Cas0,Exp0=Exp0,Inf0=Inf0,N_age=N_age,Rec0=Rec0,Sus0=Sus0,Vac0=Vac0,
-              dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt,
+  return(list(FOI_spillover=FOI_spillover,R0=R0,vacc_rate_daily=vacc_rates,N_age=N_age,
+              S_0=S_0,E_0=E_0,I_0=I_0,R_0=R_0,V_0=V_0,dP1_all=dP1_all,dP2_all=dP2_all,n_years=n_years,
+              year0=year0,vaccine_efficacy=vaccine_efficacy,dt=dt,
               t_incubation=t_incubation,t_latent=t_latent,t_infectious=t_infectious))
 }
 #-------------------------------------------------------------------------------

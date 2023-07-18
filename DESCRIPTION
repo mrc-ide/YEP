@@ -28,7 +28,7 @@ Suggests:
     knitr,
     parallel,
     rmarkdown
-SystemRequirements: C++11
+SystemRequirements: C++
 Remotes:
     mrc-ide/dust,
     mrc-ide/odin,
