@@ -35,8 +35,8 @@ t_infectious <- 5 #Time cases remain infectious
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Basic reproduction number for urban spread of infection
-#' @param vacc_data Vaccination coverage in each age group by year
-#' @param pop_data Population in each age group by year
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy=1) by age group and year
+#' @param pop_data Population by age group and year
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param output_type Type of data to output:
@@ -63,8 +63,8 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
                       start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
                       vaccine_efficacy = 1.0, dt = 1.0, n_particles = 1, n_threads = 1, deterministic = FALSE) {
 
-  #TODO Add assert_that functions
-  assert_that(n_particles<=20)
+  #TODO Add assert_that functions (NB - Some checks carried out in parameter_setup)
+  assert_that(n_particles<=20,msg="Number of particles must be 20 or less")
 
   n_nv=3 #Number of non-vector outputs
   N_age=length(pop_data[1,]) #Number of age groups
@@ -139,8 +139,6 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
       }
     }
   }
-  # x_res <- NULL
-  # gc()
 
   return(output_data)
 }
@@ -157,11 +155,17 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
 #'
 #' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
 #' @param R0 Vector of values of basic reproduction number for urban spread of infection
-#' @param vacc_data Vaccination coverage by parameter set and age group by year
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy=1) by parameter set, age group and year
 #' @param pop_data Population by parameter set and age group by year
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input, for each parameter set
-#' @param output_type Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only #TODO - Add case_alt+case_alt2
+#' @param output_type Type of data to output:
+#'   "full" = SEIRVC + FOI for all steps and ages
+#'   "case" = annual total new infections (C) summed across all ages
+#'   "sero" = annual SEIRV summed across all ages
+#'   "case+sero" = annual SEIRVC summed across all ages
+#'   "case_alt" = annual total new infections not combined by age
+#'   "case_alt2" = total new infections combined by age for all steps
 #' @param year0 First year in population/vaccination data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
@@ -181,7 +185,7 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
                                    deterministic = FALSE) {
 
   #TODO Add assert_that functions
-  assert_that(n_particles<=20)
+  assert_that(n_particles<=20,msg="Number of particles must be 20 or less")
 
   n_nv=3 #Number of non-vector outputs
   N_age=length(pop_data[1,1,]) #Number of age groups
@@ -221,35 +225,52 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
       output[[i]]$V=array(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p2,],dim=dimensions)
       output[[i]]$C=array(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p2,],dim=dimensions)
     } else {
-      n_years=length(years_data)
-      dimensions=c(N_age,n_particles,n_years)
-      output[[i]]=list(year=years_data)
-      if(output_type=="case+sero" || output_type=="sero"){
-        output[[i]]$V=output[[i]]$R=output[[i]]$I=output[[i]]$E=output[[i]]$S=array(0,dim=dimensions)
-        for(n_year in 1:n_years){
-          pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
+      if(output_type=="case_alt2"){
+        output[[i]]=list(day=x_res[1,1,],year=x_res[2,1,])
+        output[[i]]$C=array(0,dim=c(n_particles,t_pts_out))
+        for(pt in 1:t_pts_out){
           for(n_p in 1:n_particles){
-            output[[i]]$S[,n_p,n_year]=rowMeans(x_res[c((1+n_nv):(N_age+n_nv)),n_p2[n_p],pts])
-            output[[i]]$E[,n_p,n_year]=rowMeans(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p2[n_p],pts])
-            output[[i]]$I[,n_p,n_year]=rowMeans(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p2[n_p],pts])
-            output[[i]]$R[,n_p,n_year]=rowMeans(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p2[n_p],pts])
-            output[[i]]$V[,n_p,n_year]=rowMeans(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p2[n_p],pts])
+            output[[i]]$C[n_p,pt]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pt])
           }
         }
-      }
-      if(output_type=="case+sero" || output_type=="case"){
-        output[[i]]$C=array(0,dim=c(n_particles,n_years))
-        for(n_year in 1:n_years){
-          pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
-          for(n_p in 1:n_particles){
-            output[[i]]$C[n_p,n_year]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p2[n_p],pts])
+      } else {
+        n_years=length(years_data)
+        dimensions=c(N_age,n_particles,n_years)
+        output[[i]]=list(year=years_data)
+        if(output_type=="case+sero" || output_type=="sero"){
+          output[[i]]$V=output[[i]]$R=output[[i]]$I=output[[i]]$E=output[[i]]$S=array(0,dim=dimensions)
+          for(n_year in 1:n_years){
+            pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
+            for(n_p in 1:n_particles){
+              output[[i]]$S[,n_p,n_year]=rowMeans(x_res[c((1+n_nv):(N_age+n_nv)),n_p2[n_p],pts])
+              output[[i]]$E[,n_p,n_year]=rowMeans(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),n_p2[n_p],pts])
+              output[[i]]$I[,n_p,n_year]=rowMeans(x_res[c(((2*N_age)+1+n_nv):((3*N_age)+n_nv)),n_p2[n_p],pts])
+              output[[i]]$R[,n_p,n_year]=rowMeans(x_res[c(((3*N_age)+1+n_nv):((4*N_age)+n_nv)),n_p2[n_p],pts])
+              output[[i]]$V[,n_p,n_year]=rowMeans(x_res[c(((4*N_age)+1+n_nv):((5*N_age)+n_nv)),n_p2[n_p],pts])
+            }
+          }
+        }
+        if(output_type=="case+sero" || output_type=="case"){
+          output[[i]]$C=array(0,dim=c(n_particles,n_years))
+          for(n_year in 1:n_years){
+            pts=c(1:t_pts_out)[x_res[2,n_p2[1],]==years_data[n_year]]
+            for(n_p in 1:n_particles){
+              output[[i]]$C[n_p,n_year]=sum(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p2[n_p],pts])
+            }
+          }
+        }
+        if(output_type=="case_alt"){
+          output[[i]]$C=array(0,dim=c(N_age,n_particles,n_years))
+          for(n_year in 1:n_years){
+            pts=c(1:t_pts_out)[x_res[2,1,]==years_data[n_year]]
+            for(n_p in 1:n_particles){
+              output[[i]]$C[,n_p,n_year]=rowSums(x_res[c(((5*N_age)+1+n_nv):((6*N_age)+n_nv)),n_p,pts])
+            }
           }
         }
       }
     }
   }
-  # x_res <- NULL
-  # gc()
 
   return(output)
 }
@@ -265,8 +286,8 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Basic reproduction number for urban spread of infection
-#' @param vacc_data Vaccination coverage in each age group by year
-#' @param pop_data Population in each age group by year
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy=1) by age group and year
+#' @param pop_data Population by age group and year
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param output_type Type of data to output:
@@ -292,7 +313,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
                                 start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
                                 vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10) {
 
-  assert_that(division<=20)
+  assert_that(division<=20,msg="Number of particles run at once must be 20 or less")
   n_particleS_0=min(division,n_reps)
   n_threads=min(division,n_particleS_0)
   n_divs=ceiling(n_reps/division)
@@ -404,8 +425,6 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
         }
       }
     }
-    x_res<-NULL
-    gc()
   }
 
   return(output_data)
@@ -419,8 +438,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
 #'
 #' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
 #' @param R0 Reproduction number for urban spread of infection
-#' @param vacc_data Vaccination coverage in each age group by year
-#' @param pop_data Population in each age group by year
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy=1) by age group and year
+#' @param pop_data Population by age group and year
 #' @param year0 First year in population/vaccination data
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
@@ -436,8 +455,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
 parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,
                             years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
 
-  assert_that(length(pop_data[,1])>1) #TODO - msg
-  assert_that(length(pop_data[1,])>1) #TODO - msg
+  assert_that(length(pop_data[,1])>1,msg="Need population data for multiple years")
+  assert_that(length(pop_data[1,])>1,msg="Need population data for multiple age groups")
   n_years=length(pop_data[,1])-1
   N_age=length(pop_data[1,])
   assert_that(length(vacc_data[,1])==n_years+1,msg="Population and vaccination data must be for same time periods")
