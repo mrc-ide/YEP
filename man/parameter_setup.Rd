@@ -22,9 +22,9 @@ parameter_setup(
 
 \item{R0}{Reproduction number for urban spread of infection}
 
-\item{vacc_data}{Vaccination coverage in each age group by year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy=1) by age group and year}
 
-\item{pop_data}{Population in each age group by year}
+\item{pop_data}{Population by age group and year}
 
 \item{year0}{First year in population/vaccination data}
 

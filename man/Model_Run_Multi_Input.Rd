@@ -26,7 +26,7 @@ Model_Run_Multi_Input(
 
 \item{R0}{Vector of values of basic reproduction number for urban spread of infection}
 
-\item{vacc_data}{Vaccination coverage by parameter set and age group by year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy=1) by parameter set, age group and year}
 
 \item{pop_data}{Population by parameter set and age group by year}
 
@@ -34,7 +34,13 @@ Model_Run_Multi_Input(
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input, for each parameter set}
 
-\item{output_type}{Type of data to output: "full" = SEIRVC, "case" = C only, "sero" = SEIRV only #TODO - Add case_alt+case_alt2}
+\item{output_type}{Type of data to output:
+"full" = SEIRVC + FOI for all steps and ages
+"case" = annual total new infections (C) summed across all ages
+"sero" = annual SEIRV summed across all ages
+"case+sero" = annual SEIRVC summed across all ages
+"case_alt" = annual total new infections not combined by age
+"case_alt2" = total new infections combined by age for all steps}
 
 \item{year0}{First year in population/vaccination data}
 

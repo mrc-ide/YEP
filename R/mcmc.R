@@ -523,6 +523,8 @@ mcmc_FOI_R0_setup <- function(type="",prior_type="",regions="",log_params_prop=c
     prior=sum(dnorm(log_params_prop[c(1:n_params_check)],mean = 0,sd = 30,log = TRUE))
   }
 
+  if(min(c(FOI_values,R0_values))<=0.0){prior=-Inf}
+
   output=list(FOI_values=FOI_values,R0_values=R0_values,prior=prior)
   return(output)
 }
