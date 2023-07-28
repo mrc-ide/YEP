@@ -1,8 +1,8 @@
 ---
-title: "Worked Example 2 - Running Model For Multiple Parameter Sets"
+title: "Worked Example 6 - Running Model For Multiple Parameter Sets"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Worked Example 2 - Running Model For Multiple Parameter Sets}
+  %\VignetteIndexEntry{Worked Example 6 - Running Model For Multiple Parameter Sets}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

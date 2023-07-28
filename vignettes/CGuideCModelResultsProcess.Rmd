@@ -14,37 +14,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette demonstrates how the output of the dynamic yellow fever model functions (see [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YellowFeverDynamics/articles/BWorkedExampleAModelRun.html)) can be processed to produce epidemiological data similar to that produced by real-world surveillance. Three types of data are discussed here:
+This vignette demonstrates how the output of the dynamic yellow fever model functions (see [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YellowFeverDynamics/articles/BWorkedExampleAModelRun.html)) can be processed to produce epidemiological data similar to that produced by real-world surveillance. Two types of data are discussed here:
 
 -Serological survey data, the proportion of people tested in a chosen age range who test positive for yellow fever antibodies (indicating that they have either recovered from the disease or been vaccinated, with individuals known to have been vaccinated normally excluded from surveys - see below for more on this) [TBA - Link to example publications].
 -Annual reported cases and deaths, representing the number of laboratory-confirmed yellow fever cases in a region in a given year and the number which resulted in death. These usually represent a fraction of the actual number of annual yellow fever infections and deaths in a region (in particular, it is usually assumed that infections causing mild or no symptoms are never reported as non-fatal cases cases).
--Annual outbreak occurrence, binary data indicating whether one or more outbreaks (usually defined as one or more lab-confirmed cases) are reported in a region in a given year.
 
 A set of epidemiological data for multiple regions can be constructed using additional functions described in [Worked Example 2 - Generating Epidemiological Data Sets](https://mrc-ide.github.io/YellowFeverDynamics/articles/BWorkedExampleCDataGenerate.html); this combines running the model as described in Worked Example 1 and calculating epidemiological output data as described in this vignette.
 
-Data is generated as described in Worked Example 1, in this case using the Full_Model_Run() function in order to be able to calculate all three epidemiological data types.
+Data is generated as described in [Worked Example 1](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html):
 
 ```{r,eval=FALSE}
 library(YEP)
 input_data <- readRDS(file=paste(path.package("YEP"),
                                  "/exdata/input_data_example.Rds",sep=""))
-FOI_spillover <- 1.0e-7         
-R0 <- 0.0                           
-vacc_data <- input_data$vacc_data[1,,]
-pop_data <- input_data$pop_data[1,,] 
-years_data <- c(1990:2000)          
-start_SEIRV <- NULL
-output_type <- "full"
-year0 <- input_data$years_labels[1] 
-mode_start <- 1  
-vaccine_efficacy <- 1.0   
-dt <- 1.0                   
-n_particles <- 10                   
-n_threads <- 1 
-deterministic <- FALSE
-model_data <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
-                   start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
-                   dt, n_particles, n_threads, deterministic)
+model_data <- Model_Run(1.0e-7, 0.0, input_data$vacc_data[1,,], input_data$pop_data[1,,], c(1990:2000),
+                   NULL, "full", input_data$years_labels[1], 1, 1.0, 1.0, 1, 1, FALSE)
 ```
 
 The seroprevalence in a given age range in one or more years for one particle may be calculated from model data using the sero_calculate() function as shown below (in this case, for 0-15 year olds from 1990-2000). Seroprevalence for a given year calculated in this way is a year-round average. The variable vc_factor is used when creating modelled seroprevalence data to compare with real-world surveys, to account for the fact that in real-world seroprevalence surveys, while normally only unvaccinated individuals are tested, some surveyed individuals' vaccination status may be unknown. If vc_factor = 0 (i.e. all individuals tested are confirmed unvaccinated), seroprevalence is calculated only for the unvaccinated population. If vc_factor > 0, seroprevalence is calculated for an appropriate mixture of the unvaccinated population (where seroprevalence = R/(S+E+I+R)) and the overall population (where seroprevalence = (R+V)/(S+E+I+R+V)).
@@ -87,19 +71,4 @@ for(n_p in 1:n_particles){
 matplot(x=years,y=annual_data$rep_cases,type="p",pch=1,col=1,xlab="Year",ylab="Individuals")
 matplot(x=years,y=annual_data$rep_deaths,type="p",pch=2,col=2,add=TRUE)
 legend("topright",legend=c("Reported cases","Reported deaths"),pch=c(1,2),col=c(1,2))
-```
-
-Outbreak probability data can be calculated from annual reported case data; if the case count for a given year is greater than zero, it is flagged as a year in which one or more outbreaks will be reported. [TBA]
-
-```{r,eval=FALSE}
-outbreak_probability=rep(0,n_years)
-dprob=1.0/n_particles
-for(n_year in 1:n_years){
-  for(n_p in 1:n_particles){
-    if(annual_data$rep_cases[n_year,n_p]>0){
-      outbreak_probability[n_year]=outbreak_probability[n_year]+dprob
-    }
-  }
-}
-barplot(height=outbreak_probability,names.arg=years)
 ```

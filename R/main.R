@@ -467,7 +467,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
     assert_that(is.null(start_SEIRV$S)==FALSE,msg="When mode_start=2, start_SEIRV data is required")
   }
   assert_that(years_data[1]>=year0,msg="First data year must be greater than or equal to year0")
-  assert_that(max(years_data)+1-years_data[1]<=n_years,msg="Period of years_data must lie within population data")
+  assert_that(max(years_data)+1-year0<=n_years,msg="Period of years_data must lie within population data")
   vacc_initial=vacc_data[1,]
   assert_that(dt %in% c(1,2.5,5),msg="dt must have value 1, 2.5 or 5 days (must have integer no. points/year)")
   inv_365=1.0/365.0
