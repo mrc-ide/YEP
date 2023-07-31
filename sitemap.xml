@@ -40,7 +40,10 @@
     <loc>https://mrc-ide.github.io/YEP/articles/CGuideCModelResultsProcess.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideDLikelihood.html</loc>
+    <loc>https://mrc-ide.github.io/YEP/articles/CGuideDEpiDataGenerate.html</loc>
+  </url>
+  <url>
+    <loc>https://mrc-ide.github.io/YEP/articles/CGuideELikelihood.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/articles/index.html</loc>
@@ -77,6 +80,9 @@
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Multi_Input.html</loc>
+  </url>
+  <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/case_data_compare.html</loc>

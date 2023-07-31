@@ -37,7 +37,8 @@ and year(s)'><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs
     <a class="dropdown-item" href="../articles/CGuideAInputs.html">Guide 1 - Inputs</a>
     <a class="dropdown-item" href="../articles/CGuideBParametersEnvironment.html">Guide 2 - Calculating Parameters From Environmental Data</a>
     <a class="dropdown-item" href="../articles/CGuideCModelResultsProcess.html">Guide 3 - Processing Model Results</a>
-    <a class="dropdown-item" href="../articles/CGuideDLikelihood.html">Guide 4 - Calculating Likelihood Of Observed Data</a>
+    <a class="dropdown-item" href="../articles/CGuideDEpiDataGenerate.html">Guide 4 - Generating Epidemiological Data From Model Output</a>
+    <a class="dropdown-item" href="../articles/CGuideELikelihood.html">Guide 5 - Calculating Likelihood Of Observed Data</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -68,16 +69,16 @@ and year(s)</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>sero_data</dt>
-<dd><p>= Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
+<dd><p>Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 people for whom vaccination status unknown)</p></dd>
 
 
 <dt>model_data</dt>
-<dd><p>= Output of Basic_Model_Run or Full_Model_Run</p></dd>
+<dd><p>SEIRV output of Model_Run and similar functions</p></dd>
 
 
 <dt>n_p</dt>
-<dd><p>= Particle to select from model_data
+<dd><p>Particle to select from model_data
 '</p></dd>
 
 </dl></div>
