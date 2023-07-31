@@ -1,8 +1,8 @@
 ---
-title: "Guide 4 - Calculating Likelihood Of Observed Data"
+title: "Guide 5 - Calculating Likelihood Of Observed Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Guide 4 - Calculating Likelihood Of Observed Data}
+  %\VignetteIndexEntry{Guide 5 - Calculating Likelihood Of Observed Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

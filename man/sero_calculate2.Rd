@@ -7,12 +7,12 @@
 sero_calculate2(sero_data = list(), model_data = list(), n_p = 1)
 }
 \arguments{
-\item{sero_data}{= Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
+\item{sero_data}{Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 people for whom vaccination status unknown)}
 
-\item{model_data}{= Output of Basic_Model_Run or Full_Model_Run}
+\item{model_data}{SEIRV output of Model_Run and similar functions}
 
-\item{n_p}{= Particle to select from model_data
+\item{n_p}{Particle to select from model_data
 '}
 }
 \description{

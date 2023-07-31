@@ -6,18 +6,60 @@
 #'
 #' @details [TBA]
 #'
-#' @param model_data
+#' @param model_data SEIRV output of Model_Run and similar functions
 #' @param n_p Particle to select from model_data
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
 #' @param p_rep_death Probability of reporting of a fatal infection
+#' @param output_type Type of output to produce:
+#'   "annual" - Total reported cases and reported deaths by year
+#'   "pts" - Total reported cases and reported deaths for every time point, summed over age groups
+#'   "full" - Reported cases and reported deaths for every time point and age group
+#' @param deterministic Indicates whether to calculate results deterministically (TRUE) or stochastically (FALSE)
 #' '
 #' @export
 #'
 case_data_calculate <- function(model_data = list(), n_p = 1, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                                p_rep_severe = 1.0, p_rep_death = 1.0){
+                                p_rep_severe = 1.0, p_rep_death = 1.0, output_type = "annual", deterministic = FALSE){
   #TODO - Add assert_that functions
+
+  if(output_type=="annual"){
+    years=unique(model_data$year)
+    n_years=length(years)
+    case_data=data.frame(rep_cases=rep(NA,n_years),rep_deaths=rep(NA,n_years))
+    for(n_year in 1:n_years){
+      infs=sum(model_data$C[,n_p,model_data$year==years[n_year]])
+      severe_infs=rbinom(1,floor(infs),p_severe_inf)
+      deaths=rbinom(1,severe_infs,p_death_severe_inf)
+      case_data$rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
+      case_data$rep_cases[n_year]=case_data$rep_deaths[n_year] + rbinom(1,severe_infs-deaths,p_rep_severe)
+    }
+  } else {
+    n_pts=dim(model_data$C)[3]
+    if(output_type=="pts"){
+      case_data=data.frame(rep_cases=rep(NA,n_pts),rep_deaths=rep(NA,n_pts))
+      for(n_pt in 1:n_pts){
+        infs=sum(model_data$C[,n_p,n_pt])
+        severe_infs=rbinom(1,floor(infs),p_severe_inf)
+        deaths=rbinom(1,severe_infs,p_death_severe_inf)
+        case_data$rep_deaths[n_pt]=rbinom(1,deaths,p_rep_death)
+        case_data$rep_cases[n_pt]=case_data$rep_deaths[n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+      }
+    } else {
+      N_age=dim(model_data$C)[1]
+      case_data=list(rep_cases=array(NA,dim=c(N_age,n_pts)),rep_deaths=array(NA,dim=c(N_age,n_pts)))
+      for(n_pt in 1:n_pts){
+        infs=model_data$C[,n_p,n_pt]
+        severe_infs=rbinom(1,floor(infs),p_severe_inf)
+        deaths=rbinom(1,severe_infs,p_death_severe_inf)
+        case_data$rep_deaths[,n_pt]=rbinom(1,deaths,p_rep_death)
+        case_data$rep_cases[,n_pt]=case_data$rep_deaths[n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+      }
+    }
+  }
+
+  return(case_data)
 }
 #-------------------------------------------------------------------------------
 #' @title case_data_compare

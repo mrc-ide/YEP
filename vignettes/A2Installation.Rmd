@@ -32,4 +32,9 @@ To check that the package loads, run:
 library(YEP)
 ```
 
-TODO - Installation of additional packages
+For processing of SEIRV model output and the results of parameter estimation, the YEPaux package is also needed:
+
+```{r,eval=FALSE}
+devtools::install_github("mrc-ide/YEPaux")
+library(YEPaux)
+```
