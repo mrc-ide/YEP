@@ -66,10 +66,10 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
 #' number of "samples" (people eligible for testing) and "positives" (people who would test positive), plus vc_factor
 #' (proportion of people for whom vaccination status unknown)
 #'
-#' @param sero_data = Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
+#' @param sero_data Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 #' people for whom vaccination status unknown)
-#' @param model_data = Output of Basic_Model_Run or Full_Model_Run
-#' @param n_p = Particle to select from model_data
+#' @param model_data SEIRV output of Model_Run and similar functions
+#' @param n_p Particle to select from model_data
 #' '
 #' @export
 #'

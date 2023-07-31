@@ -1,5 +1,25 @@
 # R file for functions relating to annual case and death data in YEP package
 #-------------------------------------------------------------------------------
+#' @title case_data_calculate
+#'
+#' @description Calculate reported case data from SEIRV model output
+#'
+#' @details [TBA]
+#'
+#' @param model_data
+#' @param n_p Particle to select from model_data
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
+#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
+#' @param p_rep_death Probability of reporting of a fatal infection
+#' '
+#' @export
+#'
+case_data_calculate <- function(model_data = list(), n_p = 1, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                                p_rep_severe = 1.0, p_rep_death = 1.0){
+  #TODO - Add assert_that functions
+}
+#-------------------------------------------------------------------------------
 #' @title case_data_compare
 #'
 #' @description Compare modelled and observed case or death data using negative binomial function
