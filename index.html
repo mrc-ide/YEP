@@ -44,10 +44,11 @@
     <a class="dropdown-item" href="articles/A1Introduction.html">Introduction</a>
     <a class="dropdown-item" href="articles/A2Installation.html">Installation</a>
     <a class="dropdown-item" href="articles/BWorkedExampleAModelRun.html">Worked Example 1 - Single Model Run</a>
-    <a class="dropdown-item" href="articles/BWorkedExampleBModelRunMulti.html">Worked Example 2 - Running Model For Multiple Parameter Sets</a>
+    <a class="dropdown-item" href="articles/BWorkedExampleBOutbreakRiskCalculation.html">Worked Example 2 - Outbreak Risk Calculation</a>
     <a class="dropdown-item" href="articles/BWorkedExampleCDataGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
     <a class="dropdown-item" href="articles/BWorkedExampleDMCMC.html">Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions</a>
     <a class="dropdown-item" href="articles/BWorkedExampleEPolicyQuestionCaseStudy.html">Worked Example 5 - Policy Question Case Study</a>
+    <a class="dropdown-item" href="articles/BWorkedExampleFModelRunMulti.html">Worked Example 6 - Running Model For Multiple Parameter Sets</a>
     <a class="dropdown-item" href="articles/CGuideAInputs.html">Guide 1 - Inputs</a>
     <a class="dropdown-item" href="articles/CGuideBParametersEnvironment.html">Guide 2 - Calculating Parameters From Environmental Data</a>
     <a class="dropdown-item" href="articles/CGuideCModelResultsProcess.html">Guide 3 - Processing Model Results</a>
@@ -69,12 +70,12 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="yep---yellow-fever-epidemic-prevention">YEP - Yellow Fever Epidemic Prevention<a class="anchor" aria-label="anchor" href="#yep---yellow-fever-epidemic-prevention"></a>
 </h1></div>
-<p>A package for running a dynamic SEIRV model of yellow fever, including generating sets of annual epidemiological data (annual reported severe and fatal case data, seroprevalence data). The package can also be used to fit values of epidemiological parameters of the model to different types of data on yellow fever burden in one or more regions.</p>
-<p>For a more detailed overview of the purpose and uses of the package, please read the Introduction article (TBA).</p>
-<p>Additional packages (<a href="https://github.com/mrc-ide/YellowFeverDynamics" class="external-link">YellowFeverDynamics</a> and <a href="https://github.com/mrc-ide/YEPaux" class="external-link">YEPaux</a>) provide additional functions for running alternative versions of the model and carrying out more specialized tasks (YellowFeverDynamics) and processing model output (YEPaux).</p>
-<p>These packages are all currently under construction/overhaul.</p>
-<!-- badges: start -->
-
+<p>A package for running a dynamic SEIRV model of yellow fever, creating input data and processing output data.</p>
+<p>The package can also be used to:</p>
+<p>-Generate datasets based on existing yellow fever epidemiological datasets (annual reported case data and seroprevalence survey results). -Estimate values of epidemiological parameters of the model and other parameters including vaccine efficacy and case reporting rates, based on epidemiological data on yellow fever burden from one or more regions. -Generate yellow fever burden data for multiple countries based on the approach used by the [Vaccine Impact Modelling Consortium] (<a href="https://www.vaccineimpact.org/" class="external-link uri">https://www.vaccineimpact.org/</a>).</p>
+<p>Preprint of paper currently being reviewed by Lancet Global Health detailing model and applications: <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4469377" class="external-link uri">https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4469377</a></p>
+<p>Additional packages for use with this package: [YEPaux](<a href="https://github.com/mrc-ide/YEPaux" class="external-link uri">https://github.com/mrc-ide/YEPaux</a>]: Auxiliary functions for processing model output and parameter estimation results <a href="https://github.com/mrc-ide/YellowFeverDynamics" class="external-link">YellowFeverDynamics</a>: Alternate versions of the basic model and additional functions for outbreak risk estimation and response modelling</p>
+<p><!-- badges: start --> <a href="https://github.com/mrc-ide/YEP/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/mrc-ide/YEP/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <!-- badges: end --></p>
 </div>
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
@@ -100,12 +101,7 @@
 </ul>
 </div>
 
-<div class="dev-status">
-<h2 data-toc-skip>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://github.com/mrc-ide/YEP/actions" class="external-link"><img src="https://github.com/mrc-ide/YEP/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
-</ul>
-</div>
+
 
   </aside>
 </div>

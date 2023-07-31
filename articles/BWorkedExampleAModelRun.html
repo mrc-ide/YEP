@@ -44,10 +44,11 @@
     <a class="dropdown-item" href="../articles/A1Introduction.html">Introduction</a>
     <a class="dropdown-item" href="../articles/A2Installation.html">Installation</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleAModelRun.html">Worked Example 1 - Single Model Run</a>
-    <a class="dropdown-item" href="../articles/BWorkedExampleBModelRunMulti.html">Worked Example 2 - Running Model For Multiple Parameter Sets</a>
+    <a class="dropdown-item" href="../articles/BWorkedExampleBOutbreakRiskCalculation.html">Worked Example 2 - Outbreak Risk Calculation</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleCDataGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleDMCMC.html">Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleEPolicyQuestionCaseStudy.html">Worked Example 5 - Policy Question Case Study</a>
+    <a class="dropdown-item" href="../articles/BWorkedExampleFModelRunMulti.html">Worked Example 6 - Running Model For Multiple Parameter Sets</a>
     <a class="dropdown-item" href="../articles/CGuideAInputs.html">Guide 1 - Inputs</a>
     <a class="dropdown-item" href="../articles/CGuideBParametersEnvironment.html">Guide 2 - Calculating Parameters From Environmental Data</a>
     <a class="dropdown-item" href="../articles/CGuideCModelResultsProcess.html">Guide 3 - Processing Model Results</a>
@@ -148,7 +149,8 @@ documentation]</p>
 <span><span class="va">n_particles</span> <span class="op">&lt;-</span> <span class="fl">10</span>     </span>
 <span><span class="co"># Number of threads to run</span></span>
 <span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fl">1</span>   </span>
-<span><span class="co"># TBA</span></span>
+<span><span class="co"># True/false flag indicating whether or not to run model in deterministic mode</span></span>
+<span><span class="co"># (so that binomial calculations give average instead of randomized output)</span></span>
 <span><span class="va">deterministic</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span></code></pre></div>
 <p>We use the Model_Run() function to run the model for the inputs
 above:</p>
