@@ -45,7 +45,7 @@
     <a class="dropdown-item" href="../articles/A2Installation.html">Installation</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleAModelRun.html">Worked Example 1 - Single Model Run</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleBOutbreakRiskCalculation.html">Worked Example 2 - Outbreak Risk Calculation</a>
-    <a class="dropdown-item" href="../articles/BWorkedExampleCDataGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
+    <a class="dropdown-item" href="../articles/BWorkedExampleCEpiDatasetGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleDMCMC.html">Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleEPolicyQuestionCaseStudy.html">Worked Example 5 - Policy Question Case Study</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleFModelRunMulti.html">Worked Example 6 - Running Model For Multiple Parameter Sets</a>
@@ -157,12 +157,18 @@ for p_rep_severe and p_rep_death are used.</p>
 <span><span class="va">n_reps</span> <span class="op">&lt;-</span> <span class="fl">5</span> </span>
 <span><span class="co"># Vaccine efficacy (here fixed rather than varied)</span></span>
 <span><span class="va">vaccine_efficacy</span> <span class="op">&lt;-</span> <span class="fl">1.0</span> </span>
+<span><span class="co"># Probability of an infection causing severe symptoms</span></span>
+<span><span class="va">p_severe_inf</span> <span class="op">=</span> <span class="fl">0.12</span></span>
+<span><span class="co"># Probability of an infection with severe symptoms causing death</span></span>
+<span><span class="va">p_death_severe_inf</span> <span class="op">=</span> <span class="fl">0.39</span></span>
 <span><span class="co"># Fixed R0 values and severe and fatal case reporting probabilities; here set to </span></span>
 <span><span class="co"># NULL because values are variable</span></span>
 <span><span class="va">R0_fixed_values</span> <span class="op">=</span> <span class="va">p_rep_severe</span> <span class="op">=</span> <span class="va">p_rep_death</span> <span class="op">=</span> <span class="cn">NULL</span> </span>
-<span><span class="co"># TBA</span></span>
+<span><span class="co"># True/false flag indicating whether or not to run model in deterministic mode</span></span>
+<span><span class="co"># (so that binomial calculations give average instead of randomized output)</span></span>
 <span><span class="va">deterministic</span> <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="co"># TBA</span></span>
+<span><span class="co"># Variable to set different modes for running on multiple processors simultaneously;</span></span>
+<span><span class="co"># here set to "none" so that parallel processing is not used</span></span>
 <span><span class="va">mode_parallel</span><span class="op">=</span><span class="st">"none"</span></span></code></pre></div>
 <p>We then run the MCMC() function. Output data recorded at each
 iteration is saved to an output file every 10 iterations. Likelihood is
@@ -170,8 +176,8 @@ calculated as described in Guide 4 [Link TBA].</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/MCMC.html">MCMC</a></span><span class="op">(</span><span class="va">log_params_ini</span>, <span class="va">input_data</span>, <span class="va">obs_sero_data</span>, <span class="va">obs_case_data</span>, <span class="va">filename_prefix</span>, </span>
 <span>     <span class="va">Niter</span>, <span class="va">type</span>, <span class="va">log_params_min</span>,<span class="va">log_params_max</span>, <span class="va">mode_start</span>, <span class="va">prior_type</span>, <span class="va">dt</span>, </span>
-<span>     <span class="va">n_reps</span>, <span class="va">enviro_data</span>, <span class="va">R0_fixed_values</span>, <span class="va">vaccine_efficacy</span>, <span class="va">p_rep_severe</span>, </span>
-<span>     <span class="va">p_rep_death</span>,<span class="fl">1.0</span>,<span class="va">deterministic</span>,<span class="va">mode_parallel</span>,<span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+<span>     <span class="va">n_reps</span>, <span class="va">enviro_data</span>, <span class="va">R0_fixed_values</span>, <span class="va">vaccine_efficacy</span>, <span class="va">p_severe_inf</span>, </span>
+<span>     <span class="va">p_death_severe_inf</span>, <span class="va">p_rep_severe</span>, <span class="va">p_rep_death</span>,<span class="fl">1.0</span>,<span class="va">deterministic</span>,<span class="va">mode_parallel</span>,<span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p>The saved output of MCMC() takes the form of a data frame of values
 of the current likelihood (posterior_current), likelihood calculated
 from proposed parameter values (posterior_prop), current and proposed

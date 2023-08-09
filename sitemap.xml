@@ -19,7 +19,7 @@
     <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleBOutbreakRiskCalculation.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleCDataGenerate.html</loc>
+    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleCEpiDatasetGenerate.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleDMCMC.html</loc>
@@ -83,6 +83,9 @@
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc>
+  </url>
+  <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate_multi.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/case_data_compare.html</loc>

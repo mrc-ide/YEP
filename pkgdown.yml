@@ -6,7 +6,7 @@ articles:
   A2Installation: A2Installation.html
   BWorkedExampleAModelRun: BWorkedExampleAModelRun.html
   BWorkedExampleBOutbreakRiskCalculation: BWorkedExampleBOutbreakRiskCalculation.html
-  BWorkedExampleCDataGenerate: BWorkedExampleCDataGenerate.html
+  BWorkedExampleCEpiDatasetGenerate: BWorkedExampleCEpiDatasetGenerate.html
   BWorkedExampleDMCMC: BWorkedExampleDMCMC.html
   BWorkedExampleEPolicyQuestionCaseStudy: BWorkedExampleEPolicyQuestionCaseStudy.html
   BWorkedExampleFModelRunMulti: BWorkedExampleFModelRunMulti.html
@@ -15,7 +15,7 @@ articles:
   CGuideCModelResultsProcess: CGuideCModelResultsProcess.html
   CGuideDEpiDataGenerate: CGuideDEpiDataGenerate.html
   CGuideELikelihood: CGuideELikelihood.html
-last_built: 2023-07-31T19:02Z
+last_built: 2023-08-09T20:13Z
 urls:
   reference: https://mrc-ide.github.io/YEP/reference
   article: https://mrc-ide.github.io/YEP/articles

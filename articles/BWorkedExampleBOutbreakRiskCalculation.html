@@ -45,7 +45,7 @@
     <a class="dropdown-item" href="../articles/A2Installation.html">Installation</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleAModelRun.html">Worked Example 1 - Single Model Run</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleBOutbreakRiskCalculation.html">Worked Example 2 - Outbreak Risk Calculation</a>
-    <a class="dropdown-item" href="../articles/BWorkedExampleCDataGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
+    <a class="dropdown-item" href="../articles/BWorkedExampleCEpiDatasetGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleDMCMC.html">Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleEPolicyQuestionCaseStudy.html">Worked Example 5 - Policy Question Case Study</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleFModelRunMulti.html">Worked Example 6 - Running Model For Multiple Parameter Sets</a>
@@ -111,17 +111,56 @@ than 20. To run a large number of stochastic repetitions, the
 Model_Run_Many_Reps() function should be used instead. This function can
 accept any number of repetitions (n_reps), splitting them into groups of
 particles of a size up to 20 (division) and running those groups
-sequentially.</p>
+sequentially. Here we set output_type = “case” so that
+Model_Run_Many_Reps() only outputs annual total infection data, since
+this is what we are interested in.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mrc-ide.github.io/YEP/">YEP</a></span><span class="op">)</span></span>
 <span><span class="va">input_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span>file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">path.package</a></span><span class="op">(</span><span class="st">"YEP"</span><span class="op">)</span>,<span class="st">"/exdata/input_data_example.Rds"</span>, sep <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">model_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Model_Run_Many_Reps.html">Model_Run_Many_Reps</a></span><span class="op">(</span>FOI_spillover <span class="op">=</span> <span class="fl">1.0e-7</span>, R0 <span class="op">=</span> <span class="fl">0.0</span>, vacc_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">vacc_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, </span>
-<span>                             pop_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">pop_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, years_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1990</span><span class="op">:</span><span class="fl">2000</span><span class="op">)</span>,</span>
+<span><span class="va">n_reps</span> <span class="op">=</span> <span class="fl">100</span> <span class="co"># Number of stochastic repetitions</span></span>
+<span><span class="va">years_data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1990</span><span class="op">:</span><span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="va">model_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Model_Run_Many_Reps.html">Model_Run_Many_Reps</a></span><span class="op">(</span>FOI_spillover <span class="op">=</span> <span class="fl">1.0e-8</span>, R0 <span class="op">=</span> <span class="fl">0.0</span>, vacc_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">vacc_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, </span>
+<span>                             pop_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">pop_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, <span class="va">years_data</span>,</span>
 <span>                             start_SEIRV <span class="op">=</span> <span class="cn">NULL</span>, output_type <span class="op">=</span> <span class="st">"case"</span>, year0 <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">years_labels</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
 <span>                             mode_start <span class="op">=</span> <span class="fl">1</span>, vaccine_efficacy <span class="op">=</span> <span class="fl">1.0</span>, dt <span class="op">=</span> <span class="fl">1.0</span>, </span>
-<span>                             n_reps <span class="op">=</span> <span class="fl">100</span>, division <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<p>[TBA]</p>
+<span>                             n_reps <span class="op">=</span> <span class="va">n_reps</span>, division <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>We can calculate the number of reported cases by year for a single
+repetition using the case_data_calculate() function:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n_rep_select</span> <span class="op">=</span> <span class="fl">1</span> <span class="co">#Select repetition to examine</span></span>
+<span><span class="va">p_severe_inf</span> <span class="op">=</span> <span class="fl">0.12</span> <span class="co"># Probability of an infection causing severe symptoms</span></span>
+<span><span class="va">p_death_severe_inf</span> <span class="op">=</span> <span class="fl">0.39</span> <span class="co"># Probability of an infection with severe symptoms causing death</span></span>
+<span><span class="va">p_rep_severe</span> <span class="op">=</span> <span class="fl">0.1</span> <span class="co"># Probability of reporting of an infection with severe (non-fatal) symptoms</span></span>
+<span><span class="va">p_rep_death</span> <span class="op">=</span> <span class="fl">0.2</span> <span class="co"># Probability of reporting of a fatal infection</span></span>
+<span><span class="va">case_data_single</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/case_data_calculate.html">case_data_calculate</a></span><span class="op">(</span><span class="va">model_data</span>, n_p <span class="op">=</span> <span class="va">n_rep_select</span>, <span class="va">p_severe_inf</span>, <span class="va">p_death_severe_inf</span>,</span>
+<span>                                        <span class="va">p_rep_severe</span>, <span class="va">p_rep_death</span>,output_type <span class="op">=</span> <span class="st">"annual"</span>, deterministic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">case_data_single</span></span></code></pre></div>
+<p>One or more outbreaks are considered to have occurred in a year if
+the number of reported cases is more than 1, so binary outbreak
+occurrence is considered to be 1 (true) in years 4 and 10 and 0 (false)
+in the other years in the above results.</p>
+<p>We can calculate case data across multiple repetitions quickly with
+the case_data_calculate_multi() function:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">case_data_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/case_data_calculate_multi.html">case_data_calculate_multi</a></span><span class="op">(</span><span class="va">model_data</span>, <span class="va">p_severe_inf</span>, <span class="va">p_death_severe_inf</span>,<span class="va">p_rep_severe</span>, </span>
+<span>                                             <span class="va">p_rep_death</span>,output_type <span class="op">=</span> <span class="st">"annual"</span>, deterministic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">case_data_multi</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<p>The risk of one or more outbreaks in a given year can be calculated
+by checking the outbreak occurence for that year for every stochastic
+repetitions and dividing the number of repetitions in which the outbreak
+occurence is 1 (i.e. those where the number of reported cases is &gt;=1)
+by the total number of repetitions.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">n_years</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">years_data</span><span class="op">)</span></span>
+<span><span class="va">outbreak_risk</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">n_years</span><span class="op">)</span></span>
+<span><span class="va">dp</span><span class="op">=</span><span class="fl">1.0</span><span class="op">/</span><span class="va">n_reps</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">n_year</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_years</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw">for</span><span class="op">(</span><span class="va">n_rep</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_reps</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="va">case_data_multi</span><span class="op">[[</span><span class="va">n_rep</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rep_cases</span><span class="op">[</span><span class="va">n_year</span><span class="op">]</span><span class="op">&gt;=</span><span class="fl">1</span><span class="op">)</span><span class="op">{</span><span class="va">outbreak_risk</span><span class="op">[</span><span class="va">n_year</span><span class="op">]</span><span class="op">=</span><span class="va">outbreak_risk</span><span class="op">[</span><span class="va">n_year</span><span class="op">]</span><span class="op">+</span><span class="va">dp</span><span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">years_data</span>,y<span class="op">=</span><span class="va">outbreak_risk</span>,type<span class="op">=</span><span class="st">"b"</span>,col<span class="op">=</span><span class="fl">1</span>,pch<span class="op">=</span><span class="fl">1</span>,xlab<span class="op">=</span><span class="st">"Year"</span>,ylab<span class="op">=</span><span class="st">"Outbreak risk"</span>,ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">outbreak_risk</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
   </main>
 </div>
 

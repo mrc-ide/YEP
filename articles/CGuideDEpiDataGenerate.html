@@ -45,7 +45,7 @@
     <a class="dropdown-item" href="../articles/A2Installation.html">Installation</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleAModelRun.html">Worked Example 1 - Single Model Run</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleBOutbreakRiskCalculation.html">Worked Example 2 - Outbreak Risk Calculation</a>
-    <a class="dropdown-item" href="../articles/BWorkedExampleCDataGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
+    <a class="dropdown-item" href="../articles/BWorkedExampleCEpiDatasetGenerate.html">Worked Example 3 - Generating Epidemiological Data Sets</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleDMCMC.html">Worked Example 4 - Parameter Estimation Using Markov Chain Monte Carlo Functions</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleEPolicyQuestionCaseStudy.html">Worked Example 5 - Policy Question Case Study</a>
     <a class="dropdown-item" href="../articles/BWorkedExampleFModelRunMulti.html">Worked Example 6 - Running Model For Multiple Parameter Sets</a>
@@ -151,8 +151,12 @@ function:</p>
 <span><span class="va">seroprevalence</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/sero_calculate.html">sero_calculate</a></span><span class="op">(</span><span class="va">age_min</span>, <span class="va">age_max</span>, <span class="va">years</span>, <span class="va">vc_factor</span>, <span class="va">model_data</span>, <span class="va">n_p</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">years</span>,y<span class="op">=</span><span class="va">seroprevalence</span>,type<span class="op">=</span><span class="st">"p"</span>,pch<span class="op">=</span><span class="fl">1</span>,col<span class="op">=</span><span class="fl">1</span>,xlab<span class="op">=</span><span class="st">"Year"</span>,ylab<span class="op">=</span><span class="st">"Seroprevalence"</span><span class="op">)</span></span></code></pre></div>
 <p>A separate function, sero_calculate2(), can be used to generate
-numbers of positive and negative tests</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>[TBA]</span></code></pre></div>
+numbers of samples and positive tests based on a template. The number of
+samples and positives is based on population. [TBC?]</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">template</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>year<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1990</span>,<span class="fl">3</span><span class="op">)</span>,age_min<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">16</span>,<span class="fl">41</span><span class="op">)</span>,age_max<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>,<span class="fl">40</span>,<span class="fl">100</span><span class="op">)</span>,vc_factor<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sero_data_pn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sero_calculate2.html">sero_calculate2</a></span><span class="op">(</span><span class="va">template</span>, <span class="va">model_data</span>, n_p <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">sero_data_pn</span></span></code></pre></div>
 <p>Annual reported severe and fatal case data is generated from C, the
 output data on the number of new infectious individuals at each time
 point. The actual number of severe and fatal cases is calculated via
