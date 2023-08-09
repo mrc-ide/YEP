@@ -27,7 +27,7 @@ The code below loads and plots maps of the environmental covariate values for th
 
 ```{r,eval=FALSE}
 library(YEP)
-library(YFDaux) #Auxiliary functions for plotting
+library(YEPaux) #Auxiliary functions for plotting
 enviro_data <- read.csv(file = paste(path.package("YEP"), 
                                      "/exdata/enviro_data_example.csv", sep = ""),
                         header = TRUE) # Environmental data
@@ -73,4 +73,9 @@ null2 <- create_map(shape_data, epi_data$R0, scale=pretty(epi_data$R0, 8),
                     colour_scale, pixels_max=720, text_size=0.75, map_title="", 
                     legend_title="R0", legend_position="topleft", legend_format="f", 
                     legend_dp=1, output_file=NULL)
+```
+[TBA]
+
+```{r,eval=FALSE}
+[TBA]
 ```

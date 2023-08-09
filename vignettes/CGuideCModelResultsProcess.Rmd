@@ -21,7 +21,7 @@ Data is generated as described in [Worked Example 1](https://mrc-ide.github.io/Y
 ```{r,eval=FALSE}
 library(YEP)
 input_data <- readRDS(file=paste(path.package("YEP"),
-                                 "/inst/exdata/input_data_example.Rds",sep=""))
+                                 "/exdata/input_data_example.Rds",sep=""))
 model_data <- Model_Run(1.0e-7, 0.0, input_data$vacc_data[1,,], input_data$pop_data[1,,], c(1990:2000),
                    NULL, "full", input_data$years_labels[1], 1, 1.0, 1.0, 1, 1, FALSE)
 ```

@@ -20,17 +20,54 @@ An "outbreak" is defined as taking place whenever a case of yellow fever is repo
 
 The reporting of yellow fever cases is governed by the probability of an infection which causes severe but non-fatal symptoms being reported (p_rep_severe) and the probability of a fatal infection being reported (p_rep_death). It is assumed that infections not leading to severe or fatal symptoms are not reported. The proportion of infections which cause severe symptoms is given by the quantity p_severe_inf, and the proportion of severe infections which lead to death is given by the quantity p_death_severe_inf. These have values of 0.12 and 0.39 respectively within the package, based on [Servadio et al](https://doi.org/10.1186/s12879-021-06535-4).
 
-As described in [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html), we obtain data on the number of new infectious individuals at each time point during a modelled period from the Model_Run() function. Due to potential memory limitations, Model_Run() does not accept a number of particles (n_particles) higher than 20. To run a large number of stochastic repetitions, the Model_Run_Many_Reps() function should be used instead. This function can accept any number of repetitions (n_reps), splitting them into groups of particles of a size up to 20 (division) and running those groups sequentially.
+As described in [Worked Example 1 - Single Model Run](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html), we obtain data on the number of new infectious individuals at each time point during a modelled period from the Model_Run() function. Due to potential memory limitations, Model_Run() does not accept a number of particles (n_particles) higher than 20. To run a large number of stochastic repetitions, the Model_Run_Many_Reps() function should be used instead. This function can accept any number of repetitions (n_reps), splitting them into groups of particles of a size up to 20 (division) and running those groups sequentially. Here we set output_type = "case" so that Model_Run_Many_Reps() only outputs annual total infection data, since this is what we are interested in.
 
 ```{r,eval=FALSE}
 set.seed(1)
 library(YEP)
 input_data <- readRDS(file = paste(path.package("YEP"),"/exdata/input_data_example.Rds", sep = ""))
-model_data <- Model_Run_Many_Reps(FOI_spillover = 1.0e-7, R0 = 0.0, vacc_data = input_data$vacc_data[1,,], 
-                             pop_data = input_data$pop_data[1,,], years_data = c(1990:2000),
+n_reps = 100 # Number of stochastic repetitions
+years_data = c(1990:2000)
+model_data <- Model_Run_Many_Reps(FOI_spillover = 1.0e-8, R0 = 0.0, vacc_data = input_data$vacc_data[1,,], 
+                             pop_data = input_data$pop_data[1,,], years_data,
                              start_SEIRV = NULL, output_type = "case", year0 = input_data$years_labels[1], 
                              mode_start = 1, vaccine_efficacy = 1.0, dt = 1.0, 
-                             n_reps = 100, division = 10)
+                             n_reps = n_reps, division = 10)
 ```
 
-[TBA]
+We can calculate the number of reported cases by year for a single repetition using the case_data_calculate() function:
+
+```{r,eval=FALSE}
+n_rep_select = 1 #Select repetition to examine
+p_severe_inf = 0.12 # Probability of an infection causing severe symptoms
+p_death_severe_inf = 0.39 # Probability of an infection with severe symptoms causing death
+p_rep_severe = 0.1 # Probability of reporting of an infection with severe (non-fatal) symptoms
+p_rep_death = 0.2 # Probability of reporting of a fatal infection
+case_data_single <- case_data_calculate(model_data, n_p = n_rep_select, p_severe_inf, p_death_severe_inf,
+                                        p_rep_severe, p_rep_death,output_type = "annual", deterministic = FALSE)
+case_data_single
+```
+
+One or more outbreaks are considered to have occurred in a year if the number of reported cases is more than 1, so binary outbreak occurrence is considered to be 1 (true) in years 4 and 10 and 0 (false) in the other years in the above results.
+
+We can calculate case data across multiple repetitions quickly with the case_data_calculate_multi() function:
+
+```{r,eval=FALSE}
+case_data_multi <- case_data_calculate_multi(model_data, p_severe_inf, p_death_severe_inf,p_rep_severe, 
+                                             p_rep_death,output_type = "annual", deterministic = FALSE)
+case_data_multi[[1]]
+```
+
+The risk of one or more outbreaks in a given year can be calculated by checking the outbreak occurence for that year for every stochastic repetitions and dividing the number of repetitions in which the outbreak occurence is 1 (i.e. those where the number of reported cases is >=1) by the total number of repetitions.
+
+```{r,eval=FALSE}
+n_years=length(years_data)
+outbreak_risk=rep(0,n_years)
+dp=1.0/n_reps
+for(n_year in 1:n_years){
+  for(n_rep in 1:n_reps){
+    if(case_data_multi[[n_rep]]$rep_cases[n_year]>=1){outbreak_risk[n_year]=outbreak_risk[n_year]+dp}
+  }
+}
+matplot(x=years_data,y=outbreak_risk,type="b",col=1,pch=1,xlab="Year",ylab="Outbreak risk",ylim=c(0,max(outbreak_risk)))
+```

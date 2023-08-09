@@ -60,10 +60,12 @@ seroprevalence <-  sero_calculate(age_min, age_max, years, vc_factor, model_data
 matplot(x=years,y=seroprevalence,type="p",pch=1,col=1,xlab="Year",ylab="Seroprevalence")
 ```
 
-A separate function, sero_calculate2(), can be used to generate numbers of positive and negative tests
+A separate function, sero_calculate2(), can be used to generate numbers of samples and positive tests based on a template. The number of samples and positives is based on population. [TBC?]
 
 ```{r,eval=FALSE}
-[TBA]
+template=data.frame(year=rep(1990,3),age_min=c(0,16,41),age_max=c(15,40,100),vc_factor=rep(0,3))
+sero_data_pn <- sero_calculate2(template, model_data, n_p = 1)
+sero_data_pn
 ```
 
 Annual reported severe and fatal case data is generated from C, the output data on the number of new infectious individuals at each time point. The actual number of severe and fatal cases is calculated via binomial functions using the variables p_severe_inf (the probability of an infection leading to severe symptoms) and p_death_severe_inf (the probability that a severe infection with lead to death). The number of reported severe and fatal cases is then similarly calculated binomially using the variables p_rep_severe (probability of a severe case being reported in public health figures, usually meaning lab-confirmed cases) and p_rep_death (probability of a fatal case being reported). The total number of reported cases (rep_cases in the output data frame annual_data below) is the sum of reported severe cases and reported fatal cases (so it will always be equal to or greater than the number of reported deaths).

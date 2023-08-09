@@ -43,8 +43,10 @@ for(n_region in 1:n_regions){
  R0_values[n_region] <- FOI_R0_values$R0
 }
 vaccine_efficacy <- 1.0 
-p_rep_severe <- 0.05
-p_rep_death <- 0.1
+p_severe_inf = 0.12 # Probability of an infection causing severe symptoms
+p_death_severe_inf = 0.39 # Probability of an infection with severe symptoms causing death
+p_rep_severe = 0.05 # Probability of reporting of an infection with severe (non-fatal) symptoms
+p_rep_death = 0.1 # Probability of reporting of a fatal infection
 mode_start <- 1     
 start_SEIRV <- NULL       
 dt <- 1.0            
@@ -57,8 +59,10 @@ cluster <- NULL
 Modelled data to use for the likelihood calculation is created using Generate_Dataset() as in Worked Example 3:
 
 ```{r,eval=FALSE}
+set.seed(1)
 model_data <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
-                            p_rep_severe,p_rep_death,mode_start,start_SEIRV,dt,n_reps,deterministic,mode_parallel,cluster)
+                             p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,mode_start,
+                             start_SEIRV,dt,n_reps,deterministic,mode_parallel,cluster=NULL)
 ```
 
 The likelihood of the observed serological data based on the epidemiological parameters is calculated using a gamma distribution, with (for each line of data) the modelled seroprevalence as the probability of "success", the number of samples for the specified region, age range and year as the number of "observations", and the number of positive tests as the number of "successes".
