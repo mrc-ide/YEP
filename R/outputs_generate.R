@@ -655,17 +655,17 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
 #'
 #' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
 #' @param FOI_values Array of sets of values of the force of infection due to spillover from sylvatic reservoir;
-#'   dimensions [TBA]
+#'   dimensions = number of regions * number of sets
 #' @param R0_values Array of values of the basic reproduction number for human-human transmission;
-#'   dimensions [TBA]
-#' @param sero_template Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
+#'   dimensions = number of regions * number of sets
+#' @param sero_template Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor
 #'   and number of samples
 #' @param case_template Annual reported case/death data template - data frame with region and year
-#' @param vaccine_efficacy Vector of values of vaccine efficacy [TBA]
+#' @param vaccine_efficacy Vector of values of vaccine efficacy; length = number of datasets
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
-#' @param p_rep_severe Vector of values of probability of reporting of a severe but non-fatal infection [TBA]
-#' @param p_rep_death Vetor of value of probability of reporting of a fatal infection [TBA]
+#' @param p_rep_severe Vector of values of probability of reporting of a severe but non-fatal infection; length = no. datasets
+#' @param p_rep_death Vetor of values of probability of reporting of a fatal infection; length = no. datasets
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
