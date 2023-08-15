@@ -204,8 +204,8 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #'
 #' @param log_params_prop Proposed values of varied parameters (natural logarithm of actual parameters)
 #' @param input_data List of population and vaccination data for multiple regions (created using data input
-#'   creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process2
-#'   in MCMC2
+#'   creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process
+#'   in MCMC
 #' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.

@@ -54,7 +54,7 @@ If mode_start=2, use SEIRV input in list from previous run(s)}
 
 \item{n_reps}{Number of repetitions (used to set number of particles and threads)}
 
-\item{division}{Number of particles to run in one go (up to 20)
+\item{division}{Number of particles/threads to run in one go (up to 20)
 '}
 }
 \description{

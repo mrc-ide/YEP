@@ -45,7 +45,7 @@ t_infectious <- 5 #Time cases remain infectious
 #'   "sero" = annual SEIRV summed across all ages
 #'   "case+sero" = annual SEIRVC summed across all ages
 #'   "case_alt" = annual total new infections not combined by age
-#'   "case_alt2" = total new infections for all steps
+#'   "case_alt2" = total new infections combined by age for all steps
 #' @param year0 First year in population/vaccination data
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
@@ -305,7 +305,7 @@ Model_Run_Multi_Input <- function(FOI_spillover = c(),R0 = c(),vacc_data = list(
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param dt Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
-#' @param division Number of particles to run in one go (up to 20)
+#' @param division Number of particles/threads to run in one go (up to 20)
 #' '
 #' @export
 #'
@@ -314,13 +314,13 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
                                 vaccine_efficacy = 1.0, dt = 1.0, n_reps=1, division=10) {
 
   assert_that(division<=20,msg="Number of particles run at once must be 20 or less")
-  n_particleS_0=min(division,n_reps)
-  n_threads=min(division,n_particleS_0)
+  n_particles0=min(division,n_reps)
+  n_threads=min(division,n_particles0)
   n_divs=ceiling(n_reps/division)
   if(n_divs==1){
-    n_particles_list=n_particleS_0
+    n_particles_list=n_particles0
   } else {
-    n_particles_list=c(rep(n_particleS_0,n_divs-1),n_reps-(division*(n_divs-1)))
+    n_particles_list=c(rep(n_particles0,n_divs-1),n_reps-(division*(n_divs-1)))
   }
 
   n_nv=3 #Number of non-vector outputs
@@ -544,7 +544,8 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 create_param_labels <- function(type="FOI",input_data=list(),enviro_data=NULL,extra_params=c("vacc_eff")){
 
   assert_that(type %in% c("FOI","FOI+R0","FOI enviro","FOI+R0 enviro"))
-  assert_that(input_data_check(input_data),msg="Input data must be in standard format")
+  assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
+                                                     " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
 
   n_extra=length(extra_params)
 

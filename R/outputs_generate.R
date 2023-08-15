@@ -65,8 +65,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 
   #Prune input data based on regions
   regions=regions_breakdown(c(sero_template$region,case_template$region))
-  n_regions=length(input_data$region_labels)
   input_data=input_data_truncate(input_data,regions)
+  n_regions=length(input_data$region_labels)
 
   #Cross-reference templates with input regions
   if(is.null(sero_template)==FALSE){
@@ -257,7 +257,7 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
                                   deterministic = FALSE, mode_parallel = "none",cluster = NULL, output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
-                                                     " (see [TBA] )"))
+                                                     " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   assert_that(all(c("age_min","age_max","samples","positives","vc_factor","region") %in% names(template)))
   assert_that(vaccine_efficacy >=0.0 && vaccine_efficacy <=1.0,msg="Vaccine efficacy must be between 0-1")
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
@@ -385,7 +385,7 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
                                   mode_parallel = "none",cluster = NULL, output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
-                                                     " (see [TBA] )"))
+                                                     " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   assert_that(all(c("region","year","cases") %in% names(template)))
   #TODO - Set flag if "deaths" in template header
   input_data=input_data_process(input_data,NULL,template)
@@ -536,7 +536,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                          dt = 1.0, n_reps = 1, deterministic = FALSE,mode_parallel = "none",cluster = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
-                                                     " (see [TBA] )"))
+                                                     " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   assert_that(all(c("region","year","age_min","age_max","life_exp") %in% names(template)))
   input_data=input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy>=0.0 && vaccine_efficacy<=1.0,msg="Vaccine efficacy must be between 0-1")
@@ -560,7 +560,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                 msg="Number of start_SEIRV datasets must match number of regions")}
 
   #Set up data structures to take modelled data
-  model_case_values=model_death_values=model_dalys_values=rep(0,nrow(template))
+  model_case_values=model_death_values=rep(0,nrow(template))
 
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel=="pars_multi"){
@@ -658,9 +658,12 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
 #'   dimensions = number of regions * number of sets
 #' @param R0_values Array of values of the basic reproduction number for human-human transmission;
 #'   dimensions = number of regions * number of sets
-#' @param sero_template Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor
-#'   and number of samples
-#' @param case_template Annual reported case/death data template - data frame with region and year
+#' @param template List containing data template - either:
+#'   -case and/or serological data (as generated using the Generate_Dataset function), as template$case_template (data frame
+#'     with region and year) and template$sero_template (data frame with region, year, minimum/maximum age, vc_factor and
+#'     number of samples)
+#'   -VIMC burden data (as generated using the Generate_VIMC_Burden_Dataset function), as data frame with regions, years,
+#'     minimum and maximum age, and life expectancy for each line
 #' @param vaccine_efficacy Vector of values of vaccine efficacy; length = number of datasets
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
@@ -682,10 +685,10 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
 #' '
 #' @export
 #'
-Generate_Multiple_Datasets <- function(input_data = list(),FOI_values = list(),R0_values = list(),sero_template = NULL,case_template = NULL,
-                                       vaccine_efficacy = c(1.0), p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = c(1.0),
-                                       p_rep_death = c(1.0),mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE,
-                                       mode_parallel = "none",cluster = NULL){
+Generate_Multiple_Datasets <- function(input_data = list(),FOI_values = list(),R0_values = list(),template,
+                                       vaccine_efficacy = c(1.0), p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                                       p_rep_severe = c(1.0),p_rep_death = c(1.0),mode_start = 1,start_SEIRV = NULL, dt = 1.0,
+                                       n_reps = 1, deterministic = FALSE,mode_parallel = "none",cluster = NULL){
 
   assert_that(length(dim(FOI_values))==2)
   assert_that(length(dim(FOI_values))==2)
@@ -695,26 +698,43 @@ Generate_Multiple_Datasets <- function(input_data = list(),FOI_values = list(),R
   assert_that(length(p_rep_severe)==n_param_sets)
   assert_that(length(p_rep_death)==n_param_sets)
 
-  if(is.null(sero_template)==FALSE){model_sero_values=array(NA,dim=c(nrow(sero_template),n_param_sets))}else(model_sero_values=NULL)
-  if(is.null(case_template)==FALSE){model_case_values=model_death_values=array(NA,dim=c(nrow(case_template),n_param_sets))}else{
-    model_case_values=model_death_values=NULL
-  }
+  if(is.null(template$case_template)==FALSE || is.null(template$sero_template)==FALSE){type="case+sero"}else{type="VIMC"}
+
   cat("\nRunning set:\n")
-  for(set in 1:n_param_sets){
-    cat("\t",set,sep="")
-    dataset_single <- Generate_Dataset(input_data,FOI_values[,set],R0_values[,set],sero_template,case_template,vaccine_efficacy[set],
-                                       p_severe_inf,p_death_severe_inf,p_rep_severe[set],p_rep_death[set],mode_start,start_SEIRV,dt,n_reps,
-                                       deterministic,mode_parallel,cluster,output_frame=FALSE)
-    if(is.null(sero_template)==FALSE){
-      model_sero_values[,set]=dataset_single$model_sero_values
+  if(type=="case+sero"){
+    for(set in 1:n_param_sets){
+      cat("\t",set,sep="")
+      dataset_single <- Generate_Dataset(input_data,FOI_values[,set],R0_values[,set],template$sero_template,template$case_template,
+                                         vaccine_efficacy[set],p_severe_inf,p_death_severe_inf,p_rep_severe[set],
+                                         p_rep_death[set],mode_start,start_SEIRV,dt,n_reps,deterministic,mode_parallel,
+                                         cluster,output_frame=TRUE)
+      if(set==1){
+        data_out=list(sero_data=dataset_single$model_sero_data,case_data=dataset_single$model_case_data)
+        nrows_sero=nrow(dataset_single$model_sero_data)
+        nrows_case=nrow(dataset_single$model_case_data)
+      } else {
+        data_out$sero_data=rbind(data_out$sero_data,dataset_single$model_sero_data)
+        data_out$case_data=rbind(data_out$case_data,dataset_single$model_case_data)
+      }
     }
-    if(is.null(case_template)==FALSE){
-      model_case_values[,set]=dataset_single$model_case_values
-      model_death_values[,set]=dataset_single$model_death_values
+    data_out$sero_data$set=sort(rep(c(1:n_param_sets),nrows_sero))
+    data_out$case_data$set=sort(rep(c(1:n_param_sets),nrows_case))
+  } else {
+    for(set in 1:n_param_sets){
+      cat("\t",set,sep="")
+      dataset_single <- Generate_VIMC_Burden_Dataset(input_data,FOI_values[,set],R0_values[,set],template,vaccine_efficacy[set],
+                                                     p_severe_inf,p_death_severe_inf,YLD_per_case=0.006486,mode_start,
+                                                     start_SEIRV,dt,n_reps,deterministic,mode_parallel,cluster)
+      if(set==1){
+        data_out=dataset_single
+        nrows=nrow(dataset_single)
+      } else {
+        data_out=rbind(data_out,dataset_single)
+      }
     }
+    data_out$set=sort(rep(c(1:n_param_sets),nrows))
   }
   cat("\nDatasets complete.\n")
 
-  return(list(model_sero_values=model_sero_values,model_case_values=model_case_values,
-              model_death_values=model_death_values))
+  return(data_out)
 }

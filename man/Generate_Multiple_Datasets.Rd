@@ -8,8 +8,7 @@ Generate_Multiple_Datasets(
   input_data = list(),
   FOI_values = list(),
   R0_values = list(),
-  sero_template = NULL,
-  case_template = NULL,
+  template,
   vaccine_efficacy = c(1),
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
@@ -28,25 +27,27 @@ Generate_Multiple_Datasets(
 \item{input_data}{List of population and vaccination data for multiple regions in standard format [TBA]}
 
 \item{FOI_values}{Array of sets of values of the force of infection due to spillover from sylvatic reservoir;
-dimensions [TBA]}
+dimensions = number of regions * number of sets}
 
 \item{R0_values}{Array of values of the basic reproduction number for human-human transmission;
-dimensions [TBA]}
+dimensions = number of regions * number of sets}
 
-\item{sero_template}{Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
-and number of samples}
+\item{template}{List containing data template - either:
+-case and/or serological data (as generated using the Generate_Dataset function), as template$case_template (data frame
+  with region and year) and template$sero_template (data frame with region, year, minimum/maximum age, vc_factor and
+  number of samples)
+-VIMC burden data (as generated using the Generate_VIMC_Burden_Dataset function), as data frame with regions, years,
+  minimum and maximum age, and life expectancy for each line}
 
-\item{case_template}{Annual reported case/death data template - data frame with region and year}
-
-\item{vaccine_efficacy}{Vector of values of vaccine efficacy [TBA]}
+\item{vaccine_efficacy}{Vector of values of vaccine efficacy; length = number of datasets}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
 \item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
-\item{p_rep_severe}{Vector of values of probability of reporting of a severe but non-fatal infection [TBA]}
+\item{p_rep_severe}{Vector of values of probability of reporting of a severe but non-fatal infection; length = no. datasets}
 
-\item{p_rep_death}{Vetor of value of probability of reporting of a fatal infection [TBA]}
+\item{p_rep_death}{Vetor of values of probability of reporting of a fatal infection; length = no. datasets}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
