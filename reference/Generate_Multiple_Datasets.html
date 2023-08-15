@@ -64,8 +64,7 @@
 <span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  FOI_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  R0_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  sero_template <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  case_template <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">template</span>,</span>
 <span>  vaccine_efficacy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>  p_severe_inf <span class="op">=</span> <span class="fl">0.12</span>,</span>
 <span>  p_death_severe_inf <span class="op">=</span> <span class="fl">0.39</span>,</span>
@@ -89,25 +88,25 @@
 
 <dt>FOI_values</dt>
 <dd><p>Array of sets of values of the force of infection due to spillover from sylvatic reservoir;
-dimensions [TBA]</p></dd>
+dimensions = number of regions * number of sets</p></dd>
 
 
 <dt>R0_values</dt>
 <dd><p>Array of values of the basic reproduction number for human-human transmission;
-dimensions [TBA]</p></dd>
+dimensions = number of regions * number of sets</p></dd>
 
 
-<dt>sero_template</dt>
-<dd><p>Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
-and number of samples</p></dd>
-
-
-<dt>case_template</dt>
-<dd><p>Annual reported case/death data template - data frame with region and year</p></dd>
+<dt>template</dt>
+<dd><p>List containing data template - either:
+-case and/or serological data (as generated using the Generate_Dataset function), as template$case_template (data frame
+  with region and year) and template$sero_template (data frame with region, year, minimum/maximum age, vc_factor and
+  number of samples)
+-VIMC burden data (as generated using the Generate_VIMC_Burden_Dataset function), as data frame with regions, years,
+  minimum and maximum age, and life expectancy for each line</p></dd>
 
 
 <dt>vaccine_efficacy</dt>
-<dd><p>Vector of values of vaccine efficacy [TBA]</p></dd>
+<dd><p>Vector of values of vaccine efficacy; length = number of datasets</p></dd>
 
 
 <dt>p_severe_inf</dt>
@@ -119,11 +118,11 @@ and number of samples</p></dd>
 
 
 <dt>p_rep_severe</dt>
-<dd><p>Vector of values of probability of reporting of a severe but non-fatal infection [TBA]</p></dd>
+<dd><p>Vector of values of probability of reporting of a severe but non-fatal infection; length = no. datasets</p></dd>
 
 
 <dt>p_rep_death</dt>
-<dd><p>Vetor of value of probability of reporting of a fatal infection [TBA]</p></dd>
+<dd><p>Vetor of values of probability of reporting of a fatal infection; length = no. datasets</p></dd>
 
 
 <dt>mode_start</dt>
