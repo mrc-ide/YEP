@@ -558,9 +558,10 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
   assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
   if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
                                 msg="Number of start_SEIRV datasets must match number of regions")}
+  n_lines_total=nrow(template)
 
   #Set up data structures to take modelled data
-  model_case_values=model_death_values=rep(0,nrow(template))
+  model_case_values=model_death_values=cohort_size=rep(0,n_lines_total)
 
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel=="pars_multi"){
@@ -612,17 +613,22 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     case_line_list_region=xref$line_list[[n_region]]
     years_case=template$year[case_line_list_region]
     n_lines=length(case_line_list_region)
+    age_pts=list()
+    for(n_line in 1:n_lines){
+      line=case_line_list_region[n_line]
+      n_age_min=findInterval(template$age_min[line],input_data$age_labels)
+      n_age_max=findInterval(template$age_max[line],input_data$age_labels)
+      age_pts[[n_line]]=c(n_age_min:n_age_max)
+      cohort_size[line]=sum(input_data$pop_data[n_region,
+                                                input_data$years_labels==years_case[n_line],age_pts[[n_line]]])
+    }
 
     for(n_rep in 1:n_reps){
       cases=deaths=rep(0,n_lines)
       for(n_line in 1:n_lines){
-        line=case_line_list_region[n_line]
         year=years_case[n_line]
         t_pts=t_pts_all[model_output$year==years_case[n_line]]
-        n_age_min=findInterval(template$age_min[line],input_data$age_labels)
-        n_age_max=findInterval(template$age_max[line],input_data$age_labels)
-        age_pts=c(n_age_min:n_age_max)
-        infs=sum(model_output$C[age_pts,n_rep,t_pts])
+        infs=sum(model_output$C[age_pts[[n_line]],n_rep,t_pts])
         if(deterministic){
           cases[n_line]=floor(infs)*p_severe_inf
           deaths[n_line]=cases[n_line]*p_death_severe_inf
@@ -642,8 +648,10 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
   model_YLL_values=model_death_values*template$life_exp
   model_dalys_values=(model_case_values*YLD_per_case)+model_YLL_values
 
-  return(data.frame(region=template$region,year=template$year,age_min=template$age_min,age_max=template$age_max,
-                    cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values,YLL=model_YLL_values))
+  return(data.frame(disease=rep("YF",n_lines_total),year=template$year,age=template$age_min,
+                    region_label1=substr(template$region,1,3),region_label2=template$region,
+                    cohort_size=cohort_size,cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values,
+                    YLL=model_YLL_values))
 }
 #-------------------------------------------------------------------------------
 #' @title Generate_Multiple Datasets
