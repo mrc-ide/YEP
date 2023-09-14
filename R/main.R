@@ -494,6 +494,7 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
   }
   if(mode_start==1)
   {
+    #TODO - Update herd immunity calculation to give age-stratified immunity profile based on notional FOI
     if(R0>1.0){
       herd_immunity=1.0-(1.0/R0)
     } else {
