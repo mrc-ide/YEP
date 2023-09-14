@@ -25,8 +25,9 @@
 #' @param p_rep_death Probability of reporting of a fatal infection
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
-#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
@@ -236,8 +237,9 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #' @param vaccine_efficacy Fractional vaccine efficacy
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
-#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
@@ -363,8 +365,9 @@ Generate_Sero_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #' @param p_rep_death Probability of reporting of a fatal infection
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
-#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
@@ -516,8 +519,9 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #' @param YLD_per_case TBA
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
-#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
@@ -679,8 +683,9 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
 #' @param p_rep_death Vetor of values of probability of reporting of a fatal infection; length = no. datasets
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
-#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
 #' @param dt Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param n_reps number of stochastic repetitions

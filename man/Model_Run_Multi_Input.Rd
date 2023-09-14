@@ -37,8 +37,8 @@ Model_Run_Multi_Input(
 \item{output_type}{Type of data to output:
 "full" = SEIRVC + FOI for all steps and ages
 "case" = annual total new infections (C) summed across all ages
-"sero" = annual SEIRV summed across all ages
-"case+sero" = annual SEIRVC summed across all ages
+"sero" = annual SEIRV
+"case+sero" = annual SEIRVC, C summed across all ages
 "case_alt" = annual total new infections not combined by age
 "case_alt2" = total new infections combined by age for all steps}
 
@@ -46,8 +46,9 @@ Model_Run_Multi_Input(
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-If mode_start=2, use SEIRV input in list from previous run(s)}
+If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+If mode_start=2, use SEIRV input in list from previous run(s)
+If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 

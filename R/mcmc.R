@@ -38,8 +38,9 @@
 #' @param log_params_min Lower limits of varied parameter values if specified
 #' @param log_params_max Upper limits of varied parameter values if specified
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
-#'  If mode_start = 0, only vaccinated individuals
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=0, only vaccinated individuals
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param prior_type Text indicating which type of calculation to use for prior probability
 #'  If prior_type = "zero", prior probability is always zero
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
@@ -71,6 +72,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
                  p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
 
   assert_that(is.logical(deterministic))
+  assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")
 
   #Check that initial, minimum and maximum parameters are in vectors of same sizes
   n_params=length(log_params_ini)
@@ -583,8 +585,9 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
-#'  If mode_start = 0, only vaccinated individuals
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity
+#'  If mode_start=0, only vaccinated individuals
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param prior_type Text indicating which type of calculation to use for prior probability
 #'  If prior_type = "zero", prior probability is always zero
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
@@ -613,7 +616,8 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
                             deterministic=TRUE,mode_parallel="none",cluster=NULL){
 
   #TODO - Add assertthat functions
-  assert_that(length(log_params_min)==length(log_params_max))
+  assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")
+  assert_that(length(log_params_min)==length(log_params_max),msg="Parameter limit vectors must have same lengths")
   assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro"))
   assert_that(prior_type %in% c("zero","flat","exp","norm"))
 

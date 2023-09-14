@@ -34,8 +34,9 @@ positives}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity
-If mode_start=2, use SEIRV input in list from previous run(s)}
+If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+If mode_start=2, use SEIRV input in list from previous run(s)
+If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
 

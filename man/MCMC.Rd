@@ -71,8 +71,9 @@ covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
 \item{log_params_max}{Upper limits of varied parameter values if specified}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start = 0, only vaccinated individuals
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity}
+If mode_start=0, only vaccinated individuals
+If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{prior_type}{Text indicating which type of calculation to use for prior probability
 If prior_type = "zero", prior probability is always zero
