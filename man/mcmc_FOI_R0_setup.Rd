@@ -7,6 +7,7 @@
 mcmc_FOI_R0_setup(
   type = "",
   prior_type = "",
+  norm_prior_sd = c(30, 10, 30),
   regions = "",
   log_params_prop = c(),
   enviro_data = list(),
@@ -24,6 +25,8 @@ If prior_type = "zero", prior probability is always zero
 If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
+
+\item{norm_prior_sd}{TBA}
 
 \item{regions}{Vector of region names}
 

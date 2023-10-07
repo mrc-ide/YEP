@@ -16,6 +16,7 @@ mcmc_prelim_fit(
   obs_case_data = list(),
   mode_start = 0,
   prior_type = "zero",
+  norm_prior_sd = c(30, 10, 30),
   dt = 1,
   n_reps = 1,
   enviro_data = NULL,
@@ -66,6 +67,8 @@ If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
 
+\item{norm_prior_sd}{TBA}
+
 \item{dt}{time increment in days (must be 1 or 5)}
 
 \item{n_reps}{Number of repetitions}
@@ -95,10 +98,10 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 }
 \description{
 Test multiple sets of parameters randomly drawn from range between maximum and minimum
-values in order to find approximate values giving maximum likelihood
+values in order to find approximate values giving maximum posterior likelihood
 }
 \details{
-This function is used to estimate the model parameter values giving maximum likelihood; it is primarily
-intended to be used to generate initial parameter values for Markov Chain Monte Carlo fitting (using the mcmc()
-function).
+This function is used to estimate the model parameter values giving maximum posterior likelihood; it is
+primarily intended to be used to generate initial parameter values for Markov Chain Monte Carlo fitting (using
+the mcmc() function).
 }

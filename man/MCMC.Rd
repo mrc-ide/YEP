@@ -16,6 +16,7 @@ MCMC(
   log_params_max = c(),
   mode_start = 0,
   prior_type = "zero",
+  norm_prior_sd = c(30, 10, 30),
   dt = 1,
   n_reps = 1,
   enviro_data = NULL,
@@ -79,7 +80,12 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 If prior_type = "zero", prior probability is always zero
 If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
+If prior_type = "norm", prior probability is given by dnorm calculation on parameter values using norm_prior_sd values}
+
+\item{norm_prior_sd}{Vector of 3 values of standard deviations to use in dnorm calculations
+Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
+Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
+Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)}
 
 \item{dt}{time increment in days (must be 1 or 5)}
 

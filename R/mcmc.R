@@ -45,7 +45,11 @@
 #'  If prior_type = "zero", prior probability is always zero
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-#'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values using norm_prior_sd values
+#' @param norm_prior_sd Vector of 3 values of standard deviations to use in dnorm calculations
+#'  Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
+#'  Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
+#'  Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of times to repeat calculations to get average likelihood at each step
 #' @param enviro_data Data frame containing values of environmental covariates; set to NULL if not in use
@@ -67,17 +71,14 @@
 #' @export
 #'
 MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,filename_prefix="Chain",
-                 Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,prior_type="zero",dt=1.0,
-                 n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_severe_inf=0.12,p_death_severe_inf=0.39,
-                 p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
+                 Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,prior_type="zero",
+                 norm_prior_sd=c(30,10,30),dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,
+                 vaccine_efficacy=NULL,p_severe_inf=0.12,p_death_severe_inf=0.39,p_rep_severe=NULL,p_rep_death=NULL,
+                 m_FOI_Brazil=1.0,deterministic=FALSE,mode_parallel="none",cluster=NULL){
 
   assert_that(is.logical(deterministic))
   assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")
-
-  #Check that initial, minimum and maximum parameters are in vectors of same sizes
   n_params=length(log_params_ini)
-  assert_that(length(log_params_min)==n_params)
-  assert_that(length(log_params_max)==n_params)
 
   extra_params=c()
   if(is.null(vaccine_efficacy)==TRUE){extra_params=append(extra_params,"vaccine_efficacy")}
@@ -98,16 +99,18 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 
   #Label parameters according to order and fitting type
   param_names=create_param_labels(type,input_data,enviro_data,extra_params)
-  names(log_params_ini)=names(log_params_min)=names(log_params_max)=param_names
+  names(log_params_ini)=param_names
 
   #Run checks to ensure that number of parameters is correct for fitting type and number of regions/environmental
   #covariates
-  checks<-mcmc_checks(log_params_ini,n_regions,type,log_params_min,log_params_max,prior_type,enviro_data,
-                      R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,m_FOI_Brazil)
+  checks<-mcmc_checks(log_params_ini,n_regions,type,log_params_min,log_params_max,prior_type,norm_prior_sd,
+                      enviro_data,R0_fixed_values,vaccine_efficacy,p_rep_severe,p_rep_death,m_FOI_Brazil)
+  if(prior_type=="flat"){names(log_params_min)=names(log_params_max)=param_names}
 
   #Set up list of invariant parameter values to supply to other functions
   consts=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,mode_start=mode_start,
-              prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,R0_fixed_values=R0_fixed_values,
+              prior_type=prior_type,norm_prior_sd=norm_prior_sd,
+              dt=dt,n_reps=n_reps,enviro_data=enviro_data,R0_fixed_values=R0_fixed_values,
               vaccine_efficacy=vaccine_efficacy,p_severe_inf=p_severe_inf,p_death_severe_inf=p_death_severe_inf,
               p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,deterministic=deterministic,
               mode_parallel=mode_parallel,cluster=cluster)
@@ -119,9 +122,9 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   log_params=log_params_ini
   chain_cov=1
   adapt=0
-  like_current=-Inf
+  posterior_value_current=-Inf
 
-  #Iterative fitting
+  #Iterative estimation
   for (iter in 1:Niter){
 
     #cat("\n\tGenerating new parameter values")
@@ -129,14 +132,14 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     log_params_prop=param_prop_setup(log_params,chain_cov,adapt)
 
     #cat("\n\tCalculating likelihood")
-    #Calculate likelihood using single_like_calc function
-    like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
+    #Calculate likelihood using single_posterior_calc function
+    posterior_value_prop=single_posterior_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
     #cat("\n\tLikelihood calculated")
 
-    if(is.finite(like_prop)==FALSE) {
+    if(is.finite(posterior_value_prop)==FALSE) {
       p_accept = -Inf
     } else {
-      p_accept = like_prop - like_current
+      p_accept = posterior_value_prop - posterior_value_current
       if(is.na(p_accept) ){ p_accept = -Inf}
     }
 
@@ -144,7 +147,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     tmp = runif(1)
     if(tmp<min(exp(p_accept),1)) { # accept:
       log_params = log_params_prop
-      like_current = like_prop
+      posterior_value_current = posterior_value_prop
       accept = 1
     } else { # reject:
       accept = 0
@@ -153,8 +156,8 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     #save current step
     chain = rbind(chain, log_params)
     chain_prop=rbind(chain_prop,log_params_prop)
-    posterior_current=rbind(posterior_current,like_current)
-    posterior_prop=rbind(posterior_prop,like_prop)
+    posterior_current=rbind(posterior_current,posterior_value_current)
+    posterior_prop=rbind(posterior_prop,posterior_value_prop)
     flag_accept = rbind(flag_accept, accept)
     chain_cov_all = rbind(chain_cov_all,max(chain_cov))
 
@@ -172,7 +175,11 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     if (iter %% 10 == 0){
       if (iter %% 10000 == 0){fileIndex  = iter/10000}
 
-      filename=paste(filename_prefix,fileIndex,".csv",sep="")
+      if(fileIndex>=10){
+        filename=paste0(filename_prefix,fileIndex,".csv")
+      } else {
+        filename=paste0(filename_prefix,"0",fileIndex,".csv")
+      }
       if(file.exists(filename)==FALSE){file.create(filename)}
       lines=min((fileIndex * 10000+1),iter):iter
       #cat("\nIteration ",iter,sep="")
@@ -197,11 +204,11 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
   return(param_out)
 }
 #-------------------------------------------------------------------------------
-#' @title single_like_calc
+#' @title single_posterior_calc
 #'
-#' @description Function which calculates and outputs likelihood of observing simulated data
+#' @description Function which calculates and outputs posterior likelihood of observing simulated data
 #'
-#' @details This function calculates the total likelihood of observing a set of observations (across multiple
+#' @details This function calculates the posterior likelihood of observing a set of observations (across multiple
 #' regions and data types) for a given proposed parameter set. [TBA]
 #'
 #' @param log_params_prop Proposed values of varied parameters (natural logarithm of actual parameters)
@@ -213,12 +220,12 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param consts = List of constant parameters/flags/etc. loaded to mcmc() (type,log_params_min,log_params_max,
-#'   mode_start,prior_type,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,p_death_severe_inf,
-#'   p_rep_severe,p_rep_death,m_FOI_Brazil,deterministic, mode_parallel, cluster)
+#'   mode_start,prior_type,norm_prior_sd,dt,n_reps,enviro_data,R0_fixed_values,vaccine_efficacy,p_severe_inf,
+#'   p_death_severe_inf,p_rep_severe,p_rep_death,m_FOI_Brazil,deterministic, mode_parallel, cluster)
 #'
 #' @export
 #'
-single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
+single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                               consts=list()) {
 
   regions=input_data$region_labels
@@ -237,15 +244,23 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   prior_report=0
   if(is.numeric(consts$p_rep_severe)==FALSE){
     p_rep_severe=as.numeric(exp(log_params_prop[names(log_params_prop)=="p_rep_severe"]))
-    if(p_rep_severe<exp(consts$log_params_min[names(consts$log_params_min)=="p_rep_severe"]) ||
-       p_rep_severe>exp(consts$log_params_max[names(consts$log_params_max)=="p_rep_severe"])){prior_report=-Inf}
+    if(consts$prior_type=="flat"){
+      if(p_rep_severe<exp(consts$log_params_min[names(consts$log_params_min)=="p_rep_severe"]) ||
+         p_rep_severe>exp(consts$log_params_max[names(consts$log_params_max)=="p_rep_severe"])){prior_report=-Inf}
+    } else {
+      if(p_rep_severe<=0.0 || p_rep_severe>1.0){prior_report=-Inf}
+    }
   } else {
     p_rep_severe=consts$p_rep_severe
   }
   if(is.numeric(consts$p_rep_death)==FALSE){
     p_rep_death=as.numeric(exp(log_params_prop[names(log_params_prop)=="p_rep_death"]))
-    if(p_rep_death<exp(consts$log_params_min[names(consts$log_params_min)=="p_rep_death"]) ||
-       p_rep_death>exp(consts$log_params_max[names(consts$log_params_max)=="p_rep_death"])){prior_report=-Inf}
+    if(consts$prior_type=="flat"){
+      if(p_rep_death<exp(consts$log_params_min[names(consts$log_params_min)=="p_rep_death"]) ||
+         p_rep_death>exp(consts$log_params_max[names(consts$log_params_max)=="p_rep_death"])){prior_report=-Inf}
+    } else {
+      if(p_rep_death<=0.0 || p_rep_death>1.0){prior_report=-Inf}
+    }
   } else {
     p_rep_death=consts$p_rep_death
   }
@@ -253,14 +268,18 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   #Get value of Brazil multiplier and check bounds
   if(is.numeric(consts$m_FOI_Brazil)==FALSE){
     m_FOI_Brazil=as.numeric(exp(log_params_prop[names(log_params_prop)=="m_FOI_Brazil"]))
-    if(m_FOI_Brazil<exp(consts$log_params_min[names(consts$log_params_min)=="m_FOI_Brazil"]) ||
-       m_FOI_Brazil>exp(consts$log_params_max[names(consts$log_params_max)=="m_FOI_Brazil"])){prior_report=-Inf}
+    if(consts$prior_type=="flat"){
+      if(m_FOI_Brazil<exp(consts$log_params_min[names(consts$log_params_min)=="m_FOI_Brazil"]) ||
+         m_FOI_Brazil>exp(consts$log_params_max[names(consts$log_params_max)=="m_FOI_Brazil"])){prior_report=-Inf}
+    } else {
+      if(m_FOI_Brazil<=0.0 || m_FOI_Brazil>1.0){prior_report=-Inf}
+    }
   } else {
     m_FOI_Brazil=consts$m_FOI_Brazil
   }
 
   #Get FOI and R0 values and calculate associated prior
-  FOI_R0_data=mcmc_FOI_R0_setup(consts$type,consts$prior_type,regions,log_params_prop,
+  FOI_R0_data=mcmc_FOI_R0_setup(consts$type,consts$prior_type,consts$norm_prior_sd,regions,log_params_prop,
                                 consts$enviro_data,consts$R0_fixed_values,
                                 consts$log_params_min,consts$log_params_max)
   FOI_values=FOI_R0_data$FOI_values
@@ -269,7 +288,7 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
   }
   R0_values=FOI_R0_data$R0_values
   prior_prop=prior_vacc+prior_report+FOI_R0_data$prior+sum(dnorm(log(c(p_rep_severe,p_rep_death)),
-                                                                 mean = 0,sd = 30,log = TRUE))
+                                                                 mean = 0,sd = consts$norm_prior_sd[3],log = TRUE))
 
   if(is.null(obs_sero_data)){sero_like_values=0}
   if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
@@ -288,44 +307,24 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
-      # dataset$model_sero_values[dataset$model_sero_values>1.0]=1.0
-      # dataset$model_sero_values[is.infinite(dataset$model_sero_values)]=0.0
-      # sero_rev=1.0-dataset$model_sero_values
-      # sero_rev[sero_rev<0.0]=0.0
-      # sero_like_values=lgamma(obs_sero_data$samples+1)-lgamma(obs_sero_data$positives+1)-
-      #   lgamma(obs_sero_data$samples-obs_sero_data$positives+1)+
-      #   obs_sero_data$positives*log(dataset$model_sero_values)+
-      #   (obs_sero_data$samples-obs_sero_data$positives)*log(sero_rev)
       sero_like_values=sero_data_compare(dataset$model_sero_values,obs_sero_data)
     }
     #Likelihood of observing annual case/death data
     if(is.null(obs_case_data)==FALSE){
-      # model_case_values=dataset$model_case_values
-      # model_death_values=dataset$model_death_values
-      # for(i in 1:length(model_case_values)){
-      #   model_case_values[i]=max(model_case_values[i],0.1)
-      #   model_death_values[i]=max(model_death_values[i],0.1)
-      # }
-      # cases_like_values=dnbinom(x=obs_case_data$cases,mu=model_case_values,
-      #                           size=rep(1,length(obs_case_data$cases)),log=TRUE)
-      # if(is.null(obs_case_data$deaths)==FALSE){
-      #   deaths_like_values=dnbinom(x=obs_case_data$deaths,mu=model_death_values,
-      #                              size=rep(1,length(obs_case_data$deaths)),log=TRUE)
-      # } else {deaths_like_values=0}
       cases_like_values=case_data_compare(dataset$model_case_values,obs_case_data$cases)
       if(is.null(obs_case_data$deaths)==FALSE){
         deaths_like_values=case_data_compare(dataset$model_death_values,obs_case_data$deaths)
       } else {deaths_like_values=0}
     }
 
-    likelihood=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
+    posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
                      sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
     # dataset<-NULL
     # gc()
 
-  } else {likelihood=-Inf}
+  } else {posterior=-Inf}
 
-  return(likelihood)
+  return(posterior)
 }
 #-------------------------------------------------------------------------------
 #' @title mcmc_checks
@@ -347,6 +346,10 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param norm_prior_sd Vector of 3 values of standard deviations to use in dnorm calculations
+#'  Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
+#'  Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
+#'  Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)
 #' @param enviro_data Values of environmental covariates (if in use)
 #' @param R0_fixed_values Values of R0 to use if not being varied (set to NULL if R0 is being varied)
 #' @param vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
@@ -356,15 +359,21 @@ single_like_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data
 #'
 #' @export
 #'
-mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=c(),log_params_max=c(),prior_type=NULL,
-                        enviro_data=NULL,R0_fixed_values=NULL,vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,
-                        m_FOI_Brazil=1.0){
+mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=c(),log_params_max=c(),
+                        prior_type=NULL,norm_prior_sd=c(30,10,30),enviro_data=NULL,R0_fixed_values=NULL,
+                        vaccine_efficacy=NULL,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0){
 
   param_names=names(log_params_ini)
   n_params=length(log_params_ini)
-  assert_that(is.null(param_names)==FALSE) #Check that parameters have been named (should always be done in MCMC2())
+  assert_that(is.null(param_names)==FALSE) #Check that parameters have been named (should always be done in MCMC())
   assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro")) #Check that type is one of those allowed
   assert_that(prior_type %in% c("zero","flat","exp","norm")) #Check that prior type is one of those allowed
+  if(prior_type=="flat"){
+    assert_that(length(log_params_min)==n_params)
+    assert_that(length(log_params_max)==n_params)
+  }
+  assert_that(length(norm_prior_sd)==3)
+  assert_that(all(norm_prior_sd>0))
 
   #If vaccine efficacy, severe case reporting probability and/or fatal case reporting probability have been set to
   #NULL, check that they appear among the parameters (should always have been set up in MCMC() if
@@ -402,6 +411,8 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=
   if(is.null(enviro_data)==FALSE){
     env_vars=names(enviro_data[c(2:ncol(enviro_data))])
     n_env_vars=length(env_vars)
+  } else {
+    assert_that(type %in% c("FOI+R0","FOI"))
   }
 
   #Check that total number of parameters is correct based on "type" and on number of additional parameters (vaccine
@@ -464,6 +475,7 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param norm_prior_sd TBA
 #' @param regions Vector of region names
 #' @param log_params_prop Proposed values of varied parameters (natural logarithm of actual parameters)
 #' @param enviro_data Environmental data frame, containing only relevant environmental variables
@@ -473,7 +485,7 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,log_params_min=
 #' '
 #' @export
 #'
-mcmc_FOI_R0_setup <- function(type="",prior_type="",regions="",log_params_prop=c(),enviro_data=list(),
+mcmc_FOI_R0_setup <- function(type="",prior_type="",norm_prior_sd=c(30,10,30),regions="",log_params_prop=c(),enviro_data=list(),
                               R0_fixed_values=c(),log_params_min=c(),log_params_max=c()){
 
   n_params=length(log_params_prop)
@@ -518,11 +530,20 @@ mcmc_FOI_R0_setup <- function(type="",prior_type="",regions="",log_params_prop=c
     }
   }
   if(prior_type=="norm"){
-    if(type=="FOI"){n_params_check=n_regions}
-    if(type=="FOI+R0"){n_params_check=2*n_regions}
-    if(type=="FOI enviro"){n_params_check=n_env_vars}
-    if(type=="FOI+R0 enviro"){n_params_check=2*n_env_vars}
-    prior=sum(dnorm(log_params_prop[c(1:n_params_check)],mean = 0,sd = 30,log = TRUE))
+    if(type=="FOI"){
+      prior=sum(dnorm(log_params_prop[c(1:n_regions)],mean = 0,sd = norm_prior_sd[1],log = TRUE))
+    }
+    if(type=="FOI+R0"){
+      prior=sum(dnorm(log_params_prop[c(1:n_regions)],mean = 0,sd = norm_prior_sd[1],log = TRUE)) +
+        sum(dnorm(log_params_prop[c(1:n_regions)+n_regions],mean = 0,sd = norm_prior_sd[2],log = TRUE))
+    }
+    if(type=="FOI enviro"){
+      prior=sum(dnorm(log_params_prop[c(1:n_env_vars)],mean = 0,sd = norm_prior_sd[1],log = TRUE))
+      }
+    if(type=="FOI+R0 enviro"){
+      prior=sum(dnorm(log_params_prop[c(1:n_env_vars)],mean = 0,sd = norm_prior_sd[1],log = TRUE)) +
+        sum(dnorm(log_params_prop[c(1:n_env_vars)+n_env_vars],mean = 0,sd = norm_prior_sd[2],log = TRUE))
+    }
   }
 
   if(min(c(FOI_values,R0_values))<=0.0){prior=-Inf}
@@ -564,11 +585,11 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' @title mcmc_prelim_fit
 #'
 #' @description Test multiple sets of parameters randomly drawn from range between maximum and minimum
-#' values in order to find approximate values giving maximum likelihood
+#' values in order to find approximate values giving maximum posterior likelihood
 #'
-#' @details This function is used to estimate the model parameter values giving maximum likelihood; it is primarily
-#' intended to be used to generate initial parameter values for Markov Chain Monte Carlo fitting (using the mcmc()
-#' function).
+#' @details This function is used to estimate the model parameter values giving maximum posterior likelihood; it is
+#' primarily intended to be used to generate initial parameter values for Markov Chain Monte Carlo fitting (using
+#' the mcmc() function).
 #'
 #' @param n_iterations = Number of times to run and adjust maximum/minimum
 #' @param n_param_sets = Number of parameter sets to run in each iteration
@@ -593,6 +614,7 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #'  If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 #'  If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If prior_type = "norm", prior probability is given by dnorm calculation on parameter values
+#' @param norm_prior_sd TBA
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of repetitions
 #' @param enviro_data Values of environmental variables (if in use)
@@ -609,8 +631,9 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 #' '
 #' @export
 #'
-mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,log_params_min=NULL,log_params_max=NULL,
-                            input_data=list(),obs_sero_data=list(),obs_case_data=list(),mode_start=0,prior_type="zero",
+mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,log_params_min=NULL,
+                            log_params_max=NULL,input_data=list(),obs_sero_data=list(),obs_case_data=list(),
+                            mode_start=0,prior_type="zero",norm_prior_sd=c(30,10,30),
                             dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),vaccine_efficacy=NULL,
                             p_severe_inf = 0.12, p_death_severe_inf = 0.39,p_rep_severe=NULL,p_rep_death=NULL,m_FOI_Brazil=1.0,
                             deterministic=TRUE,mode_parallel="none",cluster=NULL){
@@ -630,8 +653,6 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
   if(is.null(m_FOI_Brazil)==TRUE){extra_params=append(extra_params,"m_FOI_Brazil")}
   param_names=create_param_labels(type,input_data,enviro_data,extra_params)
 
-  #cat(c(param_names,"LogLikelihood"),file=progress_file,sep="\t")
-
   #TODO - Additional assert_that checks
   assert_that(length(param_names)==n_params)
   names(log_params_min)=names(log_params_max)=param_names
@@ -646,11 +667,12 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
     all_param_sets <- lhs(n=n_param_sets,rect=cbind(log_params_min,log_params_max))
     results=data.frame()
     consts=list(type=type,log_params_min=log_params_min,log_params_max=log_params_max,
-                    mode_start=mode_start,prior_type=prior_type,dt=dt,n_reps=n_reps,enviro_data=enviro_data,
-                    R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,
-                    p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
-                    p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,
-                    deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
+                mode_start=mode_start,prior_type=prior_type,norm_prior_sd=norm_prior_sd,
+                dt=dt,n_reps=n_reps,enviro_data=enviro_data,
+                R0_fixed_values=R0_fixed_values,vaccine_efficacy=vaccine_efficacy,
+                p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
+                p_rep_severe=p_rep_severe,p_rep_death=p_rep_death,m_FOI_Brazil=m_FOI_Brazil,
+                deterministic=deterministic,mode_parallel=mode_parallel,cluster=cluster)
 
     for(set in 1:n_param_sets){
       #if(set %% 10 == 0){cat("\n")}
@@ -663,14 +685,14 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
       #cat(log_params_prop,file=progress_file,sep="\t",append=TRUE)
 
       names(log_params_prop)=param_names
-      like_prop=single_like_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
-      results<-rbind(results,c(set,exp(log_params_prop),like_prop))
-      if(set==1){colnames(results)=c("set",param_names,"LogLikelihood")}
+      posterior_value=single_posterior_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
+      results<-rbind(results,c(set,exp(log_params_prop),posterior_value))
+      if(set==1){colnames(results)=c("set",param_names,"posterior")}
 
-      cat("\n\tLikelihood = ",like_prop,sep="")
+      cat("\n\tPosterior likelihood = ",posterior_value,sep="")
 
     }
-    results<-results[order(results$LogLikelihood,decreasing=TRUE), ]
+    results<-results[order(results$posterior,decreasing=TRUE), ]
     best_fit_results[[iteration]]=results
 
     log_params_min_new=log_params_max_new=rep(0,n_params)
