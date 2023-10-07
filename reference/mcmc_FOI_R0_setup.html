@@ -63,6 +63,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mcmc_FOI_R0_setup</span><span class="op">(</span></span>
 <span>  type <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  prior_type <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  norm_prior_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">10</span>, <span class="fl">30</span><span class="op">)</span>,</span>
 <span>  regions <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  log_params_prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -85,6 +86,10 @@ If prior_type = "zero", prior probability is always zero
 If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 If prior_type = "norm", prior probability is given by dnorm calculation on parameter values</p></dd>
+
+
+<dt>norm_prior_sd</dt>
+<dd><p>TBA</p></dd>
 
 
 <dt>regions</dt>

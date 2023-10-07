@@ -72,6 +72,7 @@
 <span>  log_params_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  mode_start <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  prior_type <span class="op">=</span> <span class="st">"zero"</span>,</span>
+<span>  norm_prior_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">10</span>, <span class="fl">30</span><span class="op">)</span>,</span>
 <span>  dt <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  enviro_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -158,7 +159,14 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 If prior_type = "zero", prior probability is always zero
 If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values</p></dd>
+If prior_type = "norm", prior probability is given by dnorm calculation on parameter values using norm_prior_sd values</p></dd>
+
+
+<dt>norm_prior_sd</dt>
+<dd><p>Vector of 3 values of standard deviations to use in dnorm calculations
+Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
+Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
+Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)</p></dd>
 
 
 <dt>dt</dt>
