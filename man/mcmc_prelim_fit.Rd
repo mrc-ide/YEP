@@ -63,7 +63,6 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 
 \item{prior_type}{Text indicating which type of calculation to use for prior probability
 If prior_type = "zero", prior probability is always zero
-If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
 If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
 
