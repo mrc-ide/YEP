@@ -240,7 +240,7 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
     prior_vacc=0
   }
 
-  #Get reporting probabilities and check they are within specified bounds
+  #Get reporting probabilities and check they are within bounds
   prior_report=0
   if(is.numeric(consts$p_rep_severe)==FALSE){
     p_rep_severe=as.numeric(exp(log_params_prop[names(log_params_prop)=="p_rep_severe"]))

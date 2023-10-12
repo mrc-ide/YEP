@@ -344,8 +344,8 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
     assert_that(p_severe_inf>=0.0 && p_severe_inf<=1.0,msg="Severe infection rate must be between 0-1")
     assert_that(p_death_severe_inf>=0.0 && p_death_severe_inf<=1.0,
                 msg="Fatality rate of severe infections must be between 0-1")
-    assert_that(all(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)>=0.0)
-    assert_that(all(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)<=1.0)
+    assert_that(all(c(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)>=0.0))
+    assert_that(all(c(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)<=1.0))
   }
   assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
@@ -364,6 +364,11 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
     sero_line_list=rep(NA,n_regions)
   }
   if(is.null(case_template)==FALSE){
+    country_list_af=c("AGO","BDI","BEN","BFA","CAF","CIV","CMR","COD","COG","ERI","ETH","GAB","GHA","GIN","GMB","GNB","GNQ",
+                      "KEN","LBR","MLI","MRT","NER","NGA","RWA","SDN","SEN","SLE","SOM","SSD","TCD","TGO","TZA","UGA","ZMB")
+    country_list_sa=c("ARG","BOL","BRA","COL","ECU","GUF","GUY","PER","PRY","SUR","VEN")
+    countries=substr(regions,1,3)
+    assert_that(all(countries %in% c(country_list_af,country_list_sa)))
     xref_case=template_region_xref(case_template,input_data$region_labels)
     case_line_list=xref_case$line_list
   } else {
@@ -459,12 +464,19 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
       years_case=case_template$year[case_line_list_region]
       n_lines=length(case_line_list_region)
 
+      #Get reporting probabilities based on region
+      if(countries[n_region] %in% country_list_af){
+        p_rep_severe=p_rep_severe_af
+        p_rep_death=p_rep_death_af
+      } else {
+        p_rep_severe=p_rep_severe_sa
+        p_rep_death=p_rep_death_sa
+      }
+
       for(n_rep in 1:n_reps){
         rep_cases=rep_deaths=rep(0,n_lines)
         for(n_line in 1:n_lines){
           #TODO - Set to adjust reporting probabilities based on region
-          p_rep_severe=p_rep_severe_af
-          p_rep_death=p_rep_death_af
           pts=c(1:t_pts)[model_output$year==years_case[n_line]]
           infs=sum(model_output$C[n_rep,pts])
           if(deterministic){
