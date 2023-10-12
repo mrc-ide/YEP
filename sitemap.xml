@@ -73,6 +73,9 @@
     <loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc>
   </url>
   <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/MCMC2.html</loc>
+  </url>
+  <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Model_Run.html</loc>
   </url>
   <url>
@@ -121,6 +124,9 @@
     <loc>https://mrc-ide.github.io/YEP/reference/mcmc_prelim_fit.html</loc>
   </url>
   <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/mcmc_prelim_fit2.html</loc>
+  </url>
+  <url>
     <loc>https://mrc-ide.github.io/YEP/reference/param_calc_enviro.html</loc>
   </url>
   <url>
@@ -143,6 +149,9 @@
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/single_posterior_calc.html</loc>
+  </url>
+  <url>
+    <loc>https://mrc-ide.github.io/YEP/reference/single_posterior_calc2.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/template_region_xref.html</loc>
