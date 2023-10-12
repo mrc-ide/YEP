@@ -1,6 +1,43 @@
 # R file for functions used for Markov Chain Monte Carlo fitting (and preliminary maximum-likelihood fitting) in
 # YEP package - alternate versions
 #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#' @title MCMC2
+#'
+#' @description TBA
+#'
+#' @details TBA
+#'
+#' @param log_params_ini TBA
+#' @param input_data TBA
+#' @param obs_sero_data TBA
+#' @param obs_case_data TBA
+#' @param filename_prefix TBA
+#' @param Niter TBA
+#' @param type TBA
+#' @param log_params_min TBA
+#' @param log_params_max TBA
+#' @param mode_start TBA
+#' @param prior_type TBA
+#' @param norm_prior_sd TBA
+#' @param dt TBA
+#' @param n_reps TBA
+#' @param enviro_data TBA
+#' @param R0_fixed_values TBA
+#' @param vaccine_efficacy TBA
+#' @param p_severe_inf TBA
+#' @param p_death_severe_inf TBA
+#' @param p_rep_severe_af TBA
+#' @param p_rep_death_af TBA
+#' @param p_rep_severe_sa TBA
+#' @param p_rep_death_sa TBA
+#' @param m_FOI_Brazil TBA
+#' @param deterministic TBA
+#' @param mode_parallel TBA
+#' @param cluster TBA
+#' '
+#' @export
+#'
 MCMC2 <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,filename_prefix="Chain",
                  Niter=1,type=NULL,log_params_min=c(),log_params_max=c(),mode_start=0,prior_type="zero",
                  norm_prior_sd=c(30,10,30),dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=NULL,
@@ -134,6 +171,20 @@ MCMC2 <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_ca
   return(param_out)
 }
 #-------------------------------------------------------------------------------
+#' @title single_posterior_calc2
+#'
+#' @description TBA
+#'
+#' @details TBA
+#'
+#' @param log_params_prop TBA
+#' @param input_data TBA
+#' @param obs_sero_data TBA
+#' @param obs_case_data TBA
+#' @param consts TBA
+#'
+#' @export
+#'
 single_posterior_calc2 <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                               consts=list()) {
 
@@ -234,6 +285,42 @@ single_posterior_calc2 <- function(log_params_prop=c(),input_data=list(),obs_ser
   return(posterior)
 }
 #-------------------------------------------------------------------------------
+#' @title mcmc_prelim_fit2
+#'
+#' @description TBA
+#'
+#' @details TBA
+#'
+#' @param n_iterations TBA
+#' @param n_param_sets TBA
+#' @param n_bounds TBA
+#' @param type TBA
+#' @param log_params_min TBA
+#' @param log_params_max TBA
+#' @param input_data TBA
+#' @param obs_sero_data TBA
+#' @param obs_case_data TBA
+#' @param mode_start TBA
+#' @param prior_type TBA
+#' @param norm_prior_sd TBA
+#' @param dt TBA
+#' @param n_reps TBA
+#' @param enviro_data TBA
+#' @param R0_fixed_values TBA
+#' @param vaccine_efficacy TBA
+#' @param p_severe_inf TBA
+#' @param p_death_severe_inf TBA
+#' @param p_rep_severe_af TBA
+#' @param p_rep_death_af TBA
+#' @param p_rep_severe_sa TBA
+#' @param p_rep_death_sa TBA
+#' @param m_FOI_Brazil TBA
+#' @param deterministic TBA
+#' @param mode_parallel TBA
+#' @param cluster TBA
+#' '
+#' @export
+#'
 mcmc_prelim_fit2 <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,log_params_min=NULL,
                             log_params_max=NULL,input_data=list(),obs_sero_data=list(),obs_case_data=list(),
                             mode_start=0,prior_type="zero",norm_prior_sd=c(30,10,30),
