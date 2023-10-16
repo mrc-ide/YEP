@@ -6,27 +6,18 @@
 \usage{
 mcmc_FOI_R0_setup(
   type = "",
-  prior_type = "",
-  norm_prior_sd = c(30, 10, 30),
+  prior_settings = list(type = "zero"),
   regions = "",
   log_params_prop = c(),
   enviro_data = list(),
-  R0_fixed_values = c(),
-  log_params_min = c(),
-  log_params_max = c()
+  R0_fixed_values = c()
 )
 }
 \arguments{
 \item{type}{Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
 covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
 
-\item{prior_type}{Text indicating which type of calculation to use for prior probability
-If prior_type = "zero", prior probability is always zero
-If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
-If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
-
-\item{norm_prior_sd}{TBA}
+\item{prior_settings}{TBA}
 
 \item{regions}{Vector of region names}
 
@@ -34,11 +25,7 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 
 \item{enviro_data}{Environmental data frame, containing only relevant environmental variables}
 
-\item{R0_fixed_values}{Values of R0 to use if not being varied}
-
-\item{log_params_min}{Lower limits of varied parameter values if specified}
-
-\item{log_params_max}{Upper limits of varied parameter values if specified
+\item{R0_fixed_values}{Values of R0 to use if not being varied
 '}
 }
 \description{

@@ -8,7 +8,7 @@ create_param_labels(
   type = "FOI",
   input_data = list(),
   enviro_data = NULL,
-  extra_params = c("vacc_eff")
+  extra_estimated_params = c("vacc_eff")
 )
 }
 \arguments{
@@ -20,8 +20,8 @@ code and usually loaded from RDS file)}
 
 \item{enviro_data}{Environmental data frame, containing only relevant environmental variables}
 
-\item{extra_params}{Vector of strings listing parameters besides ones determining FOI/R0 (may include vaccine
-efficacy and/or infection/death reporting probabilities)}
+\item{extra_estimated_params}{Vector of strings listing variable parameters besides ones determining FOI/R0 (may include
+vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FOI adjustment factor)}
 }
 \description{
 Apply names to the parameters in a set used for data matching and parameter fitting

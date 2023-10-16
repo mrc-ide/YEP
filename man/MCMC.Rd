@@ -12,21 +12,16 @@ MCMC(
   filename_prefix = "Chain",
   Niter = 1,
   type = NULL,
-  log_params_min = c(),
-  log_params_max = c(),
   mode_start = 0,
-  prior_type = "zero",
-  norm_prior_sd = c(30, 10, 30),
+  prior_settings = list(type = "zero"),
   dt = 1,
   n_reps = 1,
   enviro_data = NULL,
   R0_fixed_values = NULL,
-  vaccine_efficacy = NULL,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
-  p_rep_severe = NULL,
-  p_rep_death = NULL,
-  m_FOI_Brazil = 1,
+  add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
+    = 1),
   deterministic = FALSE,
   mode_parallel = "none",
   cluster = NULL
@@ -67,25 +62,19 @@ cases/no. deaths}
 \item{type}{Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
 covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
 
-\item{log_params_min}{Lower limits of varied parameter values if specified}
-
-\item{log_params_max}{Upper limits of varied parameter values if specified}
-
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
 If mode_start=0, only vaccinated individuals
 If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
-\item{prior_type}{Text indicating which type of calculation to use for prior probability
-If prior_type = "zero", prior probability is always zero
-If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
-If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values using norm_prior_sd values}
-
-\item{norm_prior_sd}{Vector of 3 values of standard deviations to use in dnorm calculations
-Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
-Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
-Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)}
+\item{prior_settings}{List containing settings for priors: must contain text named "type":
+If type = "zero", prior probability is always zero
+If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
+ -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini
+If type = "exp", prior probability is given by dexp calculation on FOI/R0 values
+If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
+ in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
+ parameters and to actual values of additional parameters)}
 
 \item{dt}{time increment in days (must be 1 or 5)}
 
@@ -96,17 +85,15 @@ Value 3 = SD to use for reporting probability prior calculations for all prior_t
 \item{R0_fixed_values}{Values of R0 to use if only FOI is subject to fitting (i.e. type set to "FOI" or "FOI
 enviro"); set to NULL if not in use}
 
-\item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
-
 \item{p_severe_inf}{Probability of an infection being severe}
 
 \item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
-\item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
-
-\item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
-
-\item{m_FOI_Brazil}{Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
+\item{add_values}{List containing values of additional inputs or NULL to indicate they are being varied as parameters:
+vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
+p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
+m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 

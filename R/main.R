@@ -562,18 +562,18 @@ parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=l
 #' @param input_data List of population and vaccination data for multiple regions (created using data input creation
 #' code and usually loaded from RDS file)
 #' @param enviro_data Environmental data frame, containing only relevant environmental variables
-#' @param extra_params Vector of strings listing parameters besides ones determining FOI/R0 (may include vaccine
-#'   efficacy and/or infection/death reporting probabilities)
+#' @param extra_estimated_params Vector of strings listing variable parameters besides ones determining FOI/R0 (may include
+#' vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FOI adjustment factor)
 #'
 #' @export
 #'
-create_param_labels <- function(type="FOI",input_data=list(),enviro_data=NULL,extra_params=c("vacc_eff")){
+create_param_labels <- function(type="FOI",input_data=list(),enviro_data=NULL,extra_estimated_params=c("vacc_eff")){
 
   assert_that(type %in% c("FOI","FOI+R0","FOI enviro","FOI+R0 enviro"))
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
 
-  n_extra=length(extra_params)
+  n_extra=length(extra_estimated_params)
 
   if(type %in% c("FOI","FOI+R0")){
     regions=input_data$region_labels
@@ -595,7 +595,7 @@ create_param_labels <- function(type="FOI",input_data=list(),enviro_data=NULL,ex
       if(type=="FOI+R0 enviro"){param_names[i+n_env_vars]=paste("R0_",env_vars[i],sep="")}
     }
   }
-  if(n_extra>0){param_names[(n_params-n_extra+1):n_params]=extra_params}
+  if(n_extra>0){param_names[(n_params-n_extra+1):n_params]=extra_estimated_params}
 
   return(param_names)
 }

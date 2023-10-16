@@ -8,16 +8,12 @@ mcmc_checks(
   log_params_ini = c(),
   n_regions = 1,
   type = NULL,
-  log_params_min = c(),
-  log_params_max = c(),
-  prior_type = NULL,
-  norm_prior_sd = c(30, 10, 30),
+  prior_settings = list(type = "zero"),
   enviro_data = NULL,
   R0_fixed_values = NULL,
-  vaccine_efficacy = NULL,
-  p_rep_severe = NULL,
-  p_rep_death = NULL,
-  m_FOI_Brazil = 1
+  add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
+    = 1),
+  extra_estimated_params = list()
 )
 }
 \arguments{
@@ -28,32 +24,15 @@ mcmc_checks(
 \item{type}{Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
 covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
 
-\item{log_params_min}{Lower limits of varied parameter values if specified}
-
-\item{log_params_max}{Upper limits of varied parameter values if specified}
-
-\item{prior_type}{Text indicating which type of calculation to use for prior probability
-If prior_type = "zero", prior probability is always zero
-If prior_type = "flat", prior probability is zero if FOI/R0 in designated ranges, -Inf otherwise
-If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
-
-\item{norm_prior_sd}{Vector of 3 values of standard deviations to use in dnorm calculations
-Value 1 = SD to use for FOI values/coefficients if prior_type = "norm"
-Value 2 = SD to use for R0 values/coefficients if prior_type = "norm" (if relevant)
-Value 3 = SD to use for reporting probability prior calculations for all prior_type values (if relevant)}
+\item{prior_settings}{TBA}
 
 \item{enviro_data}{Values of environmental covariates (if in use)}
 
 \item{R0_fixed_values}{Values of R0 to use if not being varied (set to NULL if R0 is being varied)}
 
-\item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
+\item{add_values}{TBA}
 
-\item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
-
-\item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
-
-\item{m_FOI_Brazil}{FOI multiplier for Brazil regions}
+\item{extra_estimated_params}{TBA}
 }
 \description{
 Perform checks on MCMC inputs

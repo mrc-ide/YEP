@@ -15,18 +15,15 @@ mcmc_prelim_fit(
   obs_sero_data = list(),
   obs_case_data = list(),
   mode_start = 0,
-  prior_type = "zero",
-  norm_prior_sd = c(30, 10, 30),
+  prior_settings = list(type = "zero"),
   dt = 1,
   n_reps = 1,
   enviro_data = NULL,
   R0_fixed_values = c(),
-  vaccine_efficacy = NULL,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
-  p_rep_severe = NULL,
-  p_rep_death = NULL,
-  m_FOI_Brazil = 1,
+  add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
+    = 1),
   deterministic = TRUE,
   mode_parallel = "none",
   cluster = NULL
@@ -61,12 +58,7 @@ If mode_start=0, only vaccinated individuals
 If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
 If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
-\item{prior_type}{Text indicating which type of calculation to use for prior probability
-If prior_type = "zero", prior probability is always zero
-If prior_type = "exp", prior probability is given by dexp calculation on FOI/R0 values
-If prior_type = "norm", prior probability is given by dnorm calculation on parameter values}
-
-\item{norm_prior_sd}{TBA}
+\item{prior_settings}{TBA}
 
 \item{dt}{time increment in days (must be 1 or 5)}
 
@@ -76,17 +68,15 @@ If prior_type = "norm", prior probability is given by dnorm calculation on param
 
 \item{R0_fixed_values}{Values of R0 to use if not being varied}
 
-\item{vaccine_efficacy}{Vaccine efficacy (set to NULL if being varied as a parameter)}
-
 \item{p_severe_inf}{TBA}
 
 \item{p_death_severe_inf}{TBA}
 
-\item{p_rep_severe}{Probability of observation of severe infection (set to NULL if being varied as a parameter)}
-
-\item{p_rep_death}{Probability of observation of death (set to NULL if being varied as a parameter)}
-
-\item{m_FOI_Brazil}{Multiplier of FOI in Brazil regions}
+\item{add_values}{List containing values of additional inputs or NULL to indicate they are being varied as parameters:
+vaccine_efficacy Vaccine efficacy (set to NULL if being varied as a parameter)
+p_rep_severe Probability of observation of severe infection (set to NULL if being varied as a parameter)
+p_rep_death Probability of observation of death (set to NULL if being varied as a parameter)
+m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (set to NULL if being varied as a parameter)}
 
 \item{deterministic}{TBA}
 
