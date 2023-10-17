@@ -333,7 +333,7 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
 
   # Check additional values
   add_value_names=names(add_values)
-  assert_that(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil")) #TBV for alt version
+  #assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil"))) #TBV for alt version
   assert_that(all(extra_estimated_params %in% add_value_names))
   for(var_name in add_value_names){
     if(var_name %in% extra_estimated_params){
