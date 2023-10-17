@@ -136,13 +136,11 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 
     ## accept/reject step:
     tmp = runif(1)
-    if(tmp<min(exp(p_accept),1)) { # accept:
+    if(tmp<min(exp(p_accept),1)) {
       log_params = log_params_prop
       posterior_value_current = posterior_value_prop
       accept = 1
-    } else { # reject:
-      accept = 0
-    }
+    } else {accept = 0}
 
     #save current step
     chain = rbind(chain, log_params)
@@ -166,16 +164,12 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
     if (iter %% 10 == 0){
       if (iter %% 10000 == 0){fileIndex  = iter/10000}
 
-      if(fileIndex>=10){
-        filename=paste0(filename_prefix,fileIndex,".csv")
-      } else {
-        filename=paste0(filename_prefix,"0",fileIndex,".csv")
-      }
-      if(file.exists(filename)==FALSE){file.create(filename)}
+      if(fileIndex>=10){fn=paste0(filename_prefix,fileIndex,".csv")} else {fn=paste0(filename_prefix,"0",fileIndex,".csv")}
+      if(file.exists(fn)==FALSE){file.create(fn)}
       lines=min((fileIndex * 10000+1),iter):iter
 
       data_out<-cbind(posterior_current,posterior_prop,exp(chain),flag_accept,exp(chain_prop),chain_cov_all)[lines,]
-      if(fileAccess(filename,2)==0){write.csv(data_out,filename,row.names=FALSE)}
+      if(fileAccess(fn,2)==0){write.csv(data_out,fn,row.names=FALSE)}
     }
 
     #Decide whether next iteration will be adaptive
@@ -219,9 +213,6 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
                               consts=list()){
 
-  regions=input_data$region_labels
-  n_regions=length(regions)
-
   #Get additional values and calculate associated priors
   vaccine_efficacy=p_rep_severe=p_rep_death=m_FOI_Brazil=1.0
   prior_add=0
@@ -233,56 +224,49 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
       if(consts$prior_settings$type=="norm"){
         prior_add=prior_add+log(dtrunc(value,"norm",a=0,b=1,mean=consts$prior_settings$norm_params_mean[i],
                                        sd=consts$prior_settings$norm_params_sd[i]))
-        # if(var_name=="vaccine_efficacy"){
-        #   prior_add=prior_add+log(dtrunc(value,"norm",a=0,b=1,mean=consts$prior_settings$norm_params_mean[i],
-        #                              sd=consts$prior_settings$norm_params_sd[i]))
-        # } else {prior_add=prior_add+dnorm(log(value),mean = 0,sd = 30,log = TRUE)}
       } else {
         if(consts$prior_settings$type=="flat"){
           if(value<consts$prior_settings$log_params_min[i] || value>consts$prior_settings$log_params_max[i]){prior_add=-Inf}
         }
       }
-    } else {
-      assign(var_name,consts$add_values[[var_name]])
-    }
+    } else {assign(var_name,consts$add_values[[var_name]])}
   }
-  # prior_add=log(dtrunc(vaccine_efficacy,"norm",a=0,b=1,mean=0.975,sd=0.05))+sum(dnorm(log(c(p_rep_severe,p_rep_death)),
-  #                                                                                     mean = 0,sd = 30,
-  #                                                                                     log = TRUE))
 
   #If additional values give finite prior, get FOI and R0 values and calculate associated prior
   if(is.finite(prior_add)){
+    regions=input_data$region_labels
+    n_regions=length(regions)
+
     FOI_R0_data=mcmc_FOI_R0_setup(consts$type,consts$prior_settings,regions,log_params_prop,
                                   consts$enviro_data,consts$R0_fixed_values)
     FOI_values=FOI_R0_data$FOI_values
-    for(n_region in 1:n_regions){
-      if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil}
-    }
+
+    for(n_region in 1:n_regions){if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil}}
     R0_values=FOI_R0_data$R0_values
     prior_prop=FOI_R0_data$prior+prior_add
-  }else{prior_prop=-Inf}
+  } else {prior_prop=-Inf}
 
   ### If prior finite, evaluate likelihood ###
   if (is.finite(prior_prop)) {
-    if(is.null(obs_sero_data)){sero_like_values=0}
-    if(is.null(obs_case_data)){cases_like_values=deaths_like_values=0}
 
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,consts$p_severe_inf,
-                                consts$p_death_severe_inf,p_rep_severe,p_rep_death,consts$mode_start,start_SEIRV=NULL,consts$dt,
-                                consts$n_reps,consts$deterministic,consts$mode_parallel,consts$cluster)
+    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                                consts$p_severe_inf,consts$p_death_severe_inf,p_rep_severe,p_rep_death,
+                                consts$mode_start,start_SEIRV=NULL,consts$dt,consts$n_reps,consts$deterministic,
+                                consts$mode_parallel,consts$cluster)
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
       sero_like_values=sero_data_compare(dataset$model_sero_values,obs_sero_data)
-    }
+    } else {sero_like_values=0}
+
     #Likelihood of observing annual case/death data
     if(is.null(obs_case_data)==FALSE){
       cases_like_values=case_data_compare(dataset$model_case_values,obs_case_data$cases)
       if(is.null(obs_case_data$deaths)==FALSE){
         deaths_like_values=case_data_compare(dataset$model_death_values,obs_case_data$deaths)
       } else {deaths_like_values=0}
-    }
+    } else {cases_like_values=deaths_like_values=0}
 
     posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
                      sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
@@ -319,9 +303,9 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
 
   param_names=names(log_params_ini)
   n_params=length(log_params_ini)
-  assert_that(is.null(param_names)==FALSE) #Check that parameters have been named (should always be done in MCMC())
-  assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro")) #Check that type is one of those allowed
-  assert_that(prior_settings$type %in% c("zero","flat","exp","norm")) #Check that prior type is one of those allowed
+  assert_that(is.null(param_names)==FALSE,msg="Parameters should be named using create_param_labels")
+  assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro"),msg="Check type parameter")
+  assert_that(prior_settings$type %in% c("zero","flat","exp","norm"),msg="Check prior_settings$type")
   if(prior_settings$type=="flat"){
     assert_that(length(prior_settings$log_params_min)==n_params)
     assert_that(length(prior_settings$log_params_max)==n_params)
@@ -332,24 +316,20 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
   }
 
   # Check additional values
-  add_value_names=names(add_values)
-  #assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil"))) #TBV for alt version
+  add_value_names=names(add_values) #TODO: formalize flexibility
+  #assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil")))
   assert_that(all(extra_estimated_params %in% add_value_names))
   for(var_name in add_value_names){
     if(var_name %in% extra_estimated_params){
       assert_that(is.null(add_values[[var_name]]))
-    }else{
-      assert_that(add_values[[var_name]]<=1.0 && add_values[[var_name]]>=0.0)
-    }
+    } else {assert_that(add_values[[var_name]]<=1.0 && add_values[[var_name]]>=0.0)}
   }
 
   # If environmental data has been supplied, get names of variables
   if(is.null(enviro_data)==FALSE){
     env_vars=names(enviro_data[c(2:ncol(enviro_data))])
     n_env_vars=length(env_vars)
-  } else {
-    assert_that(type %in% c("FOI+R0","FOI"))
-  }
+  } else {assert_that(type %in% c("FOI+R0","FOI"))}
 
   # Check that total number of parameters is correct based on "type" and on number of additional parameters (vaccine
   # efficacy, reporting probabilities); check parameters named in correct order (TBA); all should be correct if parameter
@@ -375,6 +355,9 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
     assert_that(n_params==n_env_vars+length(extra_estimated_params))
     assert_that(is.null(R0_fixed_values)==FALSE)
     assert_that(length(R0_fixed_values)==n_regions)
+    for(i in 1:n_env_vars){
+      assert_that(param_names[i]==paste("FOI_",env_vars[i],sep=""))
+    }
   }
 
   return(NULL)
@@ -405,7 +388,6 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
     log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
   }
   log_params_prop = log_params_prop_a[1,]
-  #names(log_params_prop)=names(log_params)
 
   return(log_params_prop)
 }
@@ -431,13 +413,12 @@ param_prop_setup <- function(log_params=c(),chain_cov=1,adapt=0){
 mcmc_FOI_R0_setup <- function(type="",prior_settings=list(type="zero"),regions="",log_params_prop=c(),enviro_data=list(),
                               R0_fixed_values=c()){
 
-  n_params=length(log_params_prop)
   n_regions=length(regions)
   FOI_values=R0_values=rep(0,n_regions)
 
   if(type %in% c("FOI+R0 enviro","FOI enviro")){
     n_env_vars=ncol(enviro_data)-1
-    if(type=="FOI+R0 enviro"){n_values=2*n_env_vars}else{n_values=n_env_vars}
+    if(type=="FOI+R0 enviro"){n_values=2*n_env_vars} else {n_values=n_env_vars}
     enviro_coeffs=exp(log_params_prop[c(1:n_values)])
 
     for(i in 1:n_regions){
@@ -463,7 +444,7 @@ mcmc_FOI_R0_setup <- function(type="",prior_settings=list(type="zero"),regions="
                     sd = prior_settings$norm_params_sd[c(1:n_values)],log = TRUE))
   } else {
     if(prior_settings$type=="flat"){
-      for(i in 1:n_params){
+      for(i in 1:n_values){
         if(log_params_prop[i]<prior_settings$log_params_min[i]){prior=-Inf}
         if(log_params_prop[i]>prior_settings$log_params_max[i]){prior=-Inf}
       }
@@ -476,10 +457,7 @@ mcmc_FOI_R0_setup <- function(type="",prior_settings=list(type="zero"),regions="
     }
   }
 
-  if(min(c(FOI_values,R0_values))<=0.0){prior=-Inf}
-
-  output=list(FOI_values=FOI_values,R0_values=R0_values,prior=prior)
-  return(output)
+  return(list(FOI_values=FOI_values,R0_values=R0_values,prior=prior))
 }
 #-------------------------------------------------------------------------------
 #' @title mcmc_prelim_fit
@@ -538,7 +516,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
   assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")
   assert_that(length(log_params_min)==length(log_params_max),msg="Parameter limit vectors must have same lengths")
   assert_that(type %in% c("FOI+R0","FOI","FOI+R0 enviro","FOI enviro"))
-  assert_that(prior_settings$type %in% c("zero","exp","norm"))
+  assert_that(prior_settings$type %in% c("zero","exp","norm"),msg="Prior type must be 'zero', 'exp' or 'norm'")
 
   best_fit_results=list()
   n_params=length(log_params_min)
