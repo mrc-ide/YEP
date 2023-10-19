@@ -273,8 +273,9 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
       } else {deaths_like_values=0}
     } else {cases_like_values=deaths_like_values=0}
 
-    posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
-                     sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
+    # posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
+    #                             sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
+    posterior=prior_prop+sum(sero_like_values,na.rm=TRUE)+sum(cases_like_values,na.rm=TRUE)+sum(deaths_like_values,na.rm=TRUE)
 
   } else {posterior=-Inf}
 

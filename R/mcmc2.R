@@ -209,7 +209,12 @@ single_posterior_calc2 <- function(log_params_prop=c(),input_data=list(),obs_ser
       if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil}
     }
     R0_values=FOI_R0_data$R0_values
-    prior_prop=FOI_R0_data$prior+prior_add
+    if(consts$prior_settings$type=="norm"){
+      prior_prop=FOI_R0_data$prior+prior_add+sum(log(dtrunc(R0_values,"norm",a=0,b=Inf,mean=consts$prior_settings$R0_mean,
+                                                            sd=consts$prior_settings$R0_sd)))
+    } else {
+      prior_prop=FOI_R0_data$prior+prior_add
+    }
   }else{prior_prop=-Inf}
 
   ### If prior finite, evaluate likelihood ###
@@ -235,8 +240,9 @@ single_posterior_calc2 <- function(log_params_prop=c(),input_data=list(),obs_ser
       } else {deaths_like_values=0}
     }
 
-    posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
-                                sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
+    # posterior=prior_prop+mean(c(sum(sero_like_values,na.rm=TRUE),sum(cases_like_values,na.rm=TRUE),
+    #                             sum(deaths_like_values,na.rm=TRUE)),na.rm=TRUE)
+    posterior=prior_prop+sum(sero_like_values,na.rm=TRUE)+sum(cases_like_values,na.rm=TRUE)+sum(deaths_like_values,na.rm=TRUE)
 
   } else {posterior=-Inf}
 
