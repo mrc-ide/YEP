@@ -42,7 +42,7 @@
 #'  If type = "exp", prior probability is given by dexp calculation on FOI/R0 values
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
 #'   in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters)
+#'   parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
 #'  If mode_start=0, only vaccinated individuals
 #'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
@@ -243,7 +243,12 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
 
     for(n_region in 1:n_regions){if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil}}
     R0_values=FOI_R0_data$R0_values
-    prior_prop=FOI_R0_data$prior+prior_add
+    if(consts$prior_settings$type=="norm"){
+      prior_prop=FOI_R0_data$prior+prior_add+sum(log(dtrunc(R0_values,"norm",a=0,b=Inf,mean=consts$prior_settings$R0_mean,
+                                                        sd=consts$prior_settings$R0_sd)))
+    } else {
+      prior_prop=FOI_R0_data$prior+prior_add
+    }
   } else {prior_prop=-Inf}
 
   ### If prior finite, evaluate likelihood ###
@@ -313,6 +318,8 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
   if(prior_settings$type=="norm"){
     assert_that(length(prior_settings$norm_params_mean)==n_params)
     assert_that(length(prior_settings$norm_params_sd)==n_params)
+    assert_that(is.numeric(prior_settings$R0_mean))
+    assert_that(is.numeric(prior_settings$R0_sd))
   }
 
   # Check additional values
