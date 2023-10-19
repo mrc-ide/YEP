@@ -531,7 +531,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
   #Get additional values
   extra_estimated_params=c()
   add_value_names=names(add_values)
-  assert_that(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil")) #TBV in alt version
+  assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil"))) #TBV in alt version
   for(var_name in add_value_names){
     if(is.null(add_values[[var_name]])==TRUE){extra_estimated_params=append(extra_estimated_params,var_name)}
   }
