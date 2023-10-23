@@ -139,31 +139,24 @@ for p_rep_severe and p_rep_death are used.</p>
 <span><span class="va">Niter</span> <span class="op">&lt;-</span> <span class="fl">1</span> </span>
 <span><span class="co"># Type of parameter set used to calculate spillover FOI and R0 (here both </span></span>
 <span><span class="co"># calculated from environmental covariates)</span></span>
-<span><span class="va">type</span> <span class="op">&lt;-</span> <span class="st">"FOI+R0 enviro"</span> </span>
-<span><span class="co"># Minimum log parameter values (here FOI coefficients, R0 coefficients, vaccine </span></span>
-<span><span class="co"># efficacy, severe non-fatal case report probability, fatal case report probability)</span></span>
-<span><span class="va">log_params_min</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">30</span>, <span class="va">n_env_vars</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="va">n_env_vars</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.01</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co"># Maximum log parameter values</span></span>
-<span><span class="va">log_params_max</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="va">n_env_vars</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_env_vars</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="va">type</span> <span class="op">&lt;-</span> <span class="st">"FOI+R0 enviro"</span>  </span>
 <span><span class="co"># Flag indicating how to set initial population immunity level</span></span>
-<span><span class="co"># If mode_start = 0, only vaccinated individuals</span></span>
-<span><span class="co"># If mode_start = 1, shift unvaccinated individuals into recovered for herd immunity</span></span>
 <span><span class="va">mode_start</span> <span class="op">&lt;-</span> <span class="fl">1</span> </span>
-<span><span class="co"># Type of prior likelihood calculation to use    </span></span>
-<span><span class="va">prior_type</span> <span class="op">&lt;-</span> <span class="st">"norm"</span> </span>
+<span><span class="co"># Type of prior likelihood calculation to use</span></span>
+<span><span class="va">prior_settings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"zero"</span><span class="op">)</span></span>
 <span><span class="co"># Time increment in days</span></span>
 <span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fl">5.0</span> </span>
 <span><span class="co"># Number of repetitions for which to run model and obtain average outputs</span></span>
 <span><span class="va">n_reps</span> <span class="op">&lt;-</span> <span class="fl">5</span> </span>
-<span><span class="co"># Vaccine efficacy (here fixed rather than varied)</span></span>
-<span><span class="va">vaccine_efficacy</span> <span class="op">&lt;-</span> <span class="fl">1.0</span> </span>
 <span><span class="co"># Probability of an infection causing severe symptoms</span></span>
 <span><span class="va">p_severe_inf</span> <span class="op">=</span> <span class="fl">0.12</span></span>
 <span><span class="co"># Probability of an infection with severe symptoms causing death</span></span>
 <span><span class="va">p_death_severe_inf</span> <span class="op">=</span> <span class="fl">0.39</span></span>
-<span><span class="co"># Fixed R0 values and severe and fatal case reporting probabilities; here set to </span></span>
-<span><span class="co"># NULL because values are variable</span></span>
-<span><span class="va">R0_fixed_values</span> <span class="op">=</span> <span class="va">p_rep_severe</span> <span class="op">=</span> <span class="va">p_rep_death</span> <span class="op">=</span> <span class="cn">NULL</span> </span>
+<span><span class="co"># Fixed R0 values (here set to NULL because R0 is variable)</span></span>
+<span><span class="va">R0_fixed_values</span> <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="co"># Additional values: severe and fatal case reporting probability are set to NULL due to being estimated</span></span>
+<span><span class="co"># as variables; vaccine efficacy and Brazil spillover FOI multiplier set to 1.0 as constants.</span></span>
+<span><span class="va">add_values</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>p_rep_severe <span class="op">=</span> <span class="cn">NULL</span>, p_rep_death <span class="op">=</span> <span class="cn">NULL</span>, vaccine_efficacy <span class="op">=</span> <span class="fl">1.0</span>, m_FOI_Brazil <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="co"># True/false flag indicating whether or not to run model in deterministic mode</span></span>
 <span><span class="co"># (so that binomial calculations give average instead of randomized output)</span></span>
 <span><span class="va">deterministic</span> <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -175,9 +168,9 @@ iteration is saved to an output file every 10 iterations. Likelihood is
 calculated as described in Guide 4 [Link TBA].</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/MCMC.html">MCMC</a></span><span class="op">(</span><span class="va">log_params_ini</span>, <span class="va">input_data</span>, <span class="va">obs_sero_data</span>, <span class="va">obs_case_data</span>, <span class="va">filename_prefix</span>, </span>
-<span>     <span class="va">Niter</span>, <span class="va">type</span>, <span class="va">log_params_min</span>,<span class="va">log_params_max</span>, <span class="va">mode_start</span>, <span class="va">prior_type</span>, <span class="va">dt</span>, </span>
-<span>     <span class="va">n_reps</span>, <span class="va">enviro_data</span>, <span class="va">R0_fixed_values</span>, <span class="va">vaccine_efficacy</span>, <span class="va">p_severe_inf</span>, </span>
-<span>     <span class="va">p_death_severe_inf</span>, <span class="va">p_rep_severe</span>, <span class="va">p_rep_death</span>,<span class="fl">1.0</span>,<span class="va">deterministic</span>,<span class="va">mode_parallel</span>,<span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+<span>     <span class="va">Niter</span>, <span class="va">type</span>, <span class="va">mode_start</span>, <span class="va">prior_settings</span>, <span class="va">dt</span>, </span>
+<span>     <span class="va">n_reps</span>, <span class="va">enviro_data</span>, <span class="va">R0_fixed_values</span>, <span class="va">p_severe_inf</span>, <span class="va">p_death_severe_inf</span>, </span>
+<span>     <span class="va">add_values</span>, <span class="va">deterministic</span>,<span class="va">mode_parallel</span>,<span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p>The saved output of MCMC() takes the form of a data frame of values
 of the current likelihood (posterior_current), likelihood calculated
 from proposed parameter values (posterior_prop), current and proposed

@@ -119,15 +119,21 @@ to the limitations of the computer being used). [TBA - link to odin.dust
 documentation]</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Force of infection due to spillover from sylvatic reservoir</span></span>
-<span><span class="va">FOI_spillover</span> <span class="op">&lt;-</span> <span class="fl">1.0e-8</span>             </span>
+<span><span class="va">FOI_spillover</span> <span class="op">&lt;-</span> <span class="fl">1.0e-8</span>           </span>
 <span><span class="co"># Basic reproduction number for urban spread of infection</span></span>
-<span><span class="va">R0</span> <span class="op">&lt;-</span> <span class="fl">1.5</span>             </span>
+<span><span class="va">R0</span> <span class="op">&lt;-</span> <span class="fl">1.2</span></span>
 <span><span class="co"># Year(s) for which data is to be output</span></span>
-<span><span class="va">years_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="va">years_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1995</span><span class="op">:</span><span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="co"># SEIRV data from end of a previous run to use as input (if mode_start = 2; not </span></span>
 <span><span class="co"># used here and hence set to NULL)</span></span>
 <span><span class="va">start_SEIRV</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>    </span>
-<span><span class="co"># TBA</span></span>
+<span><span class="co"># Type of data to output</span></span>
+<span><span class="co">#'   "full" = SEIRVC + FOI for all steps and ages</span></span>
+<span><span class="co">#'   "case" = annual total new infections (C) summed across all ages</span></span>
+<span><span class="co">#'   "sero" = annual SEIRV</span></span>
+<span><span class="co">#'   "case+sero" = annual SEIRVC, cases summed across all ages</span></span>
+<span><span class="co">#'   "case_alt" = annual total new infections not combined by age</span></span>
+<span><span class="co">#'   "case_alt2" = total new infections combined by age for all steps</span></span>
 <span><span class="va">output_type</span> <span class="op">&lt;-</span> <span class="st">"full"</span>             </span>
 <span><span class="co"># First year in population/vaccination data (here taken from the input data set; </span></span>
 <span><span class="co"># if the population and vaccination data is set manually, this similarly needs </span></span>
@@ -172,7 +178,11 @@ stochasticity if relevant.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">YEPaux</span><span class="op">)</span></span>
 <span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu">plot_model_output</span><span class="op">(</span><span class="va">test1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">plot</span><span class="op">)</span></span></code></pre></div>
-<p>The model can be run in deterministic mode [TBA]:</p>
+<p>The model can be run in deterministic mode by setting the
+‘deterministic’ flag to TRUE. In this mode, the number of new infections
+at each time point is calculated by multiplying the number of
+susceptible individuals by the total force of infection, rather than via
+sampling a binomial distribution.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">test1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Model_Run.html">Model_Run</a></span><span class="op">(</span><span class="va">FOI_spillover</span>, <span class="va">R0</span>, <span class="va">vacc_data</span>, <span class="va">pop_data</span>, <span class="va">years_data</span>,</span>
 <span>                   <span class="va">start_SEIRV</span>, <span class="va">output_type</span>, <span class="va">year0</span>, <span class="va">mode_start</span>, <span class="va">vaccine_efficacy</span>, </span>
