@@ -32,15 +32,21 @@ We set the other input parameters to the functions which run the model as follow
 
 ```{r,eval=FALSE}
 # Force of infection due to spillover from sylvatic reservoir
-FOI_spillover <- 1.0e-8             
+FOI_spillover <- 1.0e-8           
 # Basic reproduction number for urban spread of infection
-R0 <- 1.5             
+R0 <- 1.2
 # Year(s) for which data is to be output
-years_data <- c(2000)
+years_data <- c(1995:2000)
 # SEIRV data from end of a previous run to use as input (if mode_start = 2; not 
 # used here and hence set to NULL)
 start_SEIRV <- NULL    
-# TBA
+# Type of data to output
+#'   "full" = SEIRVC + FOI for all steps and ages
+#'   "case" = annual total new infections (C) summed across all ages
+#'   "sero" = annual SEIRV
+#'   "case+sero" = annual SEIRVC, cases summed across all ages
+#'   "case_alt" = annual total new infections not combined by age
+#'   "case_alt2" = total new infections combined by age for all steps
 output_type <- "full"             
 # First year in population/vaccination data (here taken from the input data set; 
 # if the population and vaccination data is set manually, this similarly needs 
@@ -84,7 +90,7 @@ plot <- plot_model_output(test1)
 print(plot)
 ```
 
-The model can be run in deterministic mode [TBA]:
+The model can be run in deterministic mode by setting the 'deterministic' flag to TRUE. In this mode, the number of new infections at each time point is calculated by multiplying the number of susceptible individuals by the total force of infection, rather than via sampling a binomial distribution.
 
 ```{r,eval=FALSE}
 test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,

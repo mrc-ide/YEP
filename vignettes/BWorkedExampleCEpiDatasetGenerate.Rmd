@@ -35,13 +35,13 @@ enviro_coeffs <- read.csv(file = paste(path.package("YEP"),
                                        sep = ""), header = TRUE)
 # Seroprevalence data for comparison, by region, year & age group, in format 
 # no. samples/no. positives
-obs_sero_data <- read.csv(file = paste(path.package("YEP"), 
-                                    "/exdata/obs_sero_data_example.csv",
+sero_template <- read.csv(file = paste(path.package("YEP"), 
+                                    "/exdata/sero_template_example.csv",
                                        sep = ""), header = TRUE)  
 # Annual reported case/death data for comparison, by region and year, in format 
 # no. cases/no. deaths  
-obs_case_data <- read.csv(file = paste(path.package("YEP"), 
-                                    "/exdata/obs_case_data_example.csv",
+case_template <- read.csv(file = paste(path.package("YEP"), 
+                                    "/exdata/case_template_example.csv",
                                        sep = ""), header = TRUE)   
 ```
 
@@ -82,7 +82,7 @@ We run the Generate_Dataset() function to produce the dataset. This uses the app
 
 ```{r,eval=FALSE}
 set.seed(1)
-dataset1 <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+dataset1 <- Generate_Dataset(input_data,FOI_values,R0_values,sero_template,case_template,vaccine_efficacy,
                              p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,mode_start,
                              start_SEIRV,dt,n_reps,deterministic,mode_parallel,cluster=NULL)
 ```

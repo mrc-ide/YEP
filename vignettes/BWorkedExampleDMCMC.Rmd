@@ -58,31 +58,24 @@ filename_prefix <- "Chain"
 Niter <- 1 
 # Type of parameter set used to calculate spillover FOI and R0 (here both 
 # calculated from environmental covariates)
-type <- "FOI+R0 enviro" 
-# Minimum log parameter values (here FOI coefficients, R0 coefficients, vaccine 
-# efficacy, severe non-fatal case report probability, fatal case report probability)
-log_params_min <- c(rep(-30, n_env_vars), rep(-5, n_env_vars), log(c(0.01, 0.01))) 
-# Maximum log parameter values
-log_params_max <- c(rep(-10, n_env_vars), rep(0, n_env_vars), log(c(0.25, 0.25))) 
+type <- "FOI+R0 enviro"  
 # Flag indicating how to set initial population immunity level
-# If mode_start = 0, only vaccinated individuals
-# If mode_start = 1, shift unvaccinated individuals into recovered for herd immunity
 mode_start <- 1 
-# Type of prior likelihood calculation to use    
-prior_type <- "norm" 
+# Type of prior likelihood calculation to use
+prior_settings <- list(type="zero")
 # Time increment in days
 dt <- 5.0 
 # Number of repetitions for which to run model and obtain average outputs
 n_reps <- 5 
-# Vaccine efficacy (here fixed rather than varied)
-vaccine_efficacy <- 1.0 
 # Probability of an infection causing severe symptoms
 p_severe_inf = 0.12
 # Probability of an infection with severe symptoms causing death
 p_death_severe_inf = 0.39
-# Fixed R0 values and severe and fatal case reporting probabilities; here set to 
-# NULL because values are variable
-R0_fixed_values = p_rep_severe = p_rep_death = NULL 
+# Fixed R0 values (here set to NULL because R0 is variable)
+R0_fixed_values = NULL
+# Additional values: severe and fatal case reporting probability are set to NULL due to being estimated
+# as variables; vaccine efficacy and Brazil spillover FOI multiplier set to 1.0 as constants.
+add_values=list(p_rep_severe = NULL, p_rep_death = NULL, vaccine_efficacy = 1.0, m_FOI_Brazil = 1.0)
 # True/false flag indicating whether or not to run model in deterministic mode
 # (so that binomial calculations give average instead of randomized output)
 deterministic = FALSE
@@ -95,9 +88,9 @@ We then run the MCMC() function. Output data recorded at each iteration is saved
 
 ```{r,eval=FALSE}
 MCMC(log_params_ini, input_data, obs_sero_data, obs_case_data, filename_prefix, 
-     Niter, type, log_params_min,log_params_max, mode_start, prior_type, dt, 
-     n_reps, enviro_data, R0_fixed_values, vaccine_efficacy, p_severe_inf, 
-     p_death_severe_inf, p_rep_severe, p_rep_death,1.0,deterministic,mode_parallel,NULL)
+     Niter, type, mode_start, prior_settings, dt, 
+     n_reps, enviro_data, R0_fixed_values, p_severe_inf, p_death_severe_inf, 
+     add_values, deterministic,mode_parallel,NULL)
 ```
 
 The saved output of MCMC() takes the form of a data frame of values of the current likelihood (posterior_current), likelihood calculated from proposed parameter values (posterior_prop), current and proposed parameter values, a flag indicating whether the proposed parameter values were accepted (set to 1 if they were accepted, 0 if they were not), and the chain covariance.
