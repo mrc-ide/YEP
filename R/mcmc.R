@@ -214,7 +214,7 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
                               consts=list()){
 
   #Get additional values and calculate associated priors
-  vaccine_efficacy=p_rep_severe=p_rep_death=m_FOI_Brazil=1.0
+  vaccine_efficacy=p_rep_severe=p_rep_death=p_rep_severe_af=p_rep_death_af=p_rep_severe_sa=p_rep_death_sa=m_FOI_Brazil=1.0
   prior_add=0
   for(var_name in names(consts$add_values)){
     if(is.numeric(consts$add_values[[var_name]])==FALSE){
@@ -255,10 +255,19 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
   if (is.finite(prior_prop)) {
 
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
-                                consts$p_severe_inf,consts$p_death_severe_inf,p_rep_severe,p_rep_death,
-                                consts$mode_start,start_SEIRV=NULL,consts$dt,consts$n_reps,consts$deterministic,
-                                consts$mode_parallel,consts$cluster)
+    if(p_rep_severe %in% names(consts$add_values)){
+      dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                                  consts$p_severe_inf,consts$p_death_severe_inf,p_rep_severe,p_rep_death,
+                                  consts$mode_start,start_SEIRV=NULL,consts$dt,consts$n_reps,consts$deterministic,
+                                  consts$mode_parallel,consts$cluster)
+    } else {
+      dataset <- Generate_Dataset2(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
+                                  consts$p_severe_inf,consts$p_death_severe_inf,
+                                  p_rep_severe_af,p_rep_death_af,p_rep_severe_sa,p_rep_death_sa,
+                                  consts$mode_start,start_SEIRV=NULL,consts$dt,consts$n_reps,consts$deterministic,
+                                  consts$mode_parallel,consts$cluster)
+
+    }
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data)==FALSE){
@@ -325,7 +334,9 @@ mcmc_checks <- function(log_params_ini=c(),n_regions=1,type=NULL,prior_settings=
 
   # Check additional values
   add_value_names=names(add_values) #TODO: formalize flexibility
-  #assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil")))
+  # assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil")) ||
+  #               all(add_value_names==c("vaccine_efficacy","p_rep_severe_af","p_rep_death_af",
+  #                                      "p_rep_severe_sa","p_rep_death_sa","m_FOI_Brazil")))
   assert_that(all(extra_estimated_params %in% add_value_names))
   for(var_name in add_value_names){
     if(var_name %in% extra_estimated_params){
@@ -532,7 +543,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
   #Get additional values
   extra_estimated_params=c()
   add_value_names=names(add_values)
-  assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil"))) #TBV in alt version
+  #assert_that(all(add_value_names==c("vaccine_efficacy","p_rep_severe","p_rep_death","m_FOI_Brazil"))) #TBV in alt version
   for(var_name in add_value_names){
     if(is.null(add_values[[var_name]])==TRUE){extra_estimated_params=append(extra_estimated_params,var_name)}
   }

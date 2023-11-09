@@ -621,7 +621,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     for(n_line in 1:n_lines){
       line=case_line_list_region[n_line]
       n_age_min=findInterval(template$age_min[line],input_data$age_labels)
-      n_age_max=findInterval(template$age_max[line],input_data$age_labels)
+      n_age_max=findInterval(template$age_max[line]-1,input_data$age_labels)
       age_pts[[n_line]]=c(n_age_min:n_age_max)
       cohort_size[line]=sum(input_data$pop_data[n_region,
                                                 input_data$years_labels==years_case[n_line],age_pts[[n_line]]])
@@ -658,7 +658,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                     YLL=model_YLL_values))
 }
 #-------------------------------------------------------------------------------
-#' @title Generate_Multiple Datasets
+#' @title Generate_Multiple_Datasets
 #'
 #' @description Generate multiple datasets for multiple sets of input parameter values
 #'

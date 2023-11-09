@@ -2,7 +2,7 @@
 % Please edit documentation in R/outputs_generate.R
 \name{Generate_Multiple_Datasets}
 \alias{Generate_Multiple_Datasets}
-\title{Generate_Multiple Datasets}
+\title{Generate_Multiple_Datasets}
 \usage{
 Generate_Multiple_Datasets(
   input_data = list(),

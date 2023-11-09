@@ -284,12 +284,19 @@ regions_breakdown <- function(region_labels=c()){
 #-------------------------------------------------------------------------------
 #' @title template_region_xref
 #'
-#' @description [TBA]
+#' @description Cross-reference template data with individual regions
 #'
-#' @details [TBA]
+#' @details Examines template data (serological, case or burden) and compares with vector of region names in order
+#'  to check which lines in each set of template data require model data from which region(s). For example, if a
+#'  line in a set of serological data has its region given as "AGO.1_1,AGO.2_1,AGO.3_1" and the compared vector of
+#'  regions is c("AGO.1_1","AGO.2_1","AGO.3_1",...), then that line requires data from regions 1, 2 and 3.
 #'
-#' @param template [TBA]
-#' @param regions [TBA]
+#'  This function is used when generating a dataset from one or more templates; it is normally used by the functions
+#'  Generate_Dataset, Generate_Sero_Dataset, Generate_Case_Dataset, Generate_VIMC_Burden_Dataset and
+#'  Generate_Multiple_Datasets. It returns a list containing [TBA].
+#'
+#' @param template List containing one or more sets of template data (serological data, case data or burden data)
+#' @param regions Vector of individual regions
 #'
 #' @export
 #'

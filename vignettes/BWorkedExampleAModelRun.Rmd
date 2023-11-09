@@ -59,6 +59,7 @@ year0 <- input_data$years_labels[1]
 # give herd immunity (R = 1 - 1/R0)
 # If mode_start = 2, use SEIRV input in list from previous run(s), set using
 # start_SEIRV variable
+# If mode_start = 3, set age-stratified herd immunity based on R0 and FOI_spillover
 mode_start <- 1  
 # Proportional vaccine efficacy (from 0 to 1); probability of vaccination 
 # successfully providing immunity (i.e. moving vaccinated individual to group V)
