@@ -87,7 +87,6 @@ Model_Run <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),pop_data =
   if(output_type=="full"){
     dimensions=c(N_age,n_particles,t_pts_out)
     output_data=list(day=x_res[1,1,],year=x_res[2,1,])
-    output_data=list(day=x_res[1,1,],year=x_res[2,1,])
     output_data$FOI_total=array(x_res[3,,]/dt,dim=c(n_particles,t_pts_out))
     output_data$S=array(x_res[c((1+n_nv):(N_age+n_nv)),,],dim=dimensions)
     output_data$E=array(x_res[c((N_age+1+n_nv):((2*N_age)+n_nv)),,],dim=dimensions)
