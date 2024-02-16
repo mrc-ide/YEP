@@ -4,16 +4,18 @@
 \alias{input_data_truncate}
 \title{input_data_truncate}
 \usage{
-input_data_truncate(input_data = list(), regions_new = c())
+input_data_truncate(input_data = list(), regions_new = NULL, years_new = NULL)
 }
 \arguments{
 \item{input_data}{List of population and vaccination data for multiple regions (created using create_input_data()
 function and usually loaded from an RDS file)}
 
-\item{regions_new}{Vector of regions (subset of input_data$region_labels) for which to create new, shorter dataset}
+\item{regions_new}{Vector of regions (subset of input_data$region_labels)}
+
+\item{years_new}{Vector of years (subset of input_data$years_labels)}
 }
 \description{
-Truncate input data list for shorter set of regions
+Truncate input data list for shorter set of regions and/or years
 }
 \details{
 TBA

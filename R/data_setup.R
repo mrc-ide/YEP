@@ -85,6 +85,7 @@ input_data_check <- function(input_data=list()){
 
   assert_that(is.list(input_data))
   assert_that(is.vector(input_data$region_labels))
+  assert_that(all(input_data$region_labels==sort(input_data$region_labels)),msg="Region labels must be in alphabetical order")
   n_regions=length(input_data$region_labels)
 
   assert_that(is.vector(input_data$years_labels))
@@ -224,33 +225,48 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
 #-------------------------------------------------------------------------------
 #' @title input_data_truncate
 #'
-#' @description Truncate input data list for shorter set of regions
+#' @description Truncate input data list for shorter set of regions and/or years
 #'
 #' @details TBA
 #'
 #' @param input_data List of population and vaccination data for multiple regions (created using create_input_data()
 #'   function and usually loaded from an RDS file)
-#' @param regions_new Vector of regions (subset of input_data$region_labels) for which to create new, shorter dataset
+#' @param regions_new Vector of regions (subset of input_data$region_labels)
+#' @param years_new Vector of years (subset of input_data$years_labels)
 #'
 #' @export
 #'
-input_data_truncate <- function(input_data=list(),regions_new=c()){
+input_data_truncate <- function(input_data=list(),regions_new = NULL, years_new = NULL){
 
   assert_that(input_data_check(input_data))
   N_age=length(input_data$age_labels)
   n_years=length(input_data$years_labels)
 
-  assert_that(all(input_data$region_labels==sort(input_data$region_labels)),msg="Region labels must be in alphabetical order")
-  assert_that(all(regions_new==sort(regions_new)),msg="Specified regions must be in alphabetical order")
-  assert_that(all(regions_new %in% input_data$region_labels),msg="Specified regions must be present in dataset")
+  if(is.null(regions_new)){
+    regions_new=input_data$region_labels
+  } else {
+    assert_that(all(regions_new==sort(regions_new)),msg="Specified regions must be in alphabetical order")
+    assert_that(all(regions_new %in% input_data$region_labels),msg="Specified regions must be present in dataset")
+  }
+
+  if(is.null(years_new)){
+    years_new=input_data$years_labels
+  } else {
+    assert_that(all(years_new %in% input_data$years_labels))
+    for(i in 2:length(years_new)){
+      assert_that(years_new[i]==years_new[i-1]+1,msg="New set of years must be continuous series of consecutive years")
+    }
+  }
 
   input_regions_check=input_data$region_labels %in% regions_new
   n_regions=length(input_regions_check[input_regions_check==TRUE])
+  years_check=input_data$years_labels %in% years_new
+  n_years=length(years_new)
 
   input_data_new=list(region_labels=input_data$region_labels[input_regions_check],
-                      years_labels=input_data$years_labels,age_labels=input_data$age_labels,
-                      vacc_data=array(input_data$vacc_data[input_regions_check,,],dim=c(n_regions,n_years,N_age)),
-                      pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions,n_years,N_age)))
+                      years_labels=input_data$years_labels[years_check],age_labels=input_data$age_labels,
+                      vacc_data=array(input_data$vacc_data[input_regions_check,years_check,],dim=c(n_regions,n_years,N_age)),
+                      pop_data=array(input_data$pop_data[input_regions_check,years_check,],dim=c(n_regions,n_years,N_age)))
 
   return(input_data_new)
 }
