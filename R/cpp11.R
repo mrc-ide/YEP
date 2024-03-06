@@ -20,6 +20,10 @@ dust_cpu_SEIRV_Model_simulate <- function(ptr, time_end) {
   .Call(`_YEP_dust_cpu_SEIRV_Model_simulate`, ptr, time_end)
 }
 
+dust_cpu_SEIRV_Model_run_adjoint <- function(ptr) {
+  .Call(`_YEP_dust_cpu_SEIRV_Model_run_adjoint`, ptr)
+}
+
 dust_cpu_SEIRV_Model_set_index <- function(ptr, r_index) {
   .Call(`_YEP_dust_cpu_SEIRV_Model_set_index`, ptr, r_index)
 }

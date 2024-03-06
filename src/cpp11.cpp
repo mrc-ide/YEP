@@ -41,6 +41,13 @@ extern "C" SEXP _YEP_dust_cpu_SEIRV_Model_simulate(SEXP ptr, SEXP time_end) {
   END_CPP11
 }
 // SEIRV_Model.cpp
+SEXP dust_cpu_SEIRV_Model_run_adjoint(SEXP ptr);
+extern "C" SEXP _YEP_dust_cpu_SEIRV_Model_run_adjoint(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_SEIRV_Model_run_adjoint(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// SEIRV_Model.cpp
 SEXP dust_cpu_SEIRV_Model_set_index(SEXP ptr, cpp11::sexp r_index);
 extern "C" SEXP _YEP_dust_cpu_SEIRV_Model_set_index(SEXP ptr, SEXP r_index) {
   BEGIN_CPP11
@@ -162,6 +169,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_YEP_dust_cpu_SEIRV_Model_resample",                (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_resample,                2},
     {"_YEP_dust_cpu_SEIRV_Model_rng_state",               (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_rng_state,               3},
     {"_YEP_dust_cpu_SEIRV_Model_run",                     (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_run,                     2},
+    {"_YEP_dust_cpu_SEIRV_Model_run_adjoint",             (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_run_adjoint,             1},
     {"_YEP_dust_cpu_SEIRV_Model_set_data",                (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_set_data,                3},
     {"_YEP_dust_cpu_SEIRV_Model_set_index",               (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_set_index,               2},
     {"_YEP_dust_cpu_SEIRV_Model_set_n_threads",           (DL_FUNC) &_YEP_dust_cpu_SEIRV_Model_set_n_threads,           2},
