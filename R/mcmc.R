@@ -255,7 +255,7 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
   if (is.finite(prior_prop)) {
 
     #Generate modelled data over all regions
-    if(p_rep_severe %in% names(consts$add_values)){
+    if("p_rep_severe" %in% names(consts$add_values)){
       dataset <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
                                   consts$p_severe_inf,consts$p_death_severe_inf,p_rep_severe,p_rep_death,
                                   consts$mode_start,start_SEIRV=NULL,consts$dt,consts$n_reps,consts$deterministic,
