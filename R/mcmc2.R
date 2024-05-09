@@ -1,5 +1,7 @@
-# R file for functions used for Markov Chain Monte Carlo fitting in YEP package - alternate versions
-# mcmc2 and single_posterior_calc2 removed due to changes to default MCMC functions
+# R file for functions used for Markov Chain Monte Carlo fitting in YEP package - alternate versions for
+# instances where there are separate case/death reporting probabilities for Africa and South America
+# mcmc2 and single_posterior_calc2 removed due to changes to default MCMC functions allowing them to work
+# with multiple reporting probabilities
 #-------------------------------------------------------------------------------
 #' @title Generate_Dataset2
 #'
