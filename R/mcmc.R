@@ -244,11 +244,9 @@ single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero
     for(n_region in 1:n_regions){if(substr(regions[n_region],1,3)=="BRA"){FOI_values[n_region]=FOI_values[n_region]*m_FOI_Brazil}}
     R0_values=FOI_R0_data$R0_values
     if(consts$prior_settings$type=="norm"){
-      prior_prop=FOI_R0_data$prior + prior_add + sum(log(dtrunc(R0_values,"norm",a=0,b=Inf,mean=consts$prior_settings$R0_mean,
-                                                                sd=consts$prior_settings$R0_sd)))
-      + sum(log(dtrunc(FOI_values,"norm",a=0,b=1,mean=consts$prior_settings$FOI_mean,
-                       sd=consts$prior_settings$FOI_sd)))
-      #TODO - add prior for FOI_values
+      prior_prop=FOI_R0_data$prior + prior_add +
+        sum(log(dtrunc(R0_values,"norm",a=0,b=Inf,mean=consts$prior_settings$R0_mean,sd=consts$prior_settings$R0_sd))) +
+        sum(log(dtrunc(FOI_values,"norm",a=0,b=1,mean=consts$prior_settings$FOI_mean,sd=consts$prior_settings$FOI_sd)))
     } else {
       prior_prop=FOI_R0_data$prior+prior_add
     }
