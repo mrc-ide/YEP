@@ -458,7 +458,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0,R0 = 1.0,vacc_data = list(),
 parameter_setup <- function(FOI_spillover=0.0,R0=1.0,vacc_data=list(),pop_data=list(),year0=1940,
                             years_data=c(1941:1942),mode_start=0,vaccine_efficacy=1.0,start_SEIRV=list(),dt=1.0){
 
-  assert_that(FOI_spillover>=0.0)
+  assert_that(FOI_spillover>0.0)
   assert_that(R0>0.0)
   assert_that(length(pop_data[,1])>1,msg="Need population data for multiple years")
   assert_that(length(pop_data[1,])>1,msg="Need population data for multiple age groups")
