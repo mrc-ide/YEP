@@ -19,7 +19,8 @@ Generate_VIMC_Burden_Dataset(
   n_reps = 1,
   deterministic = FALSE,
   mode_parallel = "none",
-  cluster = NULL
+  cluster = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -58,7 +59,10 @@ If mode_parallel="none", no parallelization
 If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types}
 
-\item{cluster}{Cluster of threads to use if mode_parallel="clusterMap"
+\item{cluster}{Cluster of threads to use if mode_parallel="clusterMap"}
+
+\item{seed}{Optional random seed value to set before running each region for stochastic normalization; set to NULL
+  to omit; will not work if mode_parallel is not set to "none".
 '}
 }
 \description{

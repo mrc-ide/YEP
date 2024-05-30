@@ -531,13 +531,16 @@ Generate_Case_Dataset <- function(input_data = list(),FOI_values = c(),R0_values
 #'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 #'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
 #' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
+#' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
+#'   to omit; will not work if mode_parallel is not set to "none".
 #' '
 #' @export
 #'
 Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
                                          vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                                          YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
-                                         dt = 1.0, n_reps = 1, deterministic = FALSE,mode_parallel = "none",cluster = NULL){
+                                         dt = 1.0, n_reps = 1, deterministic = FALSE, mode_parallel = "none",
+                                         cluster = NULL, seed = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -588,9 +591,9 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     model_output_all=clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
-                                MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],mode_start = mode_start,
-                                              vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
-                                              n_threads = 1 ,deterministic = deterministic))
+                                MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],
+                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy, dt = dt,
+                                              n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
   }
   #if(mode_parallel=="hybrid") #Potential future option combining parallelization types
 
@@ -600,6 +603,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     #Run model if not using parallelization
     if(mode_parallel=="none"){
       #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
+      if(is.null(seed)==FALSE && deterministic==FALSE){set.seed(seed)}
       model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
