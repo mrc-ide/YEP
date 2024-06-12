@@ -126,6 +126,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 
     #Calculate likelihood using single_posterior_calc function
     posterior_value_prop=single_posterior_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
+    gc()
 
     if(is.finite(posterior_value_prop)==FALSE) {
       p_accept = -Inf
@@ -578,6 +579,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
 
       names(log_params_prop)=param_names
       posterior_value=single_posterior_calc(log_params_prop,input_data,obs_sero_data,obs_case_data,consts)
+      gc()
       results<-rbind(results,c(set,exp(log_params_prop),posterior_value))
       if(set==1){colnames(results)=c("set",param_names,"posterior")}
 
