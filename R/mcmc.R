@@ -62,7 +62,6 @@
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_parallel Set mode for parallelization, if any:
 #'   If mode_parallel="none", no parallelization
-#'   If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 #'   If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types
 #' @param cluster Cluster of threads to use if mode_parallel="clusterMap"
 #' '
@@ -72,7 +71,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
                  Niter=1,type=NULL,mode_start=0,prior_settings=list(type="zero"),dt=1.0,n_reps=1,enviro_data=NULL,
                  R0_fixed_values=NULL,p_severe_inf=0.12,p_death_severe_inf=0.39,
                  add_values=list(vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,m_FOI_Brazil=1.0),
-                 deterministic=FALSE,mode_parallel="none",cluster=NULL){
+                 deterministic=FALSE,mode_parallel="none",cluster=NULL){ #TODO Use ellipsis for optional parameters
 
   assert_that(is.logical(deterministic))
   assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")
@@ -212,7 +211,7 @@ MCMC <- function(log_params_ini=c(),input_data=list(),obs_sero_data=NULL,obs_cas
 #' @export
 #'
 single_posterior_calc <- function(log_params_prop=c(),input_data=list(),obs_sero_data=NULL,obs_case_data=NULL,
-                              consts=list()){
+                              consts=list()){ #TODO Use ellipsis for const_list
 
   #Get additional values and calculate associated priors
   vaccine_efficacy=p_rep_severe=p_rep_death=p_rep_severe_af=p_rep_death_af=p_rep_severe_sa=p_rep_death_sa=m_FOI_Brazil=1.0
@@ -533,7 +532,7 @@ mcmc_prelim_fit <- function(n_iterations=1,n_param_sets=1,n_bounds=1,type=NULL,l
                             mode_start=0,prior_settings=list(type="zero"),dt=1.0,n_reps=1,enviro_data=NULL,R0_fixed_values=c(),
                             p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                             add_values=list(vaccine_efficacy=1.0,p_rep_severe=1.0,p_rep_death=1.0,m_FOI_Brazil=1.0),
-                            deterministic=TRUE,mode_parallel="none",cluster=NULL){
+                            deterministic=TRUE,mode_parallel="none",cluster=NULL){ #TODO Use ellipsis for optional parameters
 
   #TODO - Add assertthat functions
   assert_that(mode_start %in% c(0,1,3),msg="mode_start must have value 0, 1 or 3")

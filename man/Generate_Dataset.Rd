@@ -63,7 +63,6 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 
 \item{mode_parallel}{Set mode for parallelization, if any:
 If mode_parallel="none", no parallelization
-If mode_parallel="pars_multi", all regions run in parallel for same time period with same output type
 If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types}
 
 \item{cluster}{Cluster of threads to use if mode_parallel="clusterMap"}
@@ -77,9 +76,7 @@ Generate annual serological and/or case/death data
 }
 \details{
 This function is used to generate annual serological and/or case/death data based on templates;
-it is normally used by the single_like_calc() function. The separate Generate_Sero_dataset and
-Generate_Case_Dataset functions can be used when only one or the other type is required; this function exists
-to cover instances where serological and case data may need to be generated for the same region.
+it is normally used by the single_like_calc() function.
 
 [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 }

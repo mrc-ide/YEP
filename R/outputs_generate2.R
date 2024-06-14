@@ -1,7 +1,5 @@
-# R file for functions used for Markov Chain Monte Carlo fitting in YEP package - alternate versions for
-# instances where there are separate case/death reporting probabilities for Africa and South America
-# mcmc2 and single_posterior_calc2 removed due to changes to default MCMC functions allowing them to work
-# with multiple reporting probabilities
+# R file for alternate function version(s) for instances where there are separate case/death reporting
+# probabilities for Africa and South America
 #-------------------------------------------------------------------------------
 #' @title Generate_Dataset2
 #'
@@ -53,7 +51,7 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
     assert_that(all(c(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)>=0.0))
     assert_that(all(c(p_rep_severe_af,p_rep_severe_sa,p_rep_death_af,p_rep_death_sa)<=1.0))
   }
-  assert_that(mode_parallel %in% c("none","pars_multi","clusterMap"))
+  assert_that(mode_parallel %in% c("none","clusterMap"))
   if(mode_parallel=="clusterMap"){assert_that(is.null(cluster)==FALSE)}
 
   #Prune input data based on regions
@@ -103,7 +101,7 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
   }
 
   #Set up vector of output types to get from model if needed
-  if(mode_parallel %in% c("none","clusterMap")){
+  #if(mode_parallel %in% c("none","clusterMap")){
     output_types=rep(NA,n_regions)
     for(n_region in 1:n_regions){
       if(is.na(case_line_list[[n_region]][1])==FALSE){
@@ -114,20 +112,9 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
         }
       } else {output_types[n_region]="sero"}
     }
-  }
+  #}
 
   #Model all regions in parallel if parallel modes in use
-  if(mode_parallel=="pars_multi"){
-    years_data_all=c(min(year_data_begin):max(year_end))
-    if(is.null(sero_template)==FALSE){if(is.null(case_template)==FALSE){output_type="case+sero"} else {output_type="sero"}
-    } else {output_type="case"}
-    model_output_all=Model_Run_Multi_Input(FOI_spillover = FOI_values,R0 = R0_values,
-                                           vacc_data = input_data$vacc_data, pop_data = input_data$pop_data,
-                                           years_data = years_data_all, start_SEIRV=start_SEIRV,output_type = output_type,
-                                           year0 = input_data$years_labels[1],mode_start = mode_start,
-                                           vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
-                                           n_threads = n_reps*n_regions,deterministic = deterministic)
-  }
   if(mode_parallel=="clusterMap"){
     vacc_data_subsets=pop_data_subsets=years_data_sets=list() #TODO - change input data?
     for(n_region in 1:n_regions){
@@ -143,7 +130,6 @@ Generate_Dataset2 <- function(input_data = list(),FOI_values = c(),R0_values = c
                                               vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
                                               n_threads = 1 ,deterministic = deterministic))
   }
-  #if(mode_parallel=="hybrid") #Potential future option combining parallelization types
 
   #Save relevant output data from each region
   for(n_region in 1:n_regions){
