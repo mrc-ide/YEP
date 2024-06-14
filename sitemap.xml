@@ -49,22 +49,10 @@
     <loc>https://mrc-ide.github.io/YEP/index.html</loc>
   </url>
   <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Generate_Case_Dataset.html</loc>
-  </url>
-  <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset2.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Generate_Multiple_Datasets.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Generate_Sero_Dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Generate_VIMC_Burden_Dataset.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc>
@@ -74,9 +62,6 @@
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Many_Reps.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Multi_Input.html</loc>
   </url>
   <url>
     <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc>
