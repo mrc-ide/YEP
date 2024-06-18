@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">YEP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,14 +63,14 @@
 <span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs_sero_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  obs_case_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  consts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>log_params_prop</dt>
-<dd><p>Proposed values of varied parameters (natural logarithm of actual parameters)</p></dd>
+<dd><p>Proposed values of parameters to be estimated (natural logarithm of actual parameters)</p></dd>
 
 
 <dt>input_data</dt>
@@ -89,10 +89,10 @@ positives</p></dd>
 deaths</p></dd>
 
 
-<dt>consts</dt>
-<dd><p>= List of constant parameters/flags/etc. loaded to mcmc() (type,
-mode_start,prior_settings,dt,n_reps,enviro_data,R0_fixed_values,p_severe_inf,
-p_death_severe_inf,add_values list,extra_estimated_params,deterministic, mode_parallel, cluster)</p></dd>
+<dt>...</dt>
+<dd><p>= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
+prior_settings, dt, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
+deterministic, mode_parallel, cluster</p></dd>
 
 </dl></div>
     <div class="section level2">

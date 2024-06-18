@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">YEP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,28 +58,13 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_param_labels</span><span class="op">(</span></span>
-<span>  type <span class="op">=</span> <span class="st">"FOI"</span>,</span>
-<span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  enviro_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  extra_estimated_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"vacc_eff"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_param_labels</span><span class="op">(</span>enviro_data <span class="op">=</span> <span class="cn">NULL</span>, extra_estimated_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"vacc_eff"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>type</dt>
-<dd><p>Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
-covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"</p></dd>
-
-
-<dt>input_data</dt>
-<dd><p>List of population and vaccination data for multiple regions (created using data input creation
-code and usually loaded from RDS file)</p></dd>
-
-
-<dt>enviro_data</dt>
-<dd><p>Environmental data frame, containing only relevant environmental variables</p></dd>
+    <dl><dt>enviro_data</dt>
+<dd><p>Environmental data frame, containing only relevant environmental covariate values for regions of interest</p></dd>
 
 
 <dt>extra_estimated_params</dt>
@@ -89,7 +74,7 @@ vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FO
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Takes in input list and environmental data along with names of additional parameters (vaccine efficacy
+    <p>Takes in environmental covariate data along with names of additional parameters (vaccine efficacy
 and reporting probabilities) and generates list of names for parameter set to use as input for fitting functions</p>
     </div>
 

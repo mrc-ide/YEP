@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">YEP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,7 +74,7 @@
 <span>  dt <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  deterministic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  mode_parallel <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  mode_parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_frame <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -124,10 +124,10 @@ and number of samples</p></dd>
 
 
 <dt>mode_start</dt>
-<dd><p>Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
-If mode_start=2, use SEIRV input in list from previous run(s)
+<dd><p>Flag indicating how to set initial population immunity level in addition to vaccination <br>
+If mode_start=0, only vaccinated individuals <br>
+If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) <br>
+If mode_start=2, use SEIRV input in list from previous run(s) <br>
 If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)</p></dd>
 
 
@@ -148,17 +148,15 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 
 
 <dt>mode_parallel</dt>
-<dd><p>Set mode for parallelization, if any:
-If mode_parallel="none", no parallelization
-If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types</p></dd>
+<dd><p>TRUE/FALSE - set model to run in parallel using cluster if TRUE</p></dd>
 
 
 <dt>cluster</dt>
-<dd><p>Cluster of threads to use if mode_parallel="clusterMap"</p></dd>
+<dd><p>Cluster of threads to use if mode_parallel=TRUE</p></dd>
 
 
 <dt>output_frame</dt>
-<dd><p>Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+<dd><p>TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
   or calculated values only (if FALSE)
 '</p></dd>
 
@@ -166,7 +164,7 @@ If mode_parallel="clusterMap", all regions run in parallel with different time p
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used to generate annual serological and/or case/death data based on templates;
-it is normally used by the single_like_calc() function.</p>
+it is normally used by the single_posterior_calc() function.</p>
 <p>[TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]</p>
     </div>
 

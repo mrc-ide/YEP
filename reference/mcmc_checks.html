@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">YEP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,10 +61,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mcmc_checks</span><span class="op">(</span></span>
 <span>  log_params_ini <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  n_regions <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  prior_settings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"zero"</span><span class="op">)</span>,</span>
-<span>  enviro_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  R0_fixed_values <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  add_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vaccine_efficacy <span class="op">=</span> <span class="fl">1</span>, p_rep_severe <span class="op">=</span> <span class="fl">1</span>, p_rep_death <span class="op">=</span> <span class="fl">1</span>, m_FOI_Brazil</span>
 <span>    <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  extra_estimated_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -74,42 +72,45 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>log_params_ini</dt>
-<dd><p>Initial values of varied parameters (natural logarithm of actual parameters)</p></dd>
+<dd><p>Initial values of parameters to be estimated (natural logarithm of actual parameters)</p></dd>
 
 
 <dt>n_regions</dt>
 <dd><p>Number of regions</p></dd>
 
 
-<dt>type</dt>
-<dd><p>Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
-covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"</p></dd>
-
-
 <dt>prior_settings</dt>
-<dd><p>TBA</p></dd>
+<dd><p>List containing settings for priors: must contain text named "type": <br>
+If type = "zero", prior probability is always zero <br>
+If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
+ -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini <br>
+If type = "exp", prior probability is given by dexp calculation on FOI/R0 values <br>
+If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
+ in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
+ parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)</p></dd>
 
 
 <dt>enviro_data</dt>
-<dd><p>Values of environmental covariates (if in use)</p></dd>
-
-
-<dt>R0_fixed_values</dt>
-<dd><p>Values of R0 to use if not being varied (set to NULL if R0 is being varied)</p></dd>
+<dd><p>Values of environmental covariates</p></dd>
 
 
 <dt>add_values</dt>
-<dd><p>TBA</p></dd>
+<dd><p>List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
+ indicate that they are part of the parameter set to be estimated <br>
+vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) <br>
+p_rep_severe Probability of observation of severe infection <br>
+p_rep_death Probability of observation of death <br>
+m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered) <br></p></dd>
 
 
 <dt>extra_estimated_params</dt>
-<dd><p>TBA</p></dd>
+<dd><p>Vector of names of parameters to be estimated in addition to those governing FOI and R0; see add_values</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function, which is called by MCMC(), performs a number of checks on data to be used in fitting to
-ensure proper functionality. It verifies that the number of parameters being varied is consistent with other
+ensure proper functionality. It verifies that the number of parameters being estimated is consistent with other
 settings and that certain values are not outwith sensible boundaries (e.g. probabilities must be between 0 and 1).</p>
     </div>
 
