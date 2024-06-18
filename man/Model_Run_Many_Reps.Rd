@@ -25,7 +25,7 @@ Model_Run_Many_Reps(
 
 \item{R0}{Basic reproduction number for urban spread of infection}
 
-\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy=1) by age group and year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
 
 \item{pop_data}{Population by age group and year}
 
@@ -44,10 +44,10 @@ Model_Run_Many_Reps(
 \item{year0}{First year in population/vaccination data}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
-If mode_start=2, use SEIRV input in list from previous run(s)
-If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
+If mode_start = 0, only vaccinated individuals
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+If mode_start = 2, use SEIRV input in list from previous run(s)
+If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 

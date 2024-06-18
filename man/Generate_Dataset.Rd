@@ -20,7 +20,7 @@ Generate_Dataset(
   dt = 1,
   n_reps = 1,
   deterministic = FALSE,
-  mode_parallel = "none",
+  mode_parallel = FALSE,
   cluster = NULL,
   output_frame = FALSE
 )
@@ -47,10 +47,10 @@ and number of samples}
 
 \item{p_rep_death}{Probability of reporting of a fatal infection}
 
-\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
-If mode_start=2, use SEIRV input in list from previous run(s)
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start=0, only vaccinated individuals \cr
+If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
+If mode_start=2, use SEIRV input in list from previous run(s) \cr
 If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
@@ -61,13 +61,11 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 
-\item{mode_parallel}{Set mode for parallelization, if any:
-If mode_parallel="none", no parallelization
-If mode_parallel="clusterMap", all regions run in parallel with different time periods and output types}
+\item{mode_parallel}{TRUE/FALSE - set model to run in parallel using cluster if TRUE}
 
-\item{cluster}{Cluster of threads to use if mode_parallel="clusterMap"}
+\item{cluster}{Cluster of threads to use if mode_parallel=TRUE}
 
-\item{output_frame}{Flag indicating whether to output a complete data frame of results in template format (if TRUE)
+\item{output_frame}{TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
   or calculated values only (if FALSE)
 '}
 }
@@ -76,7 +74,7 @@ Generate annual serological and/or case/death data
 }
 \details{
 This function is used to generate annual serological and/or case/death data based on templates;
-it is normally used by the single_like_calc() function.
+it is normally used by the single_posterior_calc() function.
 
 [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 }

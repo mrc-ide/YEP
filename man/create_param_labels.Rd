@@ -4,21 +4,10 @@
 \alias{create_param_labels}
 \title{create_param_labels}
 \usage{
-create_param_labels(
-  type = "FOI",
-  input_data = list(),
-  enviro_data = NULL,
-  extra_estimated_params = c("vacc_eff")
-)
+create_param_labels(enviro_data = NULL, extra_estimated_params = c("vacc_eff"))
 }
 \arguments{
-\item{type}{Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
-covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
-
-\item{input_data}{List of population and vaccination data for multiple regions (created using data input creation
-code and usually loaded from RDS file)}
-
-\item{enviro_data}{Environmental data frame, containing only relevant environmental variables}
+\item{enviro_data}{Environmental data frame, containing only relevant environmental covariate values for regions of interest}
 
 \item{extra_estimated_params}{Vector of strings listing variable parameters besides ones determining FOI/R0 (may include
 vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FOI adjustment factor)}
@@ -27,6 +16,6 @@ vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FO
 Apply names to the parameters in a set used for data matching and parameter fitting
 }
 \details{
-Takes in input list and environmental data along with names of additional parameters (vaccine efficacy
+Takes in environmental covariate data along with names of additional parameters (vaccine efficacy
 and reporting probabilities) and generates list of names for parameter set to use as input for fitting functions
 }

@@ -5,27 +5,27 @@
 \title{mcmc_FOI_R0_setup}
 \usage{
 mcmc_FOI_R0_setup(
-  type = "",
   prior_settings = list(type = "zero"),
   regions = "",
   log_params_prop = c(),
-  enviro_data = list(),
-  R0_fixed_values = c()
+  enviro_data = list()
 )
 }
 \arguments{
-\item{type}{Type of parameter set (FOI only, FOI+R0, FOI and/or R0 coefficients associated with environmental
-covariates); choose from "FOI","FOI+R0","FOI enviro","FOI+R0 enviro"}
-
-\item{prior_settings}{TBA}
+\item{prior_settings}{List containing settings for priors: must contain text named "type": \cr
+If type = "zero", prior probability is always zero \cr
+If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
+ -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
+If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
+If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
+ in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
+ parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)}
 
 \item{regions}{Vector of region names}
 
-\item{log_params_prop}{Proposed values of varied parameters (natural logarithm of actual parameters)}
+\item{log_params_prop}{Proposed values of parameters (natural logarithm of actual parameters)}
 
-\item{enviro_data}{Environmental data frame, containing only relevant environmental variables}
-
-\item{R0_fixed_values}{Values of R0 to use if not being varied
+\item{enviro_data}{Environmental data frame, containing only relevant environmental covariate values
 '}
 }
 \description{
