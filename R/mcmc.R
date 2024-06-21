@@ -211,8 +211,10 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
       value = exp(as.numeric(log_params_prop[i]))
       assign(var_name, value)
       if(consts$prior_settings$type == "norm"){
-        prior_add = prior_add+log(dtrunc(value, "norm", a = 0, b = 1, mean = consts$prior_settings$norm_params_mean[i],
-                                       sd = consts$prior_settings$norm_params_sd[i]))
+        # prior_add = prior_add+log(dtrunc(value, "norm", a = 0, b = 1, mean = consts$prior_settings$norm_params_mean[i],
+        #                                sd = consts$prior_settings$norm_params_sd[i]))
+        prior_add = prior_add+log(dtrunc(value, "norm", a = 1.0e-3, b = 1, mean = consts$prior_settings$norm_params_mean[i],
+                                         sd = consts$prior_settings$norm_params_sd[i])) #a set higher than 0 to prevent uninformative probs
       } else {
         if(consts$prior_settings$type == "flat"){
           if(value<consts$prior_settings$log_params_min[i] || value>consts$prior_settings$log_params_max[i]){prior_add = -Inf}
