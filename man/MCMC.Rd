@@ -61,10 +61,12 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 If type = "zero", prior probability is always zero \cr
 If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max, \cr
  -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini
-If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
 If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)}
+ in prior_settings: \cr
+ norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+ parameters and to actual values of additional parameters) \cr
+ + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
+ + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr}
 
 \item{dt}{time increment in days (must be 1 or 5)}
 

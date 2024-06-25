@@ -36,10 +36,12 @@
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max, \cr
 #'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini
-#'  If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)
+#'   in prior_settings: \cr
+#'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+#'   parameters and to actual values of additional parameters) \cr
+#'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
+#'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of times to repeat calculations to get average likelihood at each step
 #' @param enviro_data Data frame containing values of environmental covariates
@@ -287,10 +289,12 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
 #'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#'  If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)
+#'   in prior_settings: \cr
+#'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+#'   parameters and to actual values of additional parameters) \cr
+#'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
+#'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param enviro_data Values of environmental covariates
 #' @param add_values List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
 #'   indicate that they are part of the parameter set to be estimated \cr
@@ -309,7 +313,7 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
   param_names = names(log_params_ini)
   n_params = length(log_params_ini)
   assert_that(is.null(param_names) == FALSE, msg = "Parameters should be named using create_param_labels")
-  assert_that(prior_settings$type %in% c("zero", "flat", "exp", "norm"), msg = "Check prior_settings$type")
+  assert_that(prior_settings$type %in% c("zero", "flat", "norm"), msg = "Check prior_settings$type")
   if(prior_settings$type == "flat"){
     assert_that(length(prior_settings$log_params_min) == n_params, msg = "Check prior_settings$log_params_min")
     assert_that(length(prior_settings$log_params_max) == n_params, msg = "Check prior_settings$log_params_max")
@@ -391,10 +395,12 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
 #'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#'  If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)
+#'   in prior_settings: \cr
+#'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+#'   parameters and to actual values of additional parameters) \cr
+#'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
+#'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param regions Vector of region names
 #' @param log_params_prop Proposed values of parameters (natural logarithm of actual parameters)
 #' @param enviro_data Environmental data frame, containing only relevant environmental covariate values
@@ -426,12 +432,6 @@ mcmc_FOI_R0_setup <- function(prior_settings = list(type = "zero"), regions = ""
       for(i in 1:n_values){
         if(log_params_prop[i]<prior_settings$log_params_min[i]){prior = -Inf}
         if(log_params_prop[i]>prior_settings$log_params_max[i]){prior = -Inf}
-      }
-    } else {
-      if(prior_settings$type == "exp"){
-        prior_FOI = dexp(FOI_values, rate = 1, log = TRUE)
-        prior_R0 = dexp(R0_values, rate = 1, log = TRUE)
-        prior = prior+sum(prior_FOI)+sum(prior_R0)
       }
     }
   }
@@ -468,10 +468,12 @@ mcmc_FOI_R0_setup <- function(prior_settings = list(type = "zero"), regions = ""
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
 #'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#'  If type = "exp", prior probability is given by dexp calculation on FOI/R0 values \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings; norm_params_mean and norm_params_sd (mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters) + R0_mean + R0_sd (mean + standard deviation of computed R0, single values)
+#'   in prior_settings: \cr
+#'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+#'   parameters and to actual values of additional parameters) \cr
+#'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
+#'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of repetitions
 #' @param enviro_data Values of environmental variables (if in use)
@@ -499,7 +501,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
   #TODO - Add assertthat functions
   assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
   assert_that(length(log_params_min) == length(log_params_max), msg = "Parameter limit vectors must have same lengths")
-  assert_that(prior_settings$type %in% c("zero", "exp", "norm"), msg = "Prior type must be 'zero', 'exp' or 'norm'")
+  assert_that(prior_settings$type %in% c("zero", "norm"), msg = "Prior type must be 'zero', or 'norm'")
 
   best_fit_results = list()
   n_params = length(log_params_min)
