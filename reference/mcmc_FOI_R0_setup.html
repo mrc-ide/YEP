@@ -58,30 +58,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mcmc_FOI_R0_setup</span><span class="op">(</span></span>
-<span>  prior_settings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"zero"</span><span class="op">)</span>,</span>
-<span>  regions <span class="op">=</span> <span class="st">""</span>,</span>
-<span>  log_params_prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mcmc_FOI_R0_setup</span><span class="op">(</span>regions <span class="op">=</span> <span class="st">""</span>, log_params_prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>, enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>prior_settings</dt>
-<dd><p>List containing settings for priors: must contain text named "type": <br>
-If type = "zero", prior probability is always zero <br>
-If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
- -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini <br>
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: <br>
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) <br>
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  <br>
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) <br></p></dd>
-
-
-<dt>regions</dt>
+    <dl><dt>regions</dt>
 <dd><p>Vector of region names</p></dd>
 
 
