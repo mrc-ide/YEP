@@ -4,25 +4,9 @@
 \alias{mcmc_FOI_R0_setup}
 \title{mcmc_FOI_R0_setup}
 \usage{
-mcmc_FOI_R0_setup(
-  prior_settings = list(type = "zero"),
-  regions = "",
-  log_params_prop = c(),
-  enviro_data = list()
-)
+mcmc_FOI_R0_setup(regions = "", log_params_prop = c(), enviro_data = list())
 }
 \arguments{
-\item{prior_settings}{List containing settings for priors: must contain text named "type": \cr
-If type = "zero", prior probability is always zero \cr
-If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
- -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: \cr
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) \cr
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr}
-
 \item{regions}{Vector of region names}
 
 \item{log_params_prop}{Proposed values of parameters (natural logarithm of actual parameters)}

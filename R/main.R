@@ -465,15 +465,11 @@ param_calc_enviro <- function(enviro_coeffs = c(), enviro_covar_values = c()){
 
   assert_that(all(enviro_coeffs >= 0), msg = "All environmental coefficients must have positive values")
   n_env_vars = length(enviro_covar_values)
-  assert_that(length(enviro_coeffs) %in% c(n_env_vars, 2*n_env_vars), msg = "Wrong number of environmental coefficients")
+  assert_that(length(enviro_coeffs)==2*n_env_vars, msg = "Wrong number of environmental coefficients")
 
-  output = list(FOI = NA, R0 = NA)
-  #output$FOI = max(0.0, sum(enviro_coeffs[c(1:n_env_vars)]*enviro_covar_values)) #Zero-maximum removed due to MCMC convergence issues
+  output = list()
   output$FOI = sum(enviro_coeffs[c(1:n_env_vars)]*enviro_covar_values)
-  if(length(enviro_coeffs) == 2*n_env_vars){
-    #output$R0 = max(0.0, sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values))
-    output$R0 = sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)
-    }
+  output$R0 = sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)
 
   return(output)
 }
