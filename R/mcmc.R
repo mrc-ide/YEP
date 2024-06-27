@@ -3,39 +3,40 @@
 #-------------------------------------------------------------------------------
 #' @title MCMC
 #'
-#' @description Combined MCMC Multi-Region - series of MCMC steps for one or more regions
+#' @description Combined MCMC Multi-Region - series of MCMC iterations for one or more regions
 #'
 #' @details This is the master function for running a Markov chain to optimize the parameters of the yellow fever
 #' model based on the calculated likelihood of observing supplied data given a particular set of parameters.
 #'
 #' @param log_params_ini Initial values of parameters to be estimated. These should always be the log() values of the
 #'   actual parameters, ordered as follows: \cr
-#'   1) Parameters controlling the value of spillover force of infection FOI, a number of environmental coefficients used to calculate
-#'   FOI values from environmental covariates equal to the number of environmental covariates listed in the
-#'   enviro_data frame. Values should be in the order of the columns in the environmental data frame. \cr
-#'   2) Parameters controlling the value of R0, a number of environmental coefficients used to calculate R0
+#'   1) A number of environmental coefficients used to calculate spillover force of infection values from environmental
+#'   covariates equal to the number of environmental covariates listed in the enviro_data frame. Values should be in the
+#'   order of the columns in the environmental data frame. \cr
+#'   2) A number of environmental coefficients used to calculate basic reproduction number
 #'   values from environmental covariates equal to the number of environmental covariates listed in the enviro_data
 #'   frame. Values should be in the order of the columns in the environmental data frame. \cr
-#'   3) Values of the additional parameters (vaccine efficacy vaccine_efficacy, severe case reporting probability
-#'   p_rep_severe and fatal case reporting probability p_rep_death) if these are to be estimated, in the order
-#'   vaccine_efficacy->p_rep_severe->p_rep_death. If these parameters are to be estimated, the values separately
-#'   supplied to this function (see add_values below) should be set to NA.
+#'   3) Values of the additional parameters (reported vaccination effectiveness vaccine_efficacy, severe case reporting
+#'   probability p_rep_severe, and fatal case reporting probability p_rep_death, and Brazil spillover FOI multiplier m_FOI_Brazil);
+#'   if these are to be estimated, in the order vaccine_efficacy->p_rep_severe->p_rep_death->m_FOI_Brazil. If these parameters
+#'   are to be estimated, the values separately supplied to this function (see add_values below) should be set to NA.
 #' @param input_data List of population and vaccination data for multiple regions (created using data input creation
 #'   code and usually loaded from RDS file)
 #' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no.
 #'   cases/no. deaths
-#' @param filename_prefix Prefix of names for output files
-#' @param Niter Total number of steps to run
+#' @param filename_prefix Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a name in the
+#'  format: "(filename_prefix)XX.csv", e.g. Chain00.csv
+#' @param Niter Total number of iterations to run
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param prior_settings List containing settings for priors: must contain text named "type":
 #'  If type = "zero", prior probability is always zero \cr
-#'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max, \cr
-#'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini
+#'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
+#'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
 #'   in prior_settings: \cr
 #'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
@@ -43,8 +44,8 @@
 #'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
 #'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param dt time increment in days (must be 1 or 5)
-#' @param n_reps Number of times to repeat calculations to get average likelihood at each step
-#' @param enviro_data Data frame containing values of environmental covariates
+#' @param n_reps Number of times to repeat calculations to get average likelihood at each iteration
+#' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param add_values List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
@@ -123,7 +124,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
       if(is.na(p_accept) ){ p_accept = -Inf}
     }
 
-    ## accept/reject step:
+    ## accept/reject iteration:
     tmp = runif(1)
     if(tmp<min(exp(p_accept), 1)) {
       log_params = log_params_prop
@@ -131,7 +132,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
       accept = 1
     } else {accept = 0}
 
-    #save current step
+    #save current iteration
     chain = rbind(chain, log_params)
     chain_prop = rbind(chain_prop, log_params_prop)
     posterior_current = rbind(posterior_current, posterior_value_current)
@@ -152,7 +153,6 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
     #Output chain to file every 10 iterations; start new file every 10,000 iterations
     if (iter %% 10 == 0){
       if (iter %% 10000 == 10){fileIndex = (iter-10)/10000}
-
       if(fileIndex >= 10){fn = paste0(filename_prefix, fileIndex, ".csv")} else {fn = paste0(filename_prefix, "0", fileIndex, ".csv")}
       if(file.exists(fn) == FALSE){file.create(fn)}
       lines = min(((fileIndex*10000)+1), iter):iter
@@ -218,32 +218,32 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
     } else {assign(var_name, consts$add_values[[var_name]])}
   }
 
-  n_values=2*(ncol(consts$enviro_dataenviro_data)-1)
+  values=c(1:(2*(ncol(consts$enviro_data)-1)))
   if(consts$prior_settings$type == "flat"){
-    for(i in 1:n_values){
+    for(i in values){
       if(log_params_prop[i]<consts$prior_settings$log_params_min[i]){prior_like = -Inf}
       if(log_params_prop[i]>consts$prior_settings$log_params_max[i]){prior_like = -Inf}
     }
   } else {
     if(consts$prior_settings$type == "norm"){
-      values=c(1:n_values)
       prior_like = prior_like + sum(dnorm(log_params_prop[values], mean = consts$prior_settings$norm_params_mean[values],
                                           sd = consts$prior_settings$norm_params_sd[values], log = TRUE))
 
     }
   }
 
-
-  #If prior is finite so far, get FOI and R0 values and calculate associated prior
+  #If prior is finite so far, get FOI and R0 values and calculate any associated prior
   if(is.finite(prior_like)){
     regions = input_data$region_labels
     n_regions = length(regions)
 
-    FOI_R0_data = mcmc_FOI_R0_setup(regions, log_params_prop, consts$enviro_data)
-    FOI_values = FOI_R0_data$FOI_values
+    #FOI_R0_data = mcmc_FOI_R0_setup(regions, log_params_prop, consts$enviro_data)
+    n_env_vars = ncol(consts$enviro_data)-1
+    enviro_coeffs = exp(log_params_prop[c(1:(2*n_env_vars))])
+    FOI_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)]*t(consts$enviro_data[,1+c(1:n_env_vars)])))
+    R0_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*t(consts$enviro_data[,1+c(1:n_env_vars)])))
 
     for(n_region in 1:n_regions){if(substr(regions[n_region], 1, 3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}}
-    R0_values = FOI_R0_data$R0_values
     if(consts$prior_settings$type == "norm"){
       prior_like = prior_like +
         sum(log(dtrunc(R0_values, "norm", a = 0, b = Inf, mean = consts$prior_settings$R0_mean, sd = consts$prior_settings$R0_sd))) +
@@ -288,19 +288,11 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
 #' ensure proper functionality. It verifies that the number of parameters being estimated is consistent with other
 #' settings and that certain values are not outwith sensible boundaries (e.g. probabilities must be between 0 and 1).
 #'
-#' @param log_params_ini Initial values of parameters to be estimated (natural logarithm of actual parameters)
+#' @param log_params_ini Initial values of parameters to be estimated (natural logarithm of actual parameters; see
+#'  documentation for MCMC() function for more details)
 #' @param n_regions Number of regions
-#' @param prior_settings List containing settings for priors: must contain text named "type": \cr
-#'  If type = "zero", prior probability is always zero \cr
-#'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
-#'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings: \cr
-#'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
-#'   parameters and to actual values of additional parameters) \cr
-#'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
-#'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
-#' @param enviro_data Values of environmental covariates
+#' @param prior_settings List containing settings for priors; see documentation for MCMC() function for more details)
+#' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
 #' @param add_values List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
 #'   indicate that they are part of the parameter set to be estimated \cr
 #'  vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) \cr
@@ -361,15 +353,15 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
 #-------------------------------------------------------------------------------
 #' @title param_prop_setup
 #'
-#' @description Set up proposed new log parameter values for next step in chain
+#' @description Set up proposed new log parameter values for next iteration in chain
 #'
 #' @details Takes in current values of parameter set used for Markov Chain Monte Carlo fitting and proposes new values
 #' from multivariate normal distribution where the existing values form the mean and the standard deviation is
 #' based on the chain covariance or (if the flag "adapt" is set to 1) a flat value based on the number of parameters.
 #'
 #' @param log_params Previous log parameter values used as input
-#' @param chain_cov Covariance calculated from previous steps in chain
-#' @param adapt 0/1 flag indicating which type of calculation to use for proposition value
+#' @param chain_cov Covariance calculated from previous iterations in chain
+#' @param adapt 0/1 flag indicating which type of covariance to use for proposition value (TBA)
 #' '
 #' @export
 #'
@@ -388,50 +380,39 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
   return(log_params_prop)
 }
 #-------------------------------------------------------------------------------
-#' @title mcmc_FOI_R0_setup
-#'
-#' @description Set up FOI and R0 values and calculate some prior probability values for MCMC calculation
-#'
-#' @details Takes in parameter values used for Markov Chain Monte Carlo fitting, calculates spillover force of
-#' infection and (optionally) reproduction number values either directly or from environmental covariates. Also
-#' calculates related components of prior probability.
-#'
-# @param prior_settings List containing settings for priors: must contain text named "type": \cr
-#  If type = "zero", prior probability is always zero \cr
-#  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
-#   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#   in prior_settings: \cr
-#   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
-#   parameters and to actual values of additional parameters) \cr
-#   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
-#   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
-#' @param regions Vector of region names
-#' @param log_params_prop Proposed values of parameters (natural logarithm of actual parameters)
-#' @param enviro_data Environmental data frame, containing only relevant environmental covariate values
-#' '
-#' @export
-#'
-#mcmc_FOI_R0_setup <- function(prior_settings = list(type = "zero"), regions = "", log_params_prop = c(), enviro_data = list()){
-mcmc_FOI_R0_setup <- function(regions = "", log_params_prop = c(), enviro_data = list()){
-
-  n_regions = length(regions)
-  FOI_values = R0_values = rep(0, n_regions)
-
-  n_env_vars = ncol(enviro_data)-1
-  # n_values = 2*n_env_vars
-  # enviro_coeffs = exp(log_params_prop[c(1:n_values)])
-  enviro_coeffs = exp(log_params_prop[c(1:(2*n_env_vars))])
-
-  for(i in 1:n_regions){ #TODO - Streamline to calculate all at once
-    model_params = param_calc_enviro(enviro_coeffs,
-                                   as.numeric(enviro_data[enviro_data$region == regions[i], 1+c(1:n_env_vars)]))
-    FOI_values[i] = model_params$FOI
-    R0_values[i] = model_params$R0
-  }
-
-  return(list(FOI_values = FOI_values, R0_values = R0_values))#, prior = prior))
-}
+# @title mcmc_FOI_R0_setup
+#
+# @description Set up FOI and R0 values and calculate some prior probability values for MCMC calculation
+#
+# @details Takes in parameter values used for Markov Chain Monte Carlo fitting, calculates spillover force of
+# infection and (optionally) reproduction number values either directly or from environmental covariates.
+#
+# @param regions Vector of region names
+# @param log_params_prop Proposed values of parameters (natural logarithm of actual parameters)
+# @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
+# '
+# @export
+#
+# mcmc_FOI_R0_setup <- function(regions = "", log_params_prop = c(), enviro_data = list()){
+#
+#   n_regions = length(regions)
+#   #FOI_values = R0_values = rep(0, n_regions)
+#
+#   n_env_vars = ncol(enviro_data)-1
+#   enviro_coeffs = exp(log_params_prop[c(1:(2*n_env_vars))])
+#
+#   # for(i in 1:n_regions){ #TODO - Streamline to calculate all at once
+#   #   model_params = param_calc_enviro(enviro_coeffs,
+#   #                                  as.numeric(enviro_data[enviro_data$region == regions[i], 1+c(1:n_env_vars)]))
+#   #   FOI_values[i] = model_params$FOI
+#   #   R0_values[i] = model_params$R0
+#   # }
+#
+#   FOI_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)]*t(enviro_data[,1+c(1:n_env_vars)])))
+#   R0_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*t(enviro_data[,1+c(1:n_env_vars)])))
+#
+#   return(list(FOI_values = FOI_values, R0_values = R0_values))
+# }
 #-------------------------------------------------------------------------------
 #' @title mcmc_prelim_fit
 #'
@@ -458,7 +439,7 @@ mcmc_FOI_R0_setup <- function(regions = "", log_params_prop = c(), enviro_data =
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#' @param prior_settings List containing settings for priors: must contain text named "type": \cr
+#' @param prior_settings List containing settings for priors: must contain text named "type":
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
 #'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
@@ -470,7 +451,7 @@ mcmc_FOI_R0_setup <- function(regions = "", log_params_prop = c(), enviro_data =
 #'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of repetitions
-#' @param enviro_data Values of environmental variables (if in use)
+#' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param add_values List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to

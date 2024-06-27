@@ -9,13 +9,13 @@ param_prop_setup(log_params = c(), chain_cov = 1, adapt = 0)
 \arguments{
 \item{log_params}{Previous log parameter values used as input}
 
-\item{chain_cov}{Covariance calculated from previous steps in chain}
+\item{chain_cov}{Covariance calculated from previous iterations in chain}
 
-\item{adapt}{0/1 flag indicating which type of calculation to use for proposition value
+\item{adapt}{0/1 flag indicating which type of covariance to use for proposition value (TBA)
 '}
 }
 \description{
-Set up proposed new log parameter values for next step in chain
+Set up proposed new log parameter values for next iteration in chain
 }
 \details{
 Takes in current values of parameter set used for Markov Chain Monte Carlo fitting and proposes new values

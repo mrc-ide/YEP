@@ -28,16 +28,16 @@ MCMC(
 \arguments{
 \item{log_params_ini}{Initial values of parameters to be estimated. These should always be the log() values of the
 actual parameters, ordered as follows: \cr
-1) Parameters controlling the value of spillover force of infection FOI, a number of environmental coefficients used to calculate
-FOI values from environmental covariates equal to the number of environmental covariates listed in the
-enviro_data frame. Values should be in the order of the columns in the environmental data frame. \cr
-2) Parameters controlling the value of R0, a number of environmental coefficients used to calculate R0
+1) A number of environmental coefficients used to calculate spillover force of infection values from environmental
+covariates equal to the number of environmental covariates listed in the enviro_data frame. Values should be in the
+order of the columns in the environmental data frame. \cr
+2) A number of environmental coefficients used to calculate basic reproduction number
 values from environmental covariates equal to the number of environmental covariates listed in the enviro_data
 frame. Values should be in the order of the columns in the environmental data frame. \cr
-3) Values of the additional parameters (vaccine efficacy vaccine_efficacy, severe case reporting probability
-p_rep_severe and fatal case reporting probability p_rep_death) if these are to be estimated, in the order
-vaccine_efficacy->p_rep_severe->p_rep_death. If these parameters are to be estimated, the values separately
-supplied to this function (see add_values below) should be set to NA.}
+3) Values of the additional parameters (reported vaccination effectiveness vaccine_efficacy, severe case reporting
+probability p_rep_severe, and fatal case reporting probability p_rep_death, and Brazil spillover FOI multiplier m_FOI_Brazil);
+if these are to be estimated, in the order vaccine_efficacy->p_rep_severe->p_rep_death->m_FOI_Brazil. If these parameters
+are to be estimated, the values separately supplied to this function (see add_values below) should be set to NA.}
 
 \item{input_data}{List of population and vaccination data for multiple regions (created using data input creation
 code and usually loaded from RDS file)}
@@ -48,9 +48,10 @@ positives}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no.
 cases/no. deaths}
 
-\item{filename_prefix}{Prefix of names for output files}
+\item{filename_prefix}{Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a name in the
+format: "(filename_prefix)XX.csv", e.g. Chain00.csv}
 
-\item{Niter}{Total number of steps to run}
+\item{Niter}{Total number of iterations to run}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
@@ -59,8 +60,8 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 \item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
-If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max, \cr
- -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini
+If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
+ -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
 If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
  in prior_settings: \cr
  norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
@@ -70,9 +71,9 @@ If type = "norm", prior probability is given by dnorm calculation on parameter v
 
 \item{dt}{time increment in days (must be 1 or 5)}
 
-\item{n_reps}{Number of times to repeat calculations to get average likelihood at each step}
+\item{n_reps}{Number of times to repeat calculations to get average likelihood at each iteration}
 
-\item{enviro_data}{Data frame containing values of environmental covariates}
+\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
@@ -93,7 +94,7 @@ m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if re
 '}
 }
 \description{
-Combined MCMC Multi-Region - series of MCMC steps for one or more regions
+Combined MCMC Multi-Region - series of MCMC iterations for one or more regions
 }
 \details{
 This is the master function for running a Markov chain to optimize the parameters of the yellow fever

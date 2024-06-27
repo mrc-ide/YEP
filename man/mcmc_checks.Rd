@@ -15,22 +15,14 @@ mcmc_checks(
 )
 }
 \arguments{
-\item{log_params_ini}{Initial values of parameters to be estimated (natural logarithm of actual parameters)}
+\item{log_params_ini}{Initial values of parameters to be estimated (natural logarithm of actual parameters; see
+documentation for MCMC() function for more details)}
 
 \item{n_regions}{Number of regions}
 
-\item{prior_settings}{List containing settings for priors: must contain text named "type": \cr
-If type = "zero", prior probability is always zero \cr
-If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
- -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: \cr
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) \cr
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr}
+\item{prior_settings}{List containing settings for priors; see documentation for MCMC() function for more details)}
 
-\item{enviro_data}{Values of environmental covariates}
+\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
 
 \item{add_values}{List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
  indicate that they are part of the parameter set to be estimated \cr

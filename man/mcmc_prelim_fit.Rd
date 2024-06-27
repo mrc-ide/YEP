@@ -53,7 +53,7 @@ If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
 If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr}
 
-\item{prior_settings}{List containing settings for priors: must contain text named "type": \cr
+\item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
 If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
  -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
@@ -68,7 +68,7 @@ If type = "norm", prior probability is given by dnorm calculation on parameter v
 
 \item{n_reps}{Number of repetitions}
 
-\item{enviro_data}{Values of environmental variables (if in use)}
+\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
