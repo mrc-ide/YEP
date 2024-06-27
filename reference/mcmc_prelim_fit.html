@@ -131,7 +131,7 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 
 <dt>prior_settings</dt>
-<dd><p>List containing settings for priors: must contain text named "type": <br>
+<dd><p>List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero <br>
 If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
  -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini <br>
@@ -152,7 +152,7 @@ If type = "norm", prior probability is given by dnorm calculation on parameter v
 
 
 <dt>enviro_data</dt>
-<dd><p>Values of environmental variables (if in use)</p></dd>
+<dd><p>Data frame of values of environmental covariates (columns) by region (rows)</p></dd>
 
 
 <dt>p_severe_inf</dt>
