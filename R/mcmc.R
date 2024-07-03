@@ -68,7 +68,8 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
 
   assert_that(is.logical(deterministic))
   assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
-  if(is.null(obs_case_data)==FALSE){assert_that(all(c("p_rep_severe","p_rep_death") %in% names(add_values)))}
+  if(is.null(obs_case_data)==FALSE){assert_that(all(c("p_rep_severe","p_rep_death") %in% names(add_values)),
+                                                msg = "Reporting probabilities required for case data")}
 
   #Process input data to check that all regions with sero and/or case data supplied are present, remove
   #regions without any supplied data, and add cross-referencing tables for use when calculating likelihood. Take
@@ -76,7 +77,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
   input_data = input_data_process(input_data, obs_sero_data, obs_case_data)
   regions = names(table(input_data$region_labels)) #Regions in new processed input data list
   n_regions = length(regions)
-  for(region in regions){assert_that(region %in% enviro_data$region)}
+  assert_that(all(regions %in% enviro_data$region),msg="Environmental data must be available for all regions in observed data")
   enviro_data = subset(enviro_data, enviro_data$region %in% regions)
 
   #Get names of additional parameters to be estimated
@@ -90,7 +91,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
   names(log_params_ini) = param_names
 
   #Run checks on inputs
-  checks<-mcmc_checks(log_params_ini, n_regions, prior_settings, enviro_data, add_values, extra_estimated_params)
+  checks <- mcmc_checks(log_params_ini, n_regions, prior_settings, enviro_data, add_values, extra_estimated_params)
   if(prior_settings$type == "flat"){names(prior_settings$log_params_min) = names(prior_settings$log_params_max) = param_names}
 
   #MCMC setup
@@ -155,9 +156,9 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
       if (iter %% 10000 == 10){fileIndex = (iter-10)/10000}
       if(fileIndex >= 10){fn = paste0(filename_prefix, fileIndex, ".csv")} else {fn = paste0(filename_prefix, "0", fileIndex, ".csv")}
       if(file.exists(fn) == FALSE){file.create(fn)}
-      lines = min(((fileIndex*10000)+1), iter):iter
+      lines = min(((fileIndex*10000) + 1), iter):iter
 
-      data_out<-cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[lines, ]
+      data_out <- cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[lines, ]
       if(fileAccess(fn, 2) == 0){write.csv(data_out, fn, row.names = FALSE)}
     }
 
@@ -240,13 +241,13 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
     #FOI_R0_data = mcmc_FOI_R0_setup(regions, log_params_prop, consts$enviro_data)
     n_env_vars = ncol(consts$enviro_data)-1
     enviro_coeffs = exp(log_params_prop[c(1:(2*n_env_vars))])
-    FOI_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)]*t(consts$enviro_data[,1+c(1:n_env_vars)])))
-    R0_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*t(consts$enviro_data[,1+c(1:n_env_vars)])))
+    FOI_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)]*t(consts$enviro_data[,1 + c(1:n_env_vars)])))
+    R0_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars) + n_env_vars]*t(consts$enviro_data[,1 + c(1:n_env_vars)])))
 
     for(n_region in 1:n_regions){if(substr(regions[n_region], 1, 3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}}
     if(consts$prior_settings$type == "norm"){
-      prior_like = prior_like +
-        sum(log(dtrunc(R0_values, "norm", a = 0, b = Inf, mean = consts$prior_settings$R0_mean, sd = consts$prior_settings$R0_sd))) +
+      prior_like = prior_like  +
+        sum(log(dtrunc(R0_values, "norm", a = 0, b = Inf, mean = consts$prior_settings$R0_mean, sd = consts$prior_settings$R0_sd)))  +
         sum(log(dtrunc(FOI_values, "norm", a = 0, b = 1, mean = consts$prior_settings$FOI_mean, sd = consts$prior_settings$FOI_sd)))
     }
   }
@@ -273,7 +274,7 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
       } else {deaths_like_values = 0}
     } else {cases_like_values = deaths_like_values = 0}
 
-    posterior = prior_like+sum(sero_like_values, na.rm = TRUE)+sum(cases_like_values, na.rm = TRUE)+sum(deaths_like_values, na.rm = TRUE)
+    posterior = prior_like + sum(sero_like_values, na.rm = TRUE) + sum(cases_like_values, na.rm = TRUE) + sum(deaths_like_values, na.rm = TRUE)
 
   } else {posterior = -Inf}
 
@@ -310,7 +311,7 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
   param_names = names(log_params_ini)
   n_params = length(log_params_ini)
   assert_that(is.null(param_names) == FALSE, msg = "Parameters should be named using create_param_labels")
-  assert_that(prior_settings$type %in% c("zero", "flat", "norm"), msg = "Check prior_settings$type")
+  assert_that(prior_settings$type %in% c("zero", "flat", "norm"), msg = "Prior settings type must be 'zero', 'flat' or 'norm'")
   if(prior_settings$type == "flat"){
     assert_that(length(prior_settings$log_params_min) == n_params, msg = "Check prior_settings$log_params_min")
     assert_that(length(prior_settings$log_params_max) == n_params, msg = "Check prior_settings$log_params_max")
@@ -326,26 +327,32 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
 
   # Check additional values
   add_value_names = names(add_values)
-  assert_that("vaccine_efficacy" %in% add_value_names)
-  if("p_rep_severe" %in% add_value_names){assert_that("p_rep_death" %in% add_value_names)}
-  assert_that(all(extra_estimated_params %in% add_value_names))
+  assert_that("vaccine_efficacy" %in% add_value_names, msg="Reported vaccination effectiveness vaccine_efficacy must be included in add_values")
+  assert_that(all(extra_estimated_params %in% add_value_names),msg="Additional parameters to be estimated must be included in add_values")
   for(var_name in add_value_names){
     if(var_name %in% extra_estimated_params){
-      assert_that(is.na(add_values[[var_name]]))
-    } else {assert_that(add_values[[var_name]] <= 1.0 && add_values[[var_name]] >= 0.0)}
+      assert_that(is.na(add_values[[var_name]]),msg="Additional parameters to be estimated must be set to NA in add_values")
+    } else {assert_that(add_values[[var_name]] <= 1.0 && add_values[[var_name]] >= 0.0, msg="Fixed additional parameters must be in range 0-1")}
   }
 
   # Get names of environmental covariates
-  assert_that(is.null(enviro_data) == FALSE)
+  assert_that(is.null(enviro_data) == FALSE, msg="Environmental data required")
   env_vars = names(enviro_data[c(2:ncol(enviro_data))])
   n_env_vars = length(env_vars)
 
   # Check that total number of parameters is correct; check parameters named in correct order (TBA); all should be correct if parameter
   # names created using create_param_labels
-  assert_that(n_params == (2*n_env_vars)+length(extra_estimated_params))
+  assert_that(n_params == (2*n_env_vars) + length(extra_estimated_params),
+              msg="Length of initial parameter vector must equal twice number of environmental covariates +
+              number of additional estimated parameters")
   for(i in 1:n_env_vars){
-    assert_that(param_names[i] == paste("FOI_", env_vars[i], sep = ""))
-    assert_that(param_names[i+n_env_vars] == paste("R0_", env_vars[i], sep = ""))
+    assert_that(param_names[i] == paste0("FOI_", env_vars[i]), msg="Initial parameter vector must start with FOI coefficients")
+    assert_that(param_names[i + n_env_vars] == paste0("R0_", env_vars[i]),
+                msg="R0 coefficients must follow FOI coefficients in initial parameter vector")
+  }
+  if(length(extra_estimated_params)>0){
+    assert_that(all(param_names[(2*n_env_vars)+c(1:length(extra_estimated_params))] == extra_estimated_params),
+                msg="Initial parameter vector must end with additional estimated parameters")
   }
 
   return(NULL)
@@ -369,50 +376,15 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 
   n_params = length(log_params)
   if (adapt == 1) {
-    sigma = (2.38 ^ 2) * chain_cov / n_params #'optimal' scaling of chain covariance
+    sigma = (5.6644 * chain_cov)/n_params #'optimal' scaling of chain covariance (2.38 ^ 2)
     log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
   } else {
-    sigma = ((1e-2) ^ 2) * diag(n_params) / n_params #this is an inital proposal covariance, see [Mckinley et al 2014]
+    sigma = (1.0e-4*diag(n_params))/n_params #this is an inital proposal covariance, see [Mckinley et al 2014] ((1e-2) ^ 2)
     log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
   }
-  log_params_prop = log_params_prop_a[1, ]
 
-  return(log_params_prop)
+  return(log_params_prop_a[1, ])
 }
-#-------------------------------------------------------------------------------
-# @title mcmc_FOI_R0_setup
-#
-# @description Set up FOI and R0 values and calculate some prior probability values for MCMC calculation
-#
-# @details Takes in parameter values used for Markov Chain Monte Carlo fitting, calculates spillover force of
-# infection and (optionally) reproduction number values either directly or from environmental covariates.
-#
-# @param regions Vector of region names
-# @param log_params_prop Proposed values of parameters (natural logarithm of actual parameters)
-# @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
-# '
-# @export
-#
-# mcmc_FOI_R0_setup <- function(regions = "", log_params_prop = c(), enviro_data = list()){
-#
-#   n_regions = length(regions)
-#   #FOI_values = R0_values = rep(0, n_regions)
-#
-#   n_env_vars = ncol(enviro_data)-1
-#   enviro_coeffs = exp(log_params_prop[c(1:(2*n_env_vars))])
-#
-#   # for(i in 1:n_regions){ #TODO - Streamline to calculate all at once
-#   #   model_params = param_calc_enviro(enviro_coeffs,
-#   #                                  as.numeric(enviro_data[enviro_data$region == regions[i], 1+c(1:n_env_vars)]))
-#   #   FOI_values[i] = model_params$FOI
-#   #   R0_values[i] = model_params$R0
-#   # }
-#
-#   FOI_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)]*t(enviro_data[,1+c(1:n_env_vars)])))
-#   R0_values=as.numeric(colSums(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*t(enviro_data[,1+c(1:n_env_vars)])))
-#
-#   return(list(FOI_values = FOI_values, R0_values = R0_values))
-# }
 #-------------------------------------------------------------------------------
 #' @title mcmc_prelim_fit
 #'
@@ -441,8 +413,6 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
 #' @param prior_settings List containing settings for priors: must contain text named "type":
 #'  If type = "zero", prior probability is always zero \cr
-#'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
-#'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
 #'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
 #'   in prior_settings: \cr
 #'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
@@ -476,7 +446,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
   #TODO - Add assertthat functions
   assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
   assert_that(length(log_params_min) == length(log_params_max), msg = "Parameter limit vectors must have same lengths")
-  assert_that(prior_settings$type %in% c("zero", "norm"), msg = "Prior type must be 'zero', or 'norm'")
+  assert_that(prior_settings$type %in% c("zero", "norm"), msg = "Prior type must be 'zero' or 'norm'")
 
   best_fit_results = list()
   n_params = length(log_params_min)
@@ -517,23 +487,23 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
                                               add_values = add_values, deterministic = deterministic, mode_parallel = mode_parallel,
                                               cluster = cluster)
       gc() #Clear garbage to prevent memory creep
-      results<-rbind(results, c(set, exp(log_params_prop), posterior_value))
+      results <- rbind(results, c(set, exp(log_params_prop), posterior_value))
       if(set == 1){colnames(results) = c("set", param_names, "posterior")}
 
       cat("\n\tPosterior likelihood = ", posterior_value, sep = "")
 
     }
-    results<-results[order(results$posterior, decreasing = TRUE), ]
+    results <- results[order(results$posterior, decreasing = TRUE), ]
     best_fit_results[[iteration]] = results
 
     log_params_min_new = log_params_max_new = rep(0, n_params)
     for(i in 1:n_params){
-      log_params_min_new[i] = min(log(results[c(1:n_bounds), i+1]))
-      log_params_max_new[i] = max(log(results[c(1:n_bounds), i+1]))
+      log_params_min_new[i] = min(log(results[c(1:n_bounds), i + 1]))
+      log_params_max_new[i] = max(log(results[c(1:n_bounds), i + 1]))
     }
     names(log_params_min_new) = names(log_params_max_new) = param_names
 
-    matplot(x = c(1:n_params), y = log(t(results[c(1:n_bounds), c(1:n_params)+1])), type = "p", pch = 16, col = 1,
+    matplot(x = c(1:n_params), y = log(t(results[c(1:n_bounds), c(1:n_params) + 1])), type = "p", pch = 16, col = 1,
             xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim)
     axis(side = 1, at = c(1:n_params), labels = xlabels, las = 2, cex.axis = 0.7)
     axis(side = 2, at = log(ylabels), labels = ylabels)
