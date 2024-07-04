@@ -200,36 +200,31 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
 
   consts=list(...)
 
-  #Get additional values, calculate initial prior
-  vaccine_efficacy = p_rep_severe = p_rep_death = m_FOI_Brazil = 1.0
+  #Check values for flat prior
   prior_like = 0
-  for(var_name in names(consts$add_values)){
-    if(var_name %in% consts$extra_estimated_params){
-      i = match(var_name, names(log_params_prop))
-      value = exp(as.numeric(log_params_prop[i]))
-      assign(var_name, value)
-      if(consts$prior_settings$type == "norm"){
-        prior_like = log(dtrunc(value, "norm", a = 1.0e-3, b = 1, mean = consts$prior_settings$norm_params_mean[i],
-                                sd = consts$prior_settings$norm_params_sd[i])) #a set higher than 0 to prevent uninformative probs
-      } else {
-        if(consts$prior_settings$type == "flat"){
-          if(value<consts$prior_settings$log_params_min[i] || value>consts$prior_settings$log_params_max[i]){prior_like = -Inf}
-        }
-      }
-    } else {assign(var_name, consts$add_values[[var_name]])}
+  if(consts$prior_settings$type == "flat"){
+    if(any(log_params_prop<consts$prior_settings$log_params_min) || any(log_params_prop>consts$prior_settings$log_params_max)){prior_like = -Inf}
   }
 
-  values=c(1:(2*(ncol(consts$enviro_data)-1)))
-  if(consts$prior_settings$type == "flat"){
-    for(i in values){
-      if(log_params_prop[i]<consts$prior_settings$log_params_min[i]){prior_like = -Inf}
-      if(log_params_prop[i]>consts$prior_settings$log_params_max[i]){prior_like = -Inf}
+  #Get additional values, calculate normal-distribution prior if relevant
+  if(is.finite(prior_like)){
+    vaccine_efficacy = p_rep_severe = p_rep_death = m_FOI_Brazil = 1.0
+    for(var_name in names(consts$add_values)){
+      if(var_name %in% consts$extra_estimated_params){
+        i = match(var_name, names(log_params_prop))
+        value = exp(as.numeric(log_params_prop[i]))
+        assign(var_name, value)
+        if(consts$prior_settings$type == "norm"){
+          prior_like = log(dtrunc(value, "norm", a = 1.0e-3, b = 1, mean = consts$prior_settings$norm_params_mean[i],
+                                  sd = consts$prior_settings$norm_params_sd[i]))
+        }
+      } else {assign(var_name, consts$add_values[[var_name]])}
     }
-  } else {
+
     if(consts$prior_settings$type == "norm"){
+      values=c(1:(2*(ncol(consts$enviro_data)-1)))
       prior_like = prior_like + sum(dnorm(log_params_prop[values], mean = consts$prior_settings$norm_params_mean[values],
                                           sd = consts$prior_settings$norm_params_sd[values], log = TRUE))
-
     }
   }
 
