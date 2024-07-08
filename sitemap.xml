@@ -1,126 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/404.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/A1Introduction.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/A2Installation.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleBOutbreakRiskCalculation.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleCEpiDatasetGenerate.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleDMCMC.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideCModelResultsProcess.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideDEpiDataGenerate.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/CGuideELikelihood.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Model_Run.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Many_Reps.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate_multi.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/case_data_compare.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/create_input_data.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/create_param_labels.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/imm_fraction_function.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/input_data_check.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/input_data_process.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/input_data_truncate.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/mcmc_checks.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/mcmc_prelim_fit.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/param_calc_enviro.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/param_prop_setup.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/parameter_setup.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/regions_breakdown.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/sero_calculate.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/sero_calculate2.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/sero_data_compare.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/single_posterior_calc.html</loc>
-  </url>
-  <url>
-    <loc>https://mrc-ide.github.io/YEP/reference/template_region_xref.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://mrc-ide.github.io/YEP/404.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/LICENSE-text.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/A1Introduction.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/A2Installation.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleBOutbreakRiskCalculation.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleCEpiDatasetGenerate.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/BWorkedExampleDMCMC.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/CGuideCModelResultsProcess.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/CGuideDEpiDataGenerate.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/CGuideELikelihood.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/articles/index.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/authors.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/index.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/Model_Run.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Many_Reps.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate_multi.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/case_data_compare.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/create_input_data.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/create_param_labels.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/imm_fraction_function.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/index.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/input_data_check.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/input_data_process.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/input_data_truncate.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/mcmc_checks.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/mcmc_prelim_fit.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/param_calc_enviro.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/param_prop_setup.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/parameter_setup.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/regions_breakdown.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/sero_calculate.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/sero_calculate2.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/sero_data_compare.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/single_posterior_calc.html</loc></url>
+<url><loc>https://mrc-ide.github.io/YEP/reference/template_region_xref.html</loc></url>
 </urlset>
+
