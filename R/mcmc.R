@@ -35,14 +35,15 @@
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param prior_settings List containing settings for priors: must contain text named "type":
 #'  If type = "zero", prior probability is always zero \cr
-#'  If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
-#'   -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-#'  If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
-#'   in prior_settings: \cr
+#'  If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and param_max_limits,
+#'   -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of same length as log_params_ini \cr
+#'  If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with settings based
+#'  on vectors of values in prior_settings: \cr
 #'   norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
 #'   parameters and to actual values of additional parameters) \cr
 #'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
 #'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
+#'   + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)
 #' @param dt time increment in days (must be 1 or 5)
 #' @param n_reps Number of times to repeat calculations to get average likelihood at each iteration
 #' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
@@ -92,7 +93,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
 
   #Run checks on inputs
   checks <- mcmc_checks(log_params_ini, n_regions, prior_settings, enviro_data, add_values, extra_estimated_params)
-  if(prior_settings$type == "flat"){names(prior_settings$log_params_min) = names(prior_settings$log_params_max) = param_names}
+  if(prior_settings$type == "flat"){names(prior_settings$param_min_limits) = names(prior_settings$param_max_limits) = param_names}
 
   #MCMC setup
   chain = chain_prop = posterior_current = posterior_prop = flag_accept = chain_cov_all = NULL
@@ -203,10 +204,11 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
   #Check values for flat prior
   prior_like = 0
   if(consts$prior_settings$type == "flat"){
-    if(any(log_params_prop<consts$prior_settings$log_params_min) || any(log_params_prop>consts$prior_settings$log_params_max)){prior_like = -Inf}
+    if(any(log_params_prop<consts$prior_settings$param_min_limits) || any(log_params_prop>consts$prior_settings$param_max_limits)){
+      prior_like = -Inf}
   }
 
-  #Get additional values, calculate normal-distribution prior if relevant
+  #Get additional values, calculate associated normal-distribution prior values if relevant
   if(is.finite(prior_like)){
     vaccine_efficacy = p_rep_severe = p_rep_death = m_FOI_Brazil = 1.0
     for(var_name in names(consts$add_values)){
@@ -215,16 +217,25 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
         value = exp(as.numeric(log_params_prop[i]))
         assign(var_name, value)
         if(consts$prior_settings$type == "norm"){
-          prior_like = log(dtrunc(value, "norm", a = 1.0e-3, b = 1, mean = consts$prior_settings$norm_params_mean[i],
-                                  sd = consts$prior_settings$norm_params_sd[i]))
+          prior_like = prior_like + log(dtrunc(value, "norm", a = consts$prior_settings$param_min_limits[i],
+                                               b = consts$prior_settings$param_max_limits[i],
+                                               mean = consts$prior_settings$norm_params_mean[i],
+                                               sd = consts$prior_settings$norm_params_sd[i]))
         }
       } else {assign(var_name, consts$add_values[[var_name]])}
     }
+  }
 
-    if(consts$prior_settings$type == "norm"){
-      values=c(1:(2*(ncol(consts$enviro_data)-1)))
-      prior_like = prior_like + sum(dnorm(log_params_prop[values], mean = consts$prior_settings$norm_params_mean[values],
-                                          sd = consts$prior_settings$norm_params_sd[values], log = TRUE))
+  #If prior is finite so far, get normal-distribution prior values for environmental coefficients if relevant
+  if(is.finite(prior_like) && consts$prior_settings$type == "norm"){
+    # values=c(1:(2*(ncol(consts$enviro_data)-1)))
+    # prior_like = prior_like + sum(dnorm(log_params_prop[values], mean = consts$prior_settings$norm_params_mean[values],
+    #                                     sd = consts$prior_settings$norm_params_sd[values], log = TRUE))
+    for(i in c(1:(2*(ncol(consts$enviro_data)-1)))){
+      prior_like = prior_like + log(dtrunc(log_params_prop[i], "norm", a = consts$prior_settings$param_min_limits[i],
+                                           b = consts$prior_settings$param_max_limits[i],
+                                           mean = consts$prior_settings$norm_params_mean[i],
+                                           sd = consts$prior_settings$norm_params_sd[i]))
     }
   }
 
@@ -307,9 +318,9 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
   n_params = length(log_params_ini)
   assert_that(is.null(param_names) == FALSE, msg = "Parameters should be named using create_param_labels")
   assert_that(prior_settings$type %in% c("zero", "flat", "norm"), msg = "Prior settings type must be 'zero', 'flat' or 'norm'")
-  if(prior_settings$type == "flat"){
-    assert_that(length(prior_settings$log_params_min) == n_params, msg = "Check prior_settings$log_params_min")
-    assert_that(length(prior_settings$log_params_max) == n_params, msg = "Check prior_settings$log_params_max")
+  if(prior_settings$type %in% c("flat", "norm")){
+    assert_that(length(prior_settings$param_min_limits) == n_params, msg = "Check prior_settings$param_min_limits")
+    assert_that(length(prior_settings$param_max_limits) == n_params, msg = "Check prior_settings$param_max_limits")
   }
   if(prior_settings$type == "norm"){
     assert_that(length(prior_settings$norm_params_mean) == n_params, msg = "Check prior_settings$norm_params_mean")

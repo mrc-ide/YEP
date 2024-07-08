@@ -60,14 +60,15 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 \item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
-If type = "flat", prior probability is zero if log parameter values in designated ranges log_params_min and log_params_max,
- -Inf otherwise; log_params_min and log_params_max included in prior_settings as vectors of same length as log_params_ini \cr
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: \cr
+If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and param_max_limits,
+ -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of same length as log_params_ini \cr
+If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with settings based
+on vectors of values in prior_settings: \cr
  norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
  parameters and to actual values of additional parameters) \cr
  + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr}
+ + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
+ + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)}
 
 \item{dt}{time increment in days (must be 1 or 5)}
 
