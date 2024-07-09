@@ -490,8 +490,8 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
       posterior_value = single_posterior_calc(log_params_prop, input_data, obs_sero_data, obs_case_data,
                                               mode_start = mode_start, prior_settings = prior_settings, dt = dt, n_reps = n_reps,
                                               enviro_data = enviro_data, p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
-                                              add_values = add_values, deterministic = deterministic, mode_parallel = mode_parallel,
-                                              cluster = cluster)
+                                              add_values = add_values, extra_estimated_params = extra_estimated_params,
+                                              deterministic = deterministic, mode_parallel = mode_parallel, cluster = cluster)
       gc() #Clear garbage to prevent memory creep
       results <- rbind(results, c(set, exp(log_params_prop), posterior_value))
       if(set == 1){colnames(results) = c("set", param_names, "posterior")}
