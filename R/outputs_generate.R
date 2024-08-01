@@ -201,3 +201,153 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
                 model_death_values=model_death_values))
   }
 }
+
+#-------------------------------------------------------------------------------
+#' @title Generate_VIMC_Burden_Dataset
+#'
+#' @description Generate annual burden data in format used by VIMC
+#'
+#' @details This function is used to generate annual burden data in the format used by the Vaccine Impact
+#'   Modelling Consortium (VIMC) [TBA]
+#'
+#' @param input_data List of population and vaccination data for multiple regions
+#' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
+#' @param R0_values Values for each region of the basic reproduction number for human-human transmission
+#' @param template Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy for each line
+#' @param vaccine_efficacy Fractional vaccine efficacy
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
+#' @param YLD_per_case TBA
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
+#'  If mode_start=0, only vaccinated individuals
+#'  If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
+#'  If mode_start=2, use SEIRV input in list from previous run(s)
+#'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
+#' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
+#' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param n_reps number of stochastic repetitions
+#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
+#' @param cluster Cluster of threads to use if mode_parallel=TRUE
+#' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
+#'   to omit; will not work if mode_parallel is not set to "none".
+#' '
+#' @export
+#'
+Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
+                                         vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                                         YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
+                                         dt = 1.0, n_reps = 1, deterministic = FALSE, mode_parallel = FALSE,
+                                         cluster = NULL, seed = NULL){
+
+  assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
+                                                     " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
+  assert_that(all(c("region","year","age_min","age_max","life_exp") %in% names(template)))
+  input_data=input_data_process(input_data,NULL,template)
+  assert_that(vaccine_efficacy>=0.0 && vaccine_efficacy<=1.0,msg="Vaccine efficacy must be between 0-1")
+  assert_that(p_severe_inf>=0.0 && p_severe_inf<=1.0,msg="Severe infection rate must be between 0-1")
+  assert_that(p_death_severe_inf>=0.0 && p_death_severe_inf<=1.0,msg="Fatality rate of severe infections must be between 0-1")
+  assert_that(is.logical(mode_parallel))
+  if(mode_parallel){assert_that(is.null(cluster)==FALSE)}
+
+  #Prune input data based on regions
+  regions=regions_breakdown(template$region)
+  input_data=input_data_truncate(input_data,regions)
+
+  #Cross-reference templates with input regions
+  xref=template_region_xref(template,input_data$region_labels)
+
+  inv_reps=1/n_reps
+  n_regions=length(input_data$region_labels)
+  assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions")
+  assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
+  if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
+                                msg="Number of start_SEIRV datasets must match number of regions")}
+  n_lines_total=nrow(template)
+
+  #Set up data structures to take modelled data
+  model_case_values=model_death_values=cohort_size=rep(0,n_lines_total)
+
+  #Model all regions in parallel if parallel modes in use
+  if(mode_parallel){
+    vacc_data_subsets=pop_data_subsets=years_data_sets=list() #TODO - change input data?
+    for(n_region in 1:n_regions){
+      vacc_data_subsets[[n_region]]=input_data$vacc_data[n_region,,]
+      pop_data_subsets[[n_region]]=input_data$pop_data[n_region,,]
+      years_data_sets[[n_region]]=c(xref$year_data_begin[n_region]:xref$year_end[n_region])
+    }
+    if(is.null(start_SEIRV)){start_SEIRV=rep(NA,n_regions)}
+    model_output_all=clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
+                                vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
+                                years_data = years_data_sets, start_SEIRV = start_SEIRV,
+                                MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],
+                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy, dt = dt,
+                                              n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
+  }
+
+  #Save relevant output data from each region
+  for(n_region in 1:n_regions){
+
+    #Run model if not using parallelization
+    if(mode_parallel==FALSE){
+      #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
+      if(is.null(seed)==FALSE && deterministic==FALSE){set.seed(seed)}
+      model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
+                               vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
+                               years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
+                               start_SEIRV=start_SEIRV[[n_region]],output_type = "case_alt",
+                               year0 = input_data$years_labels[1],mode_start = mode_start,
+                               vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,n_threads = n_reps,
+                               deterministic = deterministic)
+      #cat("\n\t\tFinished modelling region ",n_region)
+    } else {
+      model_output = model_output_all[[n_region]]
+    }
+    t_pts_all=c(1:length(model_output$year))
+
+    #Compile case data
+    case_line_list_region=xref$line_list[[n_region]]
+    years_case=template$year[case_line_list_region]
+    n_lines=length(case_line_list_region)
+    age_pts=list()
+    for(n_line in 1:n_lines){
+      line=case_line_list_region[n_line]
+      n_age_min=findInterval(template$age_min[line],input_data$age_labels)
+      n_age_max=findInterval(template$age_max[line]-1,input_data$age_labels)
+      age_pts[[n_line]]=c(n_age_min:n_age_max)
+      cohort_size[line]=sum(input_data$pop_data[n_region,
+                                                input_data$years_labels==years_case[n_line],age_pts[[n_line]]])
+    }
+
+    for(n_rep in 1:n_reps){
+      cases=deaths=rep(0,n_lines)
+      for(n_line in 1:n_lines){
+        year=years_case[n_line]
+        t_pts=t_pts_all[model_output$year==years_case[n_line]]
+        infs=sum(model_output$C[age_pts[[n_line]],n_rep,t_pts])
+        if(deterministic){
+          cases[n_line]=floor(infs)*p_severe_inf
+          deaths[n_line]=cases[n_line]*p_death_severe_inf
+        } else {
+          cases[n_line]=rbinom(1,floor(infs),p_severe_inf)
+          deaths[n_line]=rbinom(1,cases[n_line],p_death_severe_inf)
+        }
+      }
+
+      model_case_values[case_line_list_region]=model_case_values[case_line_list_region]+cases
+      model_death_values[case_line_list_region]=model_death_values[case_line_list_region]+deaths
+    }
+  }
+
+  model_case_values=model_case_values*inv_reps
+  model_death_values=model_death_values*inv_reps
+  model_YLL_values=model_death_values*template$life_exp
+  model_dalys_values=(model_case_values*YLD_per_case)+model_YLL_values
+
+  return(data.frame(disease=rep("YF",n_lines_total),year=template$year,age=template$age_min,
+                    region_label1=substr(template$region,1,3),region_label2=template$region,
+                    cohort_size=cohort_size,cases=model_case_values,dalys=model_dalys_values,deaths=model_death_values,
+                    YLL=model_YLL_values))
+}
+
+
