@@ -326,7 +326,8 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
         t_pts=t_pts_all[model_output$year==years_case[n_line]]
         infs=sum(model_output$C[age_pts[[n_line]],n_rep,t_pts])
         if(deterministic){
-          cases[n_line]=floor(infs)*p_severe_inf
+          #cases[n_line]=floor(infs)*p_severe_inf
+          cases[n_line]=infs*p_severe_inf
           deaths[n_line]=cases[n_line]*p_death_severe_inf
         } else {
           cases[n_line]=rbinom(1,floor(infs),p_severe_inf)
