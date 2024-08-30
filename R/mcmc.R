@@ -439,6 +439,7 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_parallel TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
+#' @param plot_graphs TRUE/FALSE - plot graphs of evolving parameter space
 #' '
 #' @export
 #'
@@ -447,7 +448,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
                             mode_start = 0, prior_settings = list(type = "zero"), dt = 1.0, n_reps = 1, enviro_data = list(),
                             p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                             add_values = list(vaccine_efficacy = 1.0, p_rep_severe = 1.0, p_rep_death = 1.0, m_FOI_Brazil = 1.0),
-                            deterministic = TRUE, mode_parallel = FALSE, cluster = NULL){
+                            deterministic = TRUE, mode_parallel = FALSE, cluster = NULL, plot_graphs = FALSE){
 
   #TODO - Add assertthat functions
   assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
@@ -469,11 +470,14 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
   #TODO - Additional assert_that checks
   assert_that(length(param_names) == n_params)
   names(log_params_min) = names(log_params_max) = param_names
-  xlabels = param_names
-  for(i in 1:n_params){xlabels[i] = substr(xlabels[i], 1, 15)}
-  ylabels = 10^c(-8, -6, -4, -3, -2, -1, 0, 1)
-  par(mar = c(6, 2, 1, 1))
-  ylim = c(min(log_params_min), max(log_params_max))
+
+  if(plot_graphs){
+    xlabels = param_names
+    for(i in 1:n_params){xlabels[i] = substr(xlabels[i], 1, 15)}
+    ylabels = 10^c(-8, -6, -4, -3, -2, -1, 0, 1)
+    par(mar = c(6, 2, 1, 1))
+    ylim = c(min(log_params_min), max(log_params_max))
+  }
 
   for(iteration in 1:n_iterations){
     cat("\nIteration: ", iteration, "\n", sep = "")
@@ -509,14 +513,16 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
     }
     names(log_params_min_new) = names(log_params_max_new) = param_names
 
-    matplot(x = c(1:n_params), y = log(t(results[c(1:n_bounds), c(1:n_params) + 1])), type = "p", pch = 16, col = 1,
-            xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim)
-    axis(side = 1, at = c(1:n_params), labels = xlabels, las = 2, cex.axis = 0.7)
-    axis(side = 2, at = log(ylabels), labels = ylabels)
-    matplot(x = c(1:n_params), y = log_params_min, type = "l", col = 1, lty = 2, add = TRUE)
-    matplot(x = c(1:n_params), y = log_params_max, type = "l", col = 1, lty = 2, add = TRUE)
-    matplot(x = c(1:n_params), y = log_params_min_new, type = "l", col = 2, add = TRUE)
-    matplot(x = c(1:n_params), y = log_params_max_new, type = "l", col = 2, add = TRUE)
+    if(plot_graphs){
+      matplot(x = c(1:n_params), y = log(t(results[c(1:n_bounds), c(1:n_params) + 1])), type = "p", pch = 16, col = 1,
+              xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = ylim)
+      axis(side = 1, at = c(1:n_params), labels = xlabels, las = 2, cex.axis = 0.7)
+      axis(side = 2, at = log(ylabels), labels = ylabels)
+      matplot(x = c(1:n_params), y = log_params_min, type = "l", col = 1, lty = 2, add = TRUE)
+      matplot(x = c(1:n_params), y = log_params_max, type = "l", col = 1, lty = 2, add = TRUE)
+      matplot(x = c(1:n_params), y = log_params_min_new, type = "l", col = 2, add = TRUE)
+      matplot(x = c(1:n_params), y = log_params_max_new, type = "l", col = 2, add = TRUE)
+    }
 
     log_params_min = log_params_min_new
     log_params_max = log_params_max_new

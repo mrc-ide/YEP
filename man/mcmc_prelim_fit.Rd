@@ -24,7 +24,8 @@ mcmc_prelim_fit(
     = 1),
   deterministic = TRUE,
   mode_parallel = FALSE,
-  cluster = NULL
+  cluster = NULL,
+  plot_graphs = FALSE
 )
 }
 \arguments{
@@ -83,7 +84,9 @@ m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if re
 
 \item{mode_parallel}{TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed}
 
-\item{cluster}{Cluster of threads to use if mode_parallel = TRUE
+\item{cluster}{Cluster of threads to use if mode_parallel = TRUE}
+
+\item{plot_graphs}{TRUE/FALSE - plot graphs of evolving parameter space
 '}
 }
 \description{
