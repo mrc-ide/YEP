@@ -468,6 +468,11 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
   param_names = create_param_labels(enviro_data, extra_estimated_params)
 
   #TODO - Additional assert_that checks
+  # input_data = input_data_process(input_data, obs_sero_data, obs_case_data)
+  # regions = names(table(input_data$region_labels)) #Regions in new processed input data list
+  # n_regions = length(regions)
+  # assert_that(all(regions %in% enviro_data$region),msg="Environmental data must be available for all regions in observed data")
+  # enviro_data = subset(enviro_data, enviro_data$region %in% regions)
   assert_that(length(param_names) == n_params)
   names(log_params_min) = names(log_params_max) = param_names
 
