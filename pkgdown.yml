@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.1.0
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   A1Introduction: A1Introduction.html
@@ -13,7 +13,7 @@ articles:
   CGuideCModelResultsProcess: CGuideCModelResultsProcess.html
   CGuideDEpiDataGenerate: CGuideDEpiDataGenerate.html
   CGuideELikelihood: CGuideELikelihood.html
-last_built: 2024-09-02T17:25Z
+last_built: 2024-11-20T10:32Z
 urls:
   reference: https://mrc-ide.github.io/YEP/reference
   article: https://mrc-ide.github.io/YEP/articles
