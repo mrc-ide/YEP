@@ -10,7 +10,7 @@ update(time) <- time + dt
 
 #Parameters---------------------------------------------------------------------
 t_incubation <- user() #Length in days of yellow fever incubation period in mosquito vectors
-t_latent <- user() #Length in days of latent period in humans exposed to yellow dever
+t_latent <- user() #Length in days of latent period in humans exposed to yellow fever
 t_infectious <- user() #Length of infectious period in humans with yellow fever
 FOI_spillover <- user() #Spillover force of infection (per day)
 R0 <- user() #Basic reproduction number for human-human transmission
