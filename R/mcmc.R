@@ -44,7 +44,7 @@
 #'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
 #'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
 #'   + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)
-#' @param dt time increment in days (must be 1 or 5)
+#' @param time_inc time increment in days (must be 1 or 5)
 #' @param n_reps Number of times to repeat calculations to get average likelihood at each iteration
 #' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
 #' @param p_severe_inf Probability of an infection being severe
@@ -62,7 +62,7 @@
 #' @export
 #'
 MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL, obs_case_data = NULL, filename_prefix = "Chain",
-                 Niter = 1, mode_start = 0, prior_settings = list(type = "zero"), dt = 1.0, n_reps = 1, enviro_data = list(),
+                 Niter = 1, mode_start = 0, prior_settings = list(type = "zero"), time_inc = 1.0, n_reps = 1, enviro_data = list(),
                  p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                  add_values = list(vaccine_efficacy = 1.0, p_rep_severe = 1.0, p_rep_death = 1.0, m_FOI_Brazil = 1.0),
                  deterministic = FALSE, mode_parallel = FALSE, cluster = NULL){
@@ -113,7 +113,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
 
     #Calculate likelihood using single_posterior_calc function
     posterior_value_prop = single_posterior_calc(log_params_prop, input_data, obs_sero_data, obs_case_data,
-                                                 mode_start = mode_start, prior_settings = prior_settings, dt = dt, n_reps = n_reps,
+                                                 mode_start = mode_start, prior_settings = prior_settings, time_inc = time_inc, n_reps = n_reps,
                                                  enviro_data = enviro_data, p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
                                                  add_values = add_values, extra_estimated_params = extra_estimated_params,
                                                  deterministic = deterministic, mode_parallel = mode_parallel, cluster = cluster)
@@ -192,7 +192,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #' @param ... = Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
-#'  prior_settings, dt, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
+#'  prior_settings, time_inc, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
 #'  deterministic, mode_parallel, cluster
 #'
 #' @export
@@ -264,7 +264,7 @@ single_posterior_calc <- function(log_params_prop = c(), input_data = list(), ob
     #Generate modelled data over all regions
     dataset <- Generate_Dataset(input_data, FOI_values, R0_values, obs_sero_data, obs_case_data, vaccine_efficacy,
                                 consts$p_severe_inf, consts$p_death_severe_inf, p_rep_severe, p_rep_death,
-                                consts$mode_start, start_SEIRV = NULL, consts$dt, consts$n_reps, consts$deterministic,
+                                consts$mode_start, start_SEIRV = NULL, consts$time_inc, consts$n_reps, consts$deterministic,
                                 consts$mode_parallel, consts$cluster)
 
     #Likelihood of observing serological data
@@ -425,7 +425,7 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'   parameters and to actual values of additional parameters) \cr
 #'   + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
 #'   + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
-#' @param dt time increment in days (must be 1 or 5)
+#' @param time_inc time increment in days (must be 1 or 5)
 #' @param n_reps Number of repetitions
 #' @param enviro_data Data frame of values of environmental covariates (columns) by region (rows)
 #' @param p_severe_inf Probability of an infection being severe
@@ -445,7 +445,7 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'
 mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, log_params_min = NULL,
                             log_params_max = NULL, input_data = list(), obs_sero_data = list(), obs_case_data = list(),
-                            mode_start = 0, prior_settings = list(type = "zero"), dt = 1.0, n_reps = 1, enviro_data = list(),
+                            mode_start = 0, prior_settings = list(type = "zero"), time_inc = 1.0, n_reps = 1, enviro_data = list(),
                             p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                             add_values = list(vaccine_efficacy = 1.0, p_rep_severe = 1.0, p_rep_death = 1.0, m_FOI_Brazil = 1.0),
                             deterministic = TRUE, mode_parallel = FALSE, cluster = NULL, plot_graphs = FALSE){
@@ -497,7 +497,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
 
       names(log_params_prop) = param_names
       posterior_value = single_posterior_calc(log_params_prop, input_data, obs_sero_data, obs_case_data,
-                                              mode_start = mode_start, prior_settings = prior_settings, dt = dt, n_reps = n_reps,
+                                              mode_start = mode_start, prior_settings = prior_settings, time_inc = time_inc, n_reps = n_reps,
                                               enviro_data = enviro_data, p_severe_inf = p_severe_inf, p_death_severe_inf = p_death_severe_inf,
                                               add_values = add_values, extra_estimated_params = extra_estimated_params,
                                               deterministic = deterministic, mode_parallel = mode_parallel, cluster = cluster)

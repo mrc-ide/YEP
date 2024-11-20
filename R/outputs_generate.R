@@ -27,7 +27,7 @@
 #'  If mode_start=2, use SEIRV input in list from previous run(s) \cr
 #'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
-#' @param dt Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
+#' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
@@ -39,7 +39,7 @@
 #'
 Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),sero_template = NULL,case_template = NULL,
                              vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,
-                             p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, dt = 1.0,n_reps = 1, deterministic = FALSE,
+                             p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, time_inc = 1.0,n_reps = 1, deterministic = FALSE,
                              mode_parallel = FALSE,cluster = NULL,output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
@@ -120,7 +120,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
                                 MoreArgs=list(year0 = input_data$years_labels[1],mode_start = mode_start,
-                                              vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,
+                                              vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
                                               n_threads = 1 ,deterministic = deterministic))
   }
 
@@ -135,7 +135,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
                                years_data = c(year_data_begin[n_region]:year_end[n_region]),
                                start_SEIRV=start_SEIRV[[n_region]],output_type = output_types[n_region],
                                year0 = input_data$years_labels[1],mode_start = mode_start,
-                               vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,n_threads = n_reps,
+                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,n_threads = n_reps,
                                deterministic = deterministic)
       #cat("\n\t\tFinished modelling region ",n_region)
     } else {
@@ -224,7 +224,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #'  If mode_start=2, use SEIRV input in list from previous run(s)
 #'  If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
-#' @param dt Time increment in days to use in model (should be either 1.0 or 5.0 days)
+#' @param time_inc Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
@@ -237,7 +237,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
                                          vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                                          YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
-                                         dt = 1.0, n_reps = 1, deterministic = FALSE, mode_parallel = FALSE,
+                                         time_inc = 1.0, n_reps = 1, deterministic = FALSE, mode_parallel = FALSE,
                                          cluster = NULL, seed = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
@@ -281,7 +281,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
                                 MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],
-                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy, dt = dt,
+                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy, time_inc = time_inc,
                                               n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
   }
 
@@ -297,7 +297,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
                                start_SEIRV=start_SEIRV[[n_region]],output_type = "case_alt",
                                year0 = input_data$years_labels[1],mode_start = mode_start,
-                               vaccine_efficacy = vaccine_efficacy, dt = dt, n_particles = n_reps,n_threads = n_reps,
+                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,n_threads = n_reps,
                                deterministic = deterministic)
       #cat("\n\t\tFinished modelling region ",n_region)
     } else {

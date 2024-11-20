@@ -13,7 +13,7 @@ MCMC(
   Niter = 1,
   mode_start = 0,
   prior_settings = list(type = "zero"),
-  dt = 1,
+  time_inc = 1,
   n_reps = 1,
   enviro_data = list(),
   p_severe_inf = 0.12,
@@ -70,7 +70,7 @@ on vectors of values in prior_settings: \cr
  + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
  + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)}
 
-\item{dt}{time increment in days (must be 1 or 5)}
+\item{time_inc}{time increment in days (must be 1 or 5)}
 
 \item{n_reps}{Number of times to repeat calculations to get average likelihood at each iteration}
 

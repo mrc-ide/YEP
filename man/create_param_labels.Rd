@@ -7,7 +7,8 @@
 create_param_labels(enviro_data = NULL, extra_estimated_params = c("vacc_eff"))
 }
 \arguments{
-\item{enviro_data}{Environmental data frame, containing only relevant environmental covariate values for regions of interest}
+\item{enviro_data}{Environmental data frame, containing only relevant environmental covariate values for regions of
+interest}
 
 \item{extra_estimated_params}{Vector of strings listing variable parameters besides ones determining FOI/R0 (may include
 vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FOI adjustment factor)}

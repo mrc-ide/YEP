@@ -26,7 +26,7 @@ positives}
 deaths}
 
 \item{...}{= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
-prior_settings, dt, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
+prior_settings, time_inc, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
 deterministic, mode_parallel, cluster}
 }
 \description{
