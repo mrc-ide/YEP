@@ -212,7 +212,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
       n_years = length(years_data)
       output_data = list(year = years_data)
       if(output_type == "case+sero" || output_type == "sero"){
-        output_data$V = output_data$R = output_data$I = output_data$E = output_data$S = array(0, dim = c(N_age, n_particles, n_years))
+        output_data$V = output_data$R = output_data$I = output_data$E = output_data$S = array(0, dim = c(N_age, n_reps, n_years))
       }
       if(output_type == "case+sero" || output_type == "case"){
         output_data$C = array(0, dim = c(n_reps, n_years))
