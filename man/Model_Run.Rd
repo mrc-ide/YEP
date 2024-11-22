@@ -38,7 +38,7 @@ Model_Run(
 "full" = SEIRVC + FOI for all steps and ages
 "case" = annual total new infections (C) summed across all ages
 "sero" = annual SEIRV
-"case+sero" = annual SEIRVC, cases summed across all ages
+"case+sero" = annual SEIRVC, C summed across all ages
 "case_alt" = annual total new infections not combined by age
 "case_alt2" = total new infections combined by age for all steps}
 

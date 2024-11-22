@@ -44,7 +44,7 @@ t_infectious <- 5 #Time cases remain infectious
 #'   "full" = SEIRVC + FOI for all steps and ages
 #'   "case" = annual total new infections (C) summed across all ages
 #'   "sero" = annual SEIRV
-#'   "case+sero" = annual SEIRVC, cases summed across all ages
+#'   "case+sero" = annual SEIRVC, C summed across all ages
 #'   "case_alt" = annual total new infections not combined by age
 #'   "case_alt2" = total new infections combined by age for all steps
 #' @param year0 First year in population/vaccination data
@@ -91,12 +91,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   } else {
     if(output_type == "case_alt2"){
       output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ])
-      output_data$C = array(0, dim = c(n_particles, t_pts_out))
-      for(pt in 1:t_pts_out){ #TODO - change to use colSums or rowSums
-        for(n_p in 1:n_particles){
-          output_data$C[n_p, pt] = sum(x_res[index$C, n_p, pt])
-        }
-      }
+      output_data$C = colSums(x_res[index$C,,])
     }  else {
       n_years = length(years_data)
       output_data = list(year = years_data)
@@ -282,12 +277,13 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
           output_data$day = x_res[1, 1, ]
           output_data$year = x_res[2, 1, ]
         }
-        for(pt in 1:t_pts_out){
-          for(n_p in 1:n_particles){
-            n_p2 = n_p+n_p0
-            output_data$C[n_p2, pt] = sum(x_res[index$C, n_p, pt])
-          }
-        }
+        output_data$C[n_p+n_p0,] = colSums(x_res[index$C,,])
+        # for(pt in 1:t_pts_out){
+        #   for(n_p in 1:n_particles){
+        #     n_p2 = n_p+n_p0
+        #     output_data$C[n_p2, pt] = sum(x_res[index$C, n_p, pt])
+        #   }
+        # }
       }
     }
   }
