@@ -76,12 +76,11 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 
   x <- dust_system_create(SEIRV_Model, pars=parameter_setup(FOI_spillover, R0, vacc_data, pop_data, year0, years_data,
                                                             mode_start,vaccine_efficacy, start_SEIRV, time_inc),
-                          n_particles=n_particles,n_threads=n_threads,time=0,dt=1,
-                          deterministic=deterministic, preserve_particle_dimension=TRUE)
+                          n_particles = n_particles, n_threads = n_threads, time = 0, dt = 1,
+                          deterministic = deterministic, preserve_particle_dimension = TRUE)
   index=dust_unpack_index(x)
   dust_system_set_state_initial(x)
-  t <- c(step_begin:step_end)
-  x_res <- dust_system_simulate(x, t)
+  x_res <- dust_system_simulate(x, c(step_begin:step_end))
 
   if(output_type == "full"){
     dim = c(N_age, n_particles, t_pts_out)
