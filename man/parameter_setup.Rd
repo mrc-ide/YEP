@@ -14,13 +14,14 @@ parameter_setup(
   mode_start = 0,
   vaccine_efficacy = 1,
   start_SEIRV = list(),
-  time_inc = 1
+  time_inc = 1,
+  mode_time = 0
 )
 }
 \arguments{
-\item{FOI_spillover}{Force of infection due to spillover from sylvatic reservoir}
+\item{FOI_spillover}{Force of infection due to spillover from sylvatic reservoir (TBA)}
 
-\item{R0}{Reproduction number for urban spread of infection}
+\item{R0}{Reproduction number for urban spread of infection (TBA)}
 
 \item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
 
@@ -41,7 +42,9 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
-\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+
+\item{mode_time}{TBA
 '}
 }
 \description{

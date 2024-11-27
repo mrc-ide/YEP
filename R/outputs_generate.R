@@ -11,8 +11,8 @@
 #' [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 #'
 #' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
-#' @param FOI_values Vector of values of the force of infection due to spillover from sylvatic reservoir
-#' @param R0_values Vector of values of the basic reproduction number for human-human transmission
+#' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time point
+#' @param R0_values Array of values of basic reproduction number for human-human transmission by region and time point
 #' @param sero_template Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
 #'   and number of samples
 #' @param case_template Annual reported case/death data template - data frame with region and year
@@ -30,6 +30,13 @@
 #' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
+#'  If mode_time=0, no time variation (constant values)\cr
+#'  If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+#'  If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+#'  If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+#'  If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
 #' @param cluster Cluster of threads to use if mode_parallel=TRUE
 #' @param output_frame TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
@@ -39,8 +46,9 @@
 #'
 Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),sero_template = NULL,case_template = NULL,
                              vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,
-                             p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, time_inc = 1.0,n_reps = 1, deterministic = FALSE,
-                             mode_parallel = FALSE,cluster = NULL,output_frame=FALSE){
+                             p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, time_inc = 1.0,n_reps = 1,
+                             deterministic = FALSE, mode_time = 0,  mode_parallel = FALSE,cluster = NULL,
+                             output_frame=FALSE){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -86,8 +94,10 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
   }
 
   inv_reps=1/n_reps
-  assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions to be modelled")
-  assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions to be modelled")
+  assert_that(length(dim(FOI_values))==2,msg="FOI_values must be 2-D array")
+  assert_that(length(dim(R0_values))==2,msg="R0_values must be 2-D array")
+  assert_that(dim(FOI_values)[1]==n_regions,msg="1st dimension of FOI_values must match number of regions to be modelled")
+  assert_that(dim(R0_values)[1]==n_regions,msg="1st dimension of R0_values must match number of regions to be modelled")
   if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
                                 msg="Number of start_SEIRV datasets must match number of regions")}
 
@@ -120,8 +130,9 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
                                 MoreArgs=list(year0 = input_data$years_labels[1],mode_start = mode_start,
-                                              vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
-                                              n_threads = 1 ,deterministic = deterministic))
+                                              vaccine_efficacy = vaccine_efficacy, time_inc = time_inc,
+                                              n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
+                                              mode_time = mode_time))
   }
 
   #Save relevant output data from each region
@@ -133,10 +144,10 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
       model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(year_data_begin[n_region]:year_end[n_region]),
-                               start_SEIRV=start_SEIRV[[n_region]],output_type = output_types[n_region],
+                               start_SEIRV = start_SEIRV[[n_region]],output_type = output_types[n_region],
                                year0 = input_data$years_labels[1],mode_start = mode_start,
-                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,n_threads = n_reps,
-                               deterministic = deterministic)
+                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
+                               n_threads = n_reps, deterministic = deterministic, mode_time = mode_time)
       #cat("\n\t\tFinished modelling region ",n_region)
     } else {
       model_output = model_output_all[[n_region]]
@@ -227,6 +238,13 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #' @param time_inc Time increment in days to use in model (should be either 1.0 or 5.0 days)
 #' @param n_reps number of stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
+#'  If mode_time=0, no time variation (constant values)\cr
+#'  If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+#'  If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+#'  If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+#'  If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
 #' @param cluster Cluster of threads to use if mode_parallel=TRUE
 #' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
@@ -237,8 +255,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
                                          vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                                          YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
-                                         time_inc = 1.0, n_reps = 1, deterministic = FALSE, mode_parallel = FALSE,
-                                         cluster = NULL, seed = NULL){
+                                         time_inc = 1.0, n_reps = 1, deterministic = FALSE, mode_time = 0,
+                                         mode_parallel = FALSE, cluster = NULL, seed = NULL){
 
   assert_that(input_data_check(input_data),msg=paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -253,14 +271,16 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
   #Prune input data based on regions
   regions=regions_breakdown(template$region)
   input_data=input_data_truncate(input_data,regions)
+  n_regions=length(input_data$region_labels)
 
   #Cross-reference templates with input regions
   xref=template_region_xref(template,input_data$region_labels)
 
   inv_reps=1/n_reps
-  n_regions=length(input_data$region_labels)
-  assert_that(length(FOI_values)==n_regions,msg="Length of FOI_values must match number of regions")
-  assert_that(length(R0_values)==n_regions,msg="Length of R0_values must match number of regions")
+  assert_that(length(dim(FOI_values))==2,msg="FOI_values must be 2-D array")
+  assert_that(length(dim(R0_values))==2,msg="R0_values must be 2-D array")
+  assert_that(dim(FOI_values)[1]==n_regions,msg="1st dimension of FOI_values must match number of regions to be modelled")
+  assert_that(dim(R0_values)[1]==n_regions,msg="1st dimension of R0_values must match number of regions to be modelled")
   if(mode_start==2){assert_that(length(start_SEIRV)==n_regions,
                                 msg="Number of start_SEIRV datasets must match number of regions")}
   n_lines_total=nrow(template)
@@ -281,8 +301,9 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
                                 MoreArgs=list(output_type="case_alt", year0 = input_data$years_labels[1],
-                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy, time_inc = time_inc,
-                                              n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
+                                              mode_start = mode_start, vaccine_efficacy = vaccine_efficacy,
+                                              time_inc = time_inc, n_particles = n_reps, n_threads = 1 ,
+                                              deterministic = deterministic, mode_time = mode_time))
   }
 
   #Save relevant output data from each region
@@ -297,8 +318,8 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
                                start_SEIRV=start_SEIRV[[n_region]],output_type = "case_alt",
                                year0 = input_data$years_labels[1],mode_start = mode_start,
-                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,n_threads = n_reps,
-                               deterministic = deterministic)
+                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
+                               n_threads = n_reps, deterministic = deterministic, mode_time = mode_time)
       #cat("\n\t\tFinished modelling region ",n_region)
     } else {
       model_output = model_output_all[[n_region]]

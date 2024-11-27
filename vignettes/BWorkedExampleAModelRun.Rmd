@@ -65,7 +65,7 @@ mode_start <- 1
 # successfully providing immunity (i.e. moving vaccinated individual to group V)
 vaccine_efficacy <- 1.0       
 # Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
-dt <- 1.0            
+time_inc <- 1.0            
 # Number of particles to run
 n_particles <- 10     
 # Number of threads to run
@@ -80,7 +80,7 @@ We use the Model_Run() function to run the model for the inputs above:
 ```{r,eval=FALSE}
 test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
                    start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
-                   dt, n_particles, n_threads, deterministic)
+                   time_inc, n_particles, n_threads, deterministic)
 ```
 
 The output of Model_Run(), when output_type is set to "full", includes, for each particle, date information, the total force of infection FOI_total at each data point, the numbers of people in groups S, E, I, R and V at each time point organized by age group, and the number of newly infectious people (C) at each time point organized by age group. We use the plot_model function from the YEPaux package to display values of S, R and V (added together across all age groups) over time, with error bars to show the variation between particles caused by stochasticity if relevant.
@@ -96,7 +96,7 @@ The model can be run in deterministic mode by setting the 'deterministic' flag t
 ```{r,eval=FALSE}
 test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
                    start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
-                   dt, n_particles, n_threads, deterministic=TRUE)
+                   time_inc, n_particles, n_threads, deterministic=TRUE)
 plot <- plot_model_output(test1)
 print(plot)
 ```

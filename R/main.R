@@ -28,14 +28,16 @@ t_infectious <- 5 #Time cases remain infectious
 #-------------------------------------------------------------------------------
 #' @title Model_Run
 #'
-#' @description Run SEIRV model for single region (Model_Run_Multi_Input can be used to run multiple regions in parallel)
+#' @description Run SEIRV model for single region
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
 #' for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-#' values, infection numbers and/or total force of infection values.
+#' values, infection numbers and/or total force of infection values. Run up to 20 particles  (Model_Run_Multi_Input
+#' can be used to run multiple regions in parallel)
 #'
-#' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
-#' @param R0 Basic reproduction number for urban spread of infection
+#' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
+#'   (size depends on mode_time)
+#' @param R0 Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)
 #' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year
 #' @param pop_data Population by age group and year
 #' @param years_data Incremental vector of years denoting years for which to save data
@@ -48,23 +50,30 @@ t_infectious <- 5 #Time cases remain infectious
 #'   "case_alt" = annual total new infections not combined by age
 #'   "case_alt2" = total new infections combined by age for all steps
 #' @param year0 First year in population/vaccination data
-#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
-#'  If mode_start = 0, only vaccinated individuals
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
+#'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-#'  R0 based only)
-#'  If mode_start = 2, use SEIRV input in list from previous run(s)
+#'  R0 based only) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param n_particles number of particles to use
 #' @param n_threads number of threads to use
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
+#'  If mode_time=0, no time variation (constant values)\cr
+#'  If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+#'  If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+#'  If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+#'  If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' '
 #' @export
 #'
 Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_data = list(), years_data = c(1940:1941),
-                      start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0,
-                      vaccine_efficacy = 1.0, time_inc = 1.0, n_particles = 1, n_threads = 1, deterministic = FALSE) {
+                      start_SEIRV = list(), output_type = "full", year0 = 1940, mode_start = 0, vaccine_efficacy = 1.0,
+                      time_inc = 1.0, n_particles = 1, n_threads = 1, deterministic = FALSE, mode_time = 0) {
 
   #TODO Add assert_that functions (NB - Some checks carried out in parameter_setup)
   assert_that(n_particles <= 20, msg = "Number of particles must be 20 or less")
@@ -80,7 +89,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
                           deterministic = deterministic, preserve_particle_dimension = TRUE)
   index=dust_unpack_index(x)
   dust_system_set_state_initial(x)
-  x_res <- dust_system_simulate(x, c(step_begin:step_end))
+  x_res <- dust_system_simulate(x, t = c(step_begin:step_end))
 
   if(output_type == "full"){
     dim = c(N_age, n_particles, t_pts_out)
@@ -140,8 +149,9 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #' values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
 #' running a large number of repetitions (>20).
 #'
-#' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
-#' @param R0 Basic reproduction number for urban spread of infection
+#' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
+#'   (size depends on mode_time)
+#' @param R0 Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)
 #' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year
 #' @param pop_data Population by age group and year
 #' @param years_data Incremental vector of years denoting years for which to save data
@@ -154,22 +164,30 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #'   "case_alt" = annual total new infections not combined by age
 #'   "case_alt2" = total new infections combined by age for all steps
 #' @param year0 First year in population/vaccination data
-#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination
-#'  If mode_start = 0, only vaccinated individuals
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
+#'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-#'  R0 based only)
-#'  If mode_start = 2, use SEIRV input in list from previous run(s)
+#'  R0 based only) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
 #'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
 #' @param division Number of particles/threads to run in one go (up to 20)
+#' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
+#'  If mode_time=0, no time variation (constant values)\cr
+#'  If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+#'  If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+#'  If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+#'  If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' '
 #' @export
 #'
 Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_data = list(),
                                 years_data = c(1940:1941), start_SEIRV = list(), output_type = "full", year0 = 1940,
-                                mode_start = 0, vaccine_efficacy = 1.0, time_inc = 1.0, n_reps = 1, division = 10) {
+                                mode_start = 0, vaccine_efficacy = 1.0, time_inc = 1.0, n_reps = 1, division = 10,
+                                mode_time=0) {
 
   assert_that(division <= 20, msg = "Number of particles run at once must be 20 or less")
   n_particles0 = min(division, n_reps)
@@ -189,8 +207,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
   if(output_type == "full"){
     dim = c(N_age, n_reps, t_pts_out)
     output_data = list(day = rep(NA, t_pts_out), year = rep(NA, t_pts_out), FOI_total = array(NA, c(n_reps, t_pts_out)),
-                     S = array(NA, dim), E = array(NA, dim), I = array(NA, dim),
-                     R = array(NA, dim), V = array(NA, dim), C = array(NA, dim))
+                       S = array(NA, dim), E = array(NA, dim), I = array(NA, dim),
+                       R = array(NA, dim), V = array(NA, dim), C = array(NA, dim))
   } else {
     if(output_type == "case_alt2"){
       output_data = list(day = rep(NA, t_pts_out), year = rep(NA, t_pts_out))
@@ -215,12 +233,10 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
   for(div in 1:n_divs){
     n_particles = n_particles_list[div]
 
-    x <- dust_system_create(SEIRV_Model, pars=pars,
-                            n_particles=n_particles,n_threads=n_threads,time=0,dt=1,
-                            deterministic=FALSE, preserve_particle_dimension=TRUE)
+    x <- dust_system_create(SEIRV_Model, pars = pars, n_particles = n_particles, n_threads = n_threads, time=0, dt=1,
+                            deterministic = FALSE, preserve_particle_dimension = TRUE)
     dust_system_set_state_initial(x)
-    t <- c(step_begin:step_end)
-    x_res <- dust_system_simulate(x, t)
+    x_res <- dust_system_simulate(x, t = c(step_begin:step_end))
 
     if(div == 1){
       n_p0 = 0
@@ -296,8 +312,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #'
 #' @details Takes in multiple inputs, outputs list for use by odin SEIRV model.
 #'
-#' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir
-#' @param R0 Reproduction number for urban spread of infection
+#' @param FOI_spillover Force of infection due to spillover from sylvatic reservoir (TBA)
+#' @param R0 Reproduction number for urban spread of infection (TBA)
 #' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year
 #' @param pop_data Population by age group and year
 #' @param year0 First year in population/vaccination data
@@ -311,15 +327,16 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #' @param vaccine_efficacy Proportional vaccine efficacy
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input
 #' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+#' @param mode_time TBA
 #' '
 #' @export
 #'
 parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_data = list(), year0 = 1940,
                             years_data = c(1941:1942), mode_start = 0, vaccine_efficacy = 1.0, start_SEIRV = list(),
-                            time_inc = 1.0){
+                            time_inc = 1.0, mode_time = 0){
 
-  assert_that(FOI_spillover>=0.0)
-  assert_that(R0>=0.0)
+  assert_that(all(FOI_spillover>=0.0))
+  assert_that(all(R0>=0.0))
   assert_that(length(pop_data[, 1])>1, msg = "Need population data for multiple years")
   assert_that(length(pop_data[1, ])>1, msg = "Need population data for multiple age groups")
   n_years = length(pop_data[, 1])-1
@@ -336,7 +353,53 @@ parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), p
   vacc_initial = vacc_data[1, ]
   assert_that(time_inc %in% c(1, 2.5, 5),
               msg = "time_inc must have value 1, 2.5 or 5 days (must have integer no. points/year)")
+  assert_that(mode_time %in% c(0:5))
   inv_365 = 1.0/365.0
+  n_t_pts=(n_years*365.0)/time_inc
+
+  if(mode_time==0){
+    assert_that(length(FOI_spillover)==1 && length(R0)==1,msg="Spillover FOI and R0 must be single values if mode_time=0")
+    FOI_spillover_t=rep(FOI_spillover,n_t_pts)
+    R0_t=rep(R0,n_t_pts)
+  } else {
+    FOI_spillover_t=R0_t=rep(NA,n_t_pts)
+  }
+  if(mode_time==1){
+    assert_that(length(FOI_spillover)==n_years && length(R0)==n_years,
+                msg="Spillover FOI and R0 must be vectors of length equal to no.years considered if mode_time=1")
+    for(i in 1:n_years){
+      FOI_spillover_t[c(1:pts_year)+(i-1)*pts_year]=rep(FOI_spillover[i],pts_year)
+      R0_t[c(1:pts_year)+(i-1)*pts_year]=rep(R0[i],pts_year)
+    }
+  }
+  if(mode_time==2){
+    assert_that(length(FOI_spillover)==12 && length(R0)==12,
+                msg="Spillover FOI and R0 must be vectors of length 12 if mode_time=2")
+    month_values=(1+floor(((12*dt)/365)*c(0:(n_t_pts-1))) %% 12)
+    FOI_spillover_t=FOI_spillover[month_values]
+    R0_t=R0[month_values]
+  }
+  if(mode_time==3){
+    assert_that(length(FOI_spillover)==pts_year && length(R0)==pts_year,
+                msg="Spillover FOI and R0 must be vectors of length (365/dt) if mode_time=3")
+    date_values=1+(floor(dt*c(0:(n_t_pts-1))) %% (365/dt))
+    FOI_spillover_t=FOI_spillover[date_values]
+    R0_t=R0[date_values]
+  }
+  if(mode_time==4){
+    assert_that(length(FOI_spillover)==n_years*12 && length(R0)==n_years*12,
+                msg="Spillover FOI and R0 must be vectors of length equal to 12*no.years considered if mode_time=4")
+    month_values=(1+floor(((12*dt)/365)*c(0:(n_t_pts-1))) %% 12)
+    date_values=month_values+sort(rep(c(1:n_years)-1,pts_year))
+    FOI_spillover_t=FOI_spillover[date_values]
+    R0_t=R0[date_values]
+  }
+  if(mode_time==5){
+    assert_that(length(FOI_spillover)==n_years*pts_year && length(R0)==n_years*pts_year,
+                msg="Spillover FOI and R0 must be vectors of length equal to (365/dt)*no.years considered if mode_time=5")
+    FOI_spillover_t=FOI_spillover
+    R0_t=R0
+  }
 
   P0 = S_0 = E_0 = I_0 = R_0 = V_0 = rep(0, N_age)
   dP1_all = dP2_all = vacc_rates = array(NA, dim = c(N_age, n_years))
@@ -406,10 +469,10 @@ parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), p
     }
   }
 
-  return(list(FOI_spillover = FOI_spillover, R0 = R0, vacc_rate_daily = vacc_rates, N_age = N_age,
+  return(list(FOI_spillover = FOI_spillover_t, R0 = R0_t, vacc_rate_daily = vacc_rates, N_age = N_age,
               S_0 = S_0, E_0 = E_0, I_0 = I_0, R_0 = R_0, V_0 = V_0, dP1_all = dP1_all, dP2_all = dP2_all,
               n_years = n_years, year0 = year0, vaccine_efficacy = vaccine_efficacy, time_inc = time_inc,
-              t_incubation = t_incubation, t_latent = t_latent, t_infectious = t_infectious))
+              t_incubation = t_incubation, t_latent = t_latent, t_infectious = t_infectious, n_t_pts = n_t_pts))
 }
 #-------------------------------------------------------------------------------
 #' @title create_param_labels
@@ -456,7 +519,7 @@ create_param_labels <- function(enviro_data = NULL, extra_estimated_params = c("
 #' '
 #' @export
 #'
-param_calc_enviro <- function(enviro_coeffs = c(), enviro_covar_values = c()){
+param_calc_enviro <- function(enviro_coeffs = c(), enviro_covar_values = c()){ #TODO - Update for time-varying covar values
 
   assert_that(all(enviro_coeffs >= 0), msg = "All environmental coefficients must have positive values")
   n_env_vars = length(enviro_covar_values)

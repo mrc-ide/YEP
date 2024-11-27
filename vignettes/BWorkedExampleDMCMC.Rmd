@@ -61,7 +61,7 @@ mode_start <- 1
 # Type of prior likelihood calculation to use
 prior_settings <- list(type="zero")
 # Time increment in days
-dt <- 5.0 
+time_inc <- 5.0 
 # Number of repetitions for which to run model and obtain average outputs
 n_reps <- 5 
 # Probability of an infection causing severe symptoms
@@ -83,7 +83,7 @@ We then run the MCMC() function. Output data recorded at each iteration is saved
 
 ```{r,eval=FALSE}
 MCMC(log_params_ini, input_data, obs_sero_data, obs_case_data, filename_prefix, 
-     Niter, mode_start, prior_settings, dt, n_reps, enviro_data, p_severe_inf, 
+     Niter, mode_start, prior_settings, time_inc, n_reps, enviro_data, p_severe_inf, 
      p_death_severe_inf, add_values, deterministic,mode_parallel,NULL)
 ```
 

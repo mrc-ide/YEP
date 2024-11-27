@@ -15,12 +15,14 @@ MCMC(
   prior_settings = list(type = "zero"),
   time_inc = 1,
   n_reps = 1,
-  enviro_data = list(),
+  enviro_data_const = list(),
+  enviro_data_var = list(),
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
   add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
     = 1),
   deterministic = FALSE,
+  mode_time = 1,
   mode_parallel = FALSE,
   cluster = NULL
 )
@@ -29,15 +31,16 @@ MCMC(
 \item{log_params_ini}{Initial values of parameters to be estimated. These should always be the log() values of the
 actual parameters, ordered as follows: \cr
 1) A number of environmental coefficients used to calculate spillover force of infection values from environmental
-covariates equal to the number of environmental covariates listed in the enviro_data frame. Values should be in the
-order of the columns in the environmental data frame. \cr
+covariates equal to the total number of environmental covariates. Values should be in the
+order of the columns in enviro_data_const and then the covariates in enviro_data_var. \cr
 2) A number of environmental coefficients used to calculate basic reproduction number
-values from environmental covariates equal to the number of environmental covariates listed in the enviro_data
-frame. Values should be in the order of the columns in the environmental data frame. \cr
+values from environmental covariates equal to the total number of environmental covariates.
+Values should be in the order of the columns in enviro_data_const and then the covariates in enviro_data_var. \cr
 3) Values of the additional parameters (reported vaccination effectiveness vaccine_efficacy, severe case reporting
-probability p_rep_severe, and fatal case reporting probability p_rep_death, and Brazil spillover FOI multiplier m_FOI_Brazil);
-if these are to be estimated, in the order vaccine_efficacy->p_rep_severe->p_rep_death->m_FOI_Brazil. If these parameters
-are to be estimated, the values separately supplied to this function (see add_values below) should be set to NA.}
+probability p_rep_severe, and fatal case reporting probability p_rep_death, and Brazil spillover FOI multiplier
+m_FOI_Brazil); if these are to be estimated, in the order vaccine_efficacy->p_rep_severe->p_rep_death->m_FOI_Brazil.
+If these parameters are to be estimated, the values separately supplied to this function (see add_values below) should
+be set to NA.}
 
 \item{input_data}{List of population and vaccination data for multiple regions (created using data input creation
 code and usually loaded from RDS file)}
@@ -48,23 +51,25 @@ positives}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no.
 cases/no. deaths}
 
-\item{filename_prefix}{Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a name in the
-format: "(filename_prefix)XX.csv", e.g. Chain00.csv}
+\item{filename_prefix}{Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a
+name in the format: "(filename_prefix)XX.csv", e.g. Chain00.csv}
 
 \item{Niter}{Total number of iterations to run}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
+R0 based only) \cr
 If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
-If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and param_max_limits,
- -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of same length as log_params_ini \cr
-If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with settings based
-on vectors of values in prior_settings: \cr
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
+If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and
+param_max_limits, -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of
+same length as log_params_ini \cr
+If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with
+settings based on vectors of values in prior_settings: \cr
+norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
  parameters and to actual values of additional parameters) \cr
  + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
  + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
@@ -74,7 +79,9 @@ on vectors of values in prior_settings: \cr
 
 \item{n_reps}{Number of times to repeat calculations to get average likelihood at each iteration}
 
-\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
+\item{enviro_data_const}{Data frame of values of constant environmental covariates (columns) by region (rows)}
+
+\item{enviro_data_var}{List containing values of time-varying environmental covariates (TBA)}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
@@ -88,6 +95,14 @@ p_rep_death Probability of observation of death \cr
 m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered)}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
+
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time=0, no time variation (constant values)\cr
+If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
 
 \item{mode_parallel}{TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed}
 

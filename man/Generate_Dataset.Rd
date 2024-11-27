@@ -20,6 +20,7 @@ Generate_Dataset(
   time_inc = 1,
   n_reps = 1,
   deterministic = FALSE,
+  mode_time = 0,
   mode_parallel = FALSE,
   cluster = NULL,
   output_frame = FALSE
@@ -28,9 +29,9 @@ Generate_Dataset(
 \arguments{
 \item{input_data}{List of population and vaccination data for multiple regions in standard format [TBA]}
 
-\item{FOI_values}{Vector of values of the force of infection due to spillover from sylvatic reservoir}
+\item{FOI_values}{Array of values of force of infection due to spillover from sylvatic reservoir by region + time point}
 
-\item{R0_values}{Vector of values of the basic reproduction number for human-human transmission}
+\item{R0_values}{Array of values of basic reproduction number for human-human transmission by region and time point}
 
 \item{sero_template}{Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
 and number of samples}
@@ -60,6 +61,14 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 \item{n_reps}{number of stochastic repetitions}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
+
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time=0, no time variation (constant values)\cr
+If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
 
 \item{mode_parallel}{TRUE/FALSE - set model to run in parallel using cluster if TRUE}
 

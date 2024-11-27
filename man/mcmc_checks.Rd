@@ -8,10 +8,11 @@ mcmc_checks(
   log_params_ini = c(),
   n_regions = 1,
   prior_settings = list(type = "zero"),
-  enviro_data = list(),
+  enviro_data_const = list(),
+  enviro_data_var = list(),
   add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
     = 1),
-  extra_estimated_params = list()
+  extra_estimated_params = c()
 )
 }
 \arguments{
@@ -22,7 +23,9 @@ documentation for MCMC() function for more details)}
 
 \item{prior_settings}{List containing settings for priors; see documentation for MCMC() function for more details)}
 
-\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
+\item{enviro_data_const}{Data frame of values of constant environmental covariates (columns) by region (rows)}
+
+\item{enviro_data_var}{List containing values of time-varying environmental covariates (TBA)}
 
 \item{add_values}{List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
  indicate that they are part of the parameter set to be estimated \cr
@@ -31,7 +34,8 @@ p_rep_severe Probability of observation of severe infection \cr
 p_rep_death Probability of observation of death \cr
 m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered) \cr}
 
-\item{extra_estimated_params}{Vector of names of parameters to be estimated in addition to those governing FOI and R0; see add_values}
+\item{extra_estimated_params}{Vector of names of parameters to be estimated in addition to those governing FOI and R0;
+see add_values}
 }
 \description{
 Perform checks on MCMC inputs
