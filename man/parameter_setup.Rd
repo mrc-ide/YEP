@@ -31,11 +31,11 @@ parameter_setup(
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
-\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start = 0, only vaccinated individuals
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-R0 based only)
-If mode_start = 2, use SEIRV input in list from previous run(s)
+R0 based only) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s) \cr
 If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
@@ -44,7 +44,13 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
-\item{mode_time}{TBA
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+ If mode_time=0, no time variation (constant values)\cr
+ If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+ If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+ If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+ If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+ If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 '}
 }
 \description{
