@@ -646,18 +646,21 @@ create_param_labels <- function(enviro_data_const = NULL, enviro_data_var=list()
 #' '
 #' @export
 #'
-calc_var_epi <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_const = data.frame(), enviro_data_var = list()){
-  n_pts=dim(enviro_data_var$values)[3]
+calc_var_epi <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_const = data.frame(), enviro_data_var = NULL){
   #TODO - Add assertthat checks
   #TODO - Ensure function works if only variable or only constant covariates
 
-  base_output_values=as.numeric(colSums(coeffs_const*t(enviro_data_const[,c(2:ncol(enviro_data_const))])))
-  var_output_values=colSums(coeffs_var*enviro_data_var$values)
+  base_output_values=as.vector(as.matrix(enviro_data_const[,c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
 
-  total_output_values=array(NA,dim=dim(var_output_values))
-  for(i in 1:n_pts){
-    total_output_values[,i]=var_output_values[,i]+base_output_values
+  if(is.null(enviro_data_var)==FALSE){
+    n_pts=dim(enviro_data_var$values)[3]
+    var_output_values=colSums(coeffs_var*enviro_data_var$values)
+    total_output_values=array(NA,dim=dim(var_output_values))
+    for(i in 1:n_pts){
+      total_output_values[,i]=var_output_values[,i]+base_output_values
+    }
+    return(total_output_values)
+  } else {
+    return(base_output_values)
   }
-
-  return(total_output_values)
 }

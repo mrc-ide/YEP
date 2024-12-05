@@ -84,7 +84,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   t_pts_out = step_end-step_begin+1 #Number of time points in final output data
 
   x <- dust_system_create(SEIRV_Model, pars=parameter_setup(FOI_spillover, R0, vacc_data, pop_data, year0, years_data,
-                                                            mode_start,vaccine_efficacy, start_SEIRV, time_inc),
+                                                            mode_start,vaccine_efficacy, start_SEIRV, time_inc, mode_time),
                           n_particles = n_particles, n_threads = n_threads, time = 0, dt = 1,
                           deterministic = deterministic, preserve_particle_dimension = TRUE)
   index=dust_unpack_index(x)
@@ -229,7 +229,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
   }
 
   pars=parameter_setup(FOI_spillover, R0, vacc_data, pop_data, year0, years_data,
-                       mode_start,vaccine_efficacy, start_SEIRV, time_inc)
+                       mode_start,vaccine_efficacy, start_SEIRV, time_inc, mode_time)
   for(div in 1:n_divs){
     n_particles = n_particles_list[div]
 
@@ -337,8 +337,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #' '
 #' @export
 #'
-parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_data = list(), year0 = 1940,
-                            years_data = c(1941:1942), mode_start = 0, vaccine_efficacy = 1.0, start_SEIRV = list(),
+parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), pop_data = list(), year0 = 1940,
+                            years_data = c(), mode_start = 0, vaccine_efficacy = 1.0, start_SEIRV = list(),
                             time_inc = 1.0, mode_time = 0){
 
   assert_that(mode_start %in% c(0, 1, 2, 3), msg = "mode_start must have value 0, 1, 2 or 3")
@@ -417,8 +417,8 @@ parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), p
     }
     #-----------------------------------------------------------------------------
     if(mode_start == 1){ #Herd immunity, uniform by age
-      if(R0>1.0){
-        herd_immunity = 1.0-(1.0/R0)
+      if(R0_t[1]>1.0){
+        herd_immunity = 1.0-(1.0/R0_t[1])
       } else {
         herd_immunity = 0.0
       }
@@ -434,10 +434,10 @@ parameter_setup <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), p
     #-----------------------------------------------------------------------------
     if(mode_start == 3){ #New herd immunity calculation to give age-stratified immunity profile based on notional FOI
       ages = c(1:N_age)-1
-      if(R0 <= 1.0){
+      if(R0_t[1] <= 1.0){
         FOI_estimate = FOI_spillover*365.0
       } else {
-        estimation_results = nlm(imm_fraction_function, p = -4, R0, ages, P0/sum(P0))
+        estimation_results = nlm(imm_fraction_function, p = -4, R0_t[1], ages, P0/sum(P0))
         FOI_estimate = min(0.1, (FOI_spillover*365.0)+exp(estimation_results$estimate))
       }
       herd_immunity = 1.0-(exp(-FOI_estimate*(ages+0.5)))

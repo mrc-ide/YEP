@@ -141,7 +141,7 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     #Run model if not using parallelization
     if(mode_parallel==FALSE){
       #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
-      model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
+      model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(year_data_begin[n_region]:year_end[n_region]),
                                start_SEIRV = start_SEIRV[[n_region]],output_type = output_types[n_region],
@@ -313,7 +313,7 @@ Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), 
     if(mode_parallel==FALSE){
       #cat("\n\t\tBeginning modelling region ",input_data$region_labels[n_region])
       if(is.null(seed)==FALSE && deterministic==FALSE){set.seed(seed)}
-      model_output = Model_Run(FOI_spillover = FOI_values[n_region],R0 = R0_values[n_region],
+      model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
                                start_SEIRV=start_SEIRV[[n_region]],output_type = "case_alt",

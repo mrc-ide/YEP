@@ -8,7 +8,7 @@ calc_var_epi(
   coeffs_const = c(),
   coeffs_var = c(),
   enviro_data_const = data.frame(),
-  enviro_data_var = list()
+  enviro_data_var = NULL
 )
 }
 \arguments{

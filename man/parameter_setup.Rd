@@ -5,12 +5,12 @@
 \title{Parameter setup}
 \usage{
 parameter_setup(
-  FOI_spillover = 0,
-  R0 = 1,
+  FOI_spillover = c(),
+  R0 = c(),
   vacc_data = list(),
   pop_data = list(),
   year0 = 1940,
-  years_data = c(1941:1942),
+  years_data = c(),
   mode_start = 0,
   vaccine_efficacy = 1,
   start_SEIRV = list(),
