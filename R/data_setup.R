@@ -221,7 +221,6 @@ input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_dat
                 sero_line_list=sero_line_list,case_line_list=case_line_list))
   #}
 }
-
 #-------------------------------------------------------------------------------
 #' @title input_data_truncate
 #'
@@ -269,6 +268,50 @@ input_data_truncate <- function(input_data=list(),regions_new = NULL, years_new 
                       pop_data=array(input_data$pop_data[input_regions_check,years_check,],dim=c(n_regions,n_years,N_age)))
 
   return(input_data_new)
+}
+
+#-------------------------------------------------------------------------------
+#' @title enviro_data_var_check
+#'
+#' @description Check format of variable environmental data
+#'
+#' @details TBA
+#'
+#' @param enviro_data_var TBA
+#'
+#' @export
+#'
+enviro_data_var_check <- function(enviro_data_var){
+  result=TRUE
+
+  assert_that(is.list(enviro_data_var))
+  assert_that(is.null(enviro_data_var$regions)==FALSE)
+  assert_that(is.null(enviro_data_var$env_vars)==FALSE)
+  assert_that(is.null(enviro_data_var$values)==FALSE)
+  assert_that(length(dim(enviro_data_var$values))==3)
+
+  return(result)
+}
+#-------------------------------------------------------------------------------
+#' @title enviro_data_var_truncate
+#'
+#' @description Truncate variable environmental data for shorter set of regions and/or time points
+#'
+#' @details TBA
+#'
+#' @param enviro_data_var TBA
+#' @param regions_new Vector of regions (subset of enviro_data_var$regions)
+#' @param t_pts_new TBA
+#'
+#' @export
+#'
+enviro_data_var_truncate <- function(enviro_data_var = list(), regions_new = c(), t_pts_new = NULL){
+
+  enviro_data_var_new=enviro_data_var
+  enviro_data_var_new$values=enviro_data_var$values[,enviro_data_var$regions %in% regions_new,]
+  enviro_data_var_new$regions=regions_new
+
+  return(enviro_data_var_new)
 }
 #-------------------------------------------------------------------------------
 #' @title regions_breakdown

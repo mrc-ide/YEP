@@ -459,31 +459,6 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
               t_incubation = t_incubation, t_latent = t_latent, t_infectious = t_infectious, n_t_pts = n_t_pts))
 }
 #-------------------------------------------------------------------------------
-#' @title param_calc_enviro
-#'
-#' @description Parameter calculation from environmental covariates
-#'
-#' @details Takes in set of coefficients of environmental covariates and covariate values and calculates values of
-#'   spillover force of infection and reproduction number.
-#'
-#' @param enviro_coeffs Values of environmental coefficients
-#' @param enviro_covar_values Values of environmental covariates
-#' '
-#' @export
-#'
-param_calc_enviro <- function(enviro_coeffs = c(), enviro_covar_values = c()){ #TODO - Update for time-varying covar values
-
-  assert_that(all(enviro_coeffs >= 0), msg = "All environmental coefficients must have positive values")
-  n_env_vars = length(enviro_covar_values)
-  assert_that(length(enviro_coeffs)==2*n_env_vars, msg = "Wrong number of environmental coefficients")
-
-  output = list()
-  output$FOI = sum(enviro_coeffs[c(1:n_env_vars)]*enviro_covar_values)
-  output$R0 = sum(enviro_coeffs[c(1:n_env_vars)+n_env_vars]*enviro_covar_values)
-
-  return(output)
-}
-#-------------------------------------------------------------------------------
 #' @title imm_fraction_function
 #'
 #' @description Function to estimate notional FOI for herd immunity based on R0 and population age distribution
@@ -508,4 +483,46 @@ imm_fraction_function <- function(log_lambda = -4, R0 = 1.0, ages = c(0:100), po
   dev = abs(imm_mean_target-imm_mean)
 
   return(dev)
+}
+#-------------------------------------------------------------------------------
+#' @title epi_param_calc
+#'
+#' @description Calculate FOI_spillover or R0 values from environmental covariates and coefficients
+#'
+#' @details Takes in environmental covariate values for one or more regions and coefficients of environmental covariates
+#'  and calculates epidemiological parameter values via matrix multiplication. Environmental covariates may be constant
+#'  or time-varying; constant and time-varying sets of values are supplied as separate input variables, as are coefficients
+#'  of constant and time-varying covariates.
+#'
+#'  The function can accept [TBA]
+#'
+#' @param coeffs_const Vector of coefficients of time-invariant covariates
+#' @param coeffs_var Vector of coefficients of time-varying covariates
+#' @param enviro_data_const Data frame of time-invariant environmental covariate values, with region labels in first
+#'   column and one row per region
+#' @param enviro_data_var List containing data on time-varying environmental covariates: [TBA]
+#' '
+#' @export
+#'
+epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_const = data.frame(), enviro_data_var = NULL){
+  #TODO - Ensure function works if only variable covariates? (Now works for const only or const+var)
+  #TODO - Add assertthat checks
+  assert_that(is.null(enviro_data_const)==FALSE) #TBC if made capable of using all-variable data
+  assert_that(all(c(coeffs_const,coeffs_var) >= 0), msg = "All environmental coefficients must have positive values")
+  assert_that(colnames(enviro_data_const)[1]=="region")
+
+  base_output_values=as.vector(as.matrix(enviro_data_const[,c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
+
+  if(is.null(enviro_data_var)==FALSE){
+    n_pts=dim(enviro_data_var$values)[3]
+    var_output_values=colSums(coeffs_var*enviro_data_var$values)
+    total_output_values=array(NA,dim=dim(var_output_values))
+    for(i in 1:n_pts){
+      total_output_values[,i]=var_output_values[,i]+base_output_values
+    }
+  } else {
+    total_output_values=array(base_output_values,dim=c(1,length(base_output_values)))
+  }
+
+  return(total_output_values)
 }

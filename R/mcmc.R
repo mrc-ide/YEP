@@ -91,9 +91,10 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
   assert_that(all(regions %in% enviro_data_const$region),
               msg="Time-invariant nvironmental data must be available for all regions in observed data")
   enviro_data_const = subset(enviro_data_const, enviro_data_const$region %in% regions)
+  assert_that(enviro_data_var_check)
   assert_that(all(regions==enviro_data_var$regions),
               msg="Time-variant environmental data must be available for all regions in observed data")
-  #enviro_data_var = subset(enviro_data_var, enviro_data_var$region %in% regions) #TBA
+  enviro_data_var = enviro_data_var_truncate(enviro_data_var,regions)
 
   #Get names of additional parameters to be estimated
   extra_estimated_params = c()
@@ -277,18 +278,15 @@ single_posterior_calc <- function(log_params_prop = c(),input_data=list(),obs_se
     regions = input_data$region_labels
     n_regions = length(regions)
 
-    #CALCULATE FOI AND R0 VALUES FROM CONSTANT AND VARIABLE ENVIRONMENTAL DATA
-    {
-      FOI_values=calc_var_epi(coeffs_const=exp(log_params_prop[consts$i_FOI_const]),
+    FOI_values=epi_param_calc(coeffs_const=exp(log_params_prop[consts$i_FOI_const]),
                               coeffs_var=exp(log_params_prop[consts$i_FOI_var]),
                               enviro_data_const=consts$enviro_data_const,enviro_data_var=consts$enviro_data_var)
-      R0_values=calc_var_epi(coeffs_const=exp(log_params_prop[consts$i_R0_const]),
+    R0_values=epi_param_calc(coeffs_const=exp(log_params_prop[consts$i_R0_const]),
                              coeffs_var=exp(log_params_prop[consts$i_R0_var]),
                              enviro_data_const=consts$enviro_data_const,enviro_data_var=consts$enviro_data_var)
-    }
 
     for(n_region in 1:n_regions){
-      if(substr(regions[n_region], 1, 3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}
+      if(substr(regions[n_region],1,3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}
       }
     if(consts$prior_settings$type == "norm"){
       prior_like = prior_like  +
@@ -631,36 +629,4 @@ create_param_labels <- function(enviro_data_const = NULL, enviro_data_var=list()
   if(n_extra>0){param_names[(n_params-n_extra+1):n_params] = extra_estimated_params}
 
   return(param_names)
-}
-#-------------------------------------------------------------------------------
-#' @title calc_var_epi
-#'
-#' @description Calculate time-varying FOI_spillover or R0 values from environmental covariates and coefficients
-#'
-#' @details TBA
-#'
-#' @param coeffs_const TBA
-#' @param coeffs_var TBA
-#' @param enviro_data_const TBA
-#' @param enviro_data_var TBA
-#' '
-#' @export
-#'
-calc_var_epi <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_const = data.frame(), enviro_data_var = NULL){
-  #TODO - Add assertthat checks
-  #TODO - Ensure function works if only variable or only constant covariates
-
-  base_output_values=as.vector(as.matrix(enviro_data_const[,c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
-
-  if(is.null(enviro_data_var)==FALSE){
-    n_pts=dim(enviro_data_var$values)[3]
-    var_output_values=colSums(coeffs_var*enviro_data_var$values)
-    total_output_values=array(NA,dim=dim(var_output_values))
-    for(i in 1:n_pts){
-      total_output_values[,i]=var_output_values[,i]+base_output_values
-    }
-    return(total_output_values)
-  } else {
-    return(base_output_values)
-  }
 }
