@@ -6,6 +6,8 @@
 #' @details This is the master function for running a Markov chain to optimize the parameters of the yellow fever
 #' model based on the calculated likelihood of observing supplied data given a particular set of parameters.
 #'
+#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
+#'
 #' @param log_params_ini Initial values of parameters to be estimated. These should always be the log() values of the
 #'   actual parameters, ordered as follows: \cr
 #'   1) A number of environmental coefficients used to calculate spillover force of infection values from environmental

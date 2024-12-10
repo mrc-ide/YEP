@@ -10,6 +10,8 @@
 #'
 #' [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 #'
+#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
+#'
 #' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
 #' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time point
 #' @param R0_values Array of values of basic reproduction number for human-human transmission by region and time point
@@ -221,6 +223,8 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #'
 #' @details This function is used to generate annual burden data in the format used by the Vaccine Impact
 #'   Modelling Consortium (VIMC) [TBA]
+#'
+#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
 #'
 #' @param input_data List of population and vaccination data for multiple regions
 #' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
