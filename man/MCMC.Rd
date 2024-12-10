@@ -67,13 +67,13 @@ If type = "zero", prior probability is always zero \cr
 If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and
 param_max_limits, -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of
 same length as log_params_ini \cr
-If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with
-settings based on vectors of values in prior_settings: \cr
+If type = "norm", prior probability is given by truncated normal distribution with settings based on vectors of values
+in prior_settings: \cr
 norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) \cr
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
- + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)}
+parameters and to actual values of additional parameters) \cr
++ FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
++ R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr
++ param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)}
 
 \item{time_inc}{time increment in days (must be 1 or 5)}
 
@@ -81,14 +81,18 @@ norm_params_mean and norm_params_sd (vectors of mean and standard deviation valu
 
 \item{enviro_data_const}{Data frame of values of constant environmental covariates (columns) by region (rows)}
 
-\item{enviro_data_var}{List containing values of time-varying environmental covariates (TBA)}
+\item{enviro_data_var}{List containing time-varying environmental covariate data:\cr
+regions: Vector of region labels\cr
+env_vars: Vector of covariate names\cr
+values: Array of covariate values with dimensions (number of covariates, number of regions, number of time points).
+Number of time points must be correct for mode_time setting.\cr}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
 \item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
 \item{add_values}{List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
- indicate that they are part of the fitted  parameter set \cr
+indicate that they are part of the fitted  parameter set \cr
 vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) \cr
 p_rep_severe Probability of observation of severe infection \cr
 p_rep_death Probability of observation of death \cr
@@ -97,12 +101,12 @@ m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if re
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 
 \item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
-If mode_time=0, no time variation (constant values)\cr
-If mode_time=1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
-If mode_time=2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
-If mode_time=3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
-If mode_time=4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-If mode_time=5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
+If mode_time = 0, no time variation (constant values)\cr
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
 
 \item{mode_parallel}{TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed}
 

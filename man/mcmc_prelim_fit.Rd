@@ -59,7 +59,7 @@ If mode_start = 3, shift some non-vaccinated individuals into recovered to give 
 
 \item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors
+If type = "norm", prior probability is given by truncated normal distribution with settings based on vectors
 of values in prior_settings: \cr
  norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
  parameters and to actual values of additional parameters) \cr
