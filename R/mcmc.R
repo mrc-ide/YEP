@@ -31,10 +31,9 @@
 #'   name in the format: "(filename_prefix)XX.csv", e.g. Chain00.csv
 #' @param Niter Total number of iterations to run
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
-#'   If mode_start = 0, only vaccinated individuals \cr
-#'   If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-#'   R0 based only) \cr
-#'   If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
+#'  If mode_start = 0, only vaccinated individuals \cr
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param prior_settings List containing settings for priors: must contain text named "type":
 #'   If type = "zero", prior probability is always zero \cr
 #'   If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and
@@ -77,14 +76,14 @@
 #' @export
 #'
 MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL, obs_case_data = NULL,
-                 filename_prefix = "Chain", Niter = 1, mode_start = 0, prior_settings = list(type = "zero"),
+                 filename_prefix = "Chain", Niter = 1, mode_start = 1, prior_settings = list(type = "zero"),
                  time_inc = 1.0, n_reps = 1, enviro_data_const = list(), enviro_data_var = list(),
                  p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                  add_values = list(vaccine_efficacy = 1.0, p_rep_severe = 1.0, p_rep_death = 1.0, m_FOI_Brazil = 1.0),
                  deterministic = FALSE, mode_time = 1, mode_parallel = FALSE, cluster = NULL){
 
   assert_that(is.logical(deterministic))
-  assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
+  assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3 (NB 3 should be changed to 1)")
   if(is.null(obs_case_data) == FALSE){assert_that(all(c("p_rep_severe","p_rep_death") %in% names(add_values)),
                                                 msg = "Reporting probabilities required for case data")}
 
@@ -304,10 +303,10 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
   if (is.finite(prior_like)) {
 
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(input_data, FOI_values, R0_values, obs_sero_data, obs_case_data, vaccine_efficacy,
-                                consts$p_severe_inf, consts$p_death_severe_inf, p_rep_severe, p_rep_death,
-                                consts$mode_start, start_SEIRV = NULL, consts$time_inc,consts$n_reps, consts$deterministic,
-                                consts$mode_time, consts$mode_parallel, consts$cluster)
+    dataset <- Generate_Dataset(FOI_values, R0_values, input_data, obs_sero_data, obs_case_data, vaccine_efficacy,
+                                consts$time_inc,consts$mode_start, start_SEIRV = NULL, consts$mode_time, consts$n_reps,
+                                consts$deterministic, consts$p_severe_inf, consts$p_death_severe_inf, p_rep_severe, p_rep_death,
+                                consts$mode_parallel, consts$cluster,output_frame = FALSE)
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data) == FALSE){
@@ -465,9 +464,8 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'   deaths
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-#'  R0 based only) \cr
-#'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param prior_settings List containing settings for priors: must contain text named "type":
 #'  If type = "zero", prior probability is always zero \cr
 #'  If type = "norm", prior probability is given by truncated normal distribution with settings based on vectors
@@ -498,7 +496,7 @@ param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
 #'
 mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, log_params_min = NULL,
                             log_params_max = NULL, input_data = list(), obs_sero_data = list(), obs_case_data = list(),
-                            mode_start = 0, prior_settings = list(type = "zero"), time_inc = 1.0, n_reps = 1,
+                            mode_start = 1, prior_settings = list(type = "zero"), time_inc = 1.0, n_reps = 1,
                             enviro_data_const = list(), enviro_data_var = list(),
                             p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                             add_values = list(vaccine_efficacy = 1.0,p_rep_severe = 1.0,p_rep_death = 1.0,m_FOI_Brazil = 1.0),
@@ -506,7 +504,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
 
   #TODO - Add assertthat functions
   assert_that(is.logical(deterministic))
-  assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3")
+  assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3 (NB 3 should be changed to 1)")
   assert_that(length(log_params_min) == length(log_params_max), msg = "Parameter limit vectors must have same lengths")
   assert_that(prior_settings$type %in% c("zero", "norm"), msg = "Prior type must be 'zero' or 'norm'")
 

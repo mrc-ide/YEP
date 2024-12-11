@@ -11,7 +11,7 @@ MCMC(
   obs_case_data = NULL,
   filename_prefix = "Chain",
   Niter = 1,
-  mode_start = 0,
+  mode_start = 1,
   prior_settings = list(type = "zero"),
   time_inc = 1,
   n_reps = 1,
@@ -58,9 +58,8 @@ name in the format: "(filename_prefix)XX.csv", e.g. Chain00.csv}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-R0 based only) \cr
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s)}
 
 \item{prior_settings}{List containing settings for priors: must contain text named "type":
 If type = "zero", prior probability is always zero \cr
@@ -119,4 +118,6 @@ Combined MCMC Multi-Region - series of MCMC iterations for one or more regions
 \details{
 This is the master function for running a Markov chain to optimize the parameters of the yellow fever
 model based on the calculated likelihood of observing supplied data given a particular set of parameters.
+
+#TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
 }

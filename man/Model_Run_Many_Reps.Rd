@@ -10,15 +10,16 @@ Model_Run_Many_Reps(
   vacc_data = list(),
   pop_data = list(),
   years_data = c(1940:1941),
-  start_SEIRV = list(),
-  output_type = "full",
   year0 = 1940,
-  mode_start = 0,
   vaccine_efficacy = 1,
   time_inc = 1,
+  output_type = "full",
+  mode_start = 0,
+  start_SEIRV = list(),
+  mode_time = 0,
   n_reps = 1,
   division = 10,
-  mode_time = 0
+  deterministic = FALSE
 )
 }
 \arguments{
@@ -33,7 +34,11 @@ Model_Run_Many_Reps(
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
+\item{year0}{First year in population/vaccination data}
+
+\item{vaccine_efficacy}{Proportional vaccine efficacy}
+
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{output_type}{Type of data to output: \cr
 "full" = SEIRVC + FOI for all steps and ages \cr
@@ -41,32 +46,28 @@ Model_Run_Many_Reps(
 "sero" = annual SEIRV \cr
 "case+sero" = annual SEIRVC, C summed across all ages \cr
 "case_alt" = annual total new infections not combined by age \cr
-"case_alt2" = total new infections combined by age for all steps \cr}
-
-\item{year0}{First year in population/vaccination data}
+"case_alt2" = total new infections combined by age for all steps}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-R0 based only) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s) \cr
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
 
-\item{vaccine_efficacy}{Proportional vaccine efficacy}
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start=2)}
 
-\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time = 0, no time variation (constant values)\cr
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
 
 \item{n_reps}{Number of repetitions (used to set number of particles and threads)}
 
 \item{division}{Number of particles/threads to run in one go (up to 20)}
 
-\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
- If mode_time = 0, no time variation (constant values)\cr
- If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
- If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
- If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
- If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
- If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
 '}
 }
 \description{
@@ -77,4 +78,6 @@ Accepts epidemiological + population parameters and model settings; runs SEIRV m
 for one region over a specified time period for a number of repetitions and outputs time-dependent SEIRV
 values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
 running a large number of repetitions (>20).
+
+#TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
 }

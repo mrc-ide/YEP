@@ -31,15 +31,21 @@ pop_data <- input_data$pop_data[1, , ]
 We set the other input parameters to the functions which run the model as follows. Here we set the spillover FOI and basic reproduction number directly; they may alternatively be calculated from environmental covariates as described in [Guide 2 - Calculating Parameters From Environmental Data](https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html). The mode_start variable is used to set the initial conditions in one of 3 ways. The n_particles variable is used to run the model multiple times for the same inputs; the results can be compared and/or combined to test and/or average out the effects of the stochasticity of the model. The n_threads variable is used to set the number of particles run in parallel (subject to the limitations of the computer being used). [TBA - link to odin.dust documentation]
 
 ```{r,eval=FALSE}
-# Force of infection due to spillover from sylvatic reservoir
+# Force of infection due to spillover from sylvatic reservoir (here fixed over time)
 FOI_spillover <- 1.0e-8           
-# Basic reproduction number for urban spread of infection
+# Basic reproduction number for urban spread of infection (here fixed over time)
 R0 <- 1.2
 # Year(s) for which data is to be output
-years_data <- c(1995:2000)
-# SEIRV data from end of a previous run to use as input (if mode_start = 2; not 
-# used here and hence set to NULL)
-start_SEIRV <- NULL    
+years_data <- c(1995:2000)         
+# First year in population/vaccination data (here taken from the input data set; 
+# if the population and vaccination data is set manually, this similarly needs 
+# to be set manually)
+year0 <- input_data$years_labels[1]
+# Proportional vaccine efficacy (from 0 to 1); probability of vaccination 
+# successfully providing immunity (i.e. moving vaccinated individual to group V)
+vaccine_efficacy <- 1.0      
+# Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+time_inc <- 1.0     
 # Type of data to output
 #'   "full" = SEIRVC + FOI for all steps and ages
 #'   "case" = annual total new infections (C) summed across all ages
@@ -47,25 +53,20 @@ start_SEIRV <- NULL
 #'   "case+sero" = annual SEIRVC, cases summed across all ages
 #'   "case_alt" = annual total new infections not combined by age
 #'   "case_alt2" = total new infections combined by age for all steps
-output_type <- "full"             
-# First year in population/vaccination data (here taken from the input data set; 
-# if the population and vaccination data is set manually, this similarly needs 
-# to be set manually)
-year0 <- input_data$years_labels[1]
+output_type <- "full"    
 # Flag indicating how to set initial population immunity level in addition to
 # vaccination
 # If mode_start = 0, only vaccinated individuals are immune (R = 0)
 # If mode_start = 1, shift some non-vaccinated individuals into recovered to 
-# give herd immunity (R = 1 - 1/R0)
+# give herd immunity (stratified by age)
 # If mode_start = 2, use SEIRV input in list from previous run(s), set using
 # start_SEIRV variable
-# If mode_start = 3, set age-stratified herd immunity based on R0 and FOI_spillover
-mode_start <- 1  
-# Proportional vaccine efficacy (from 0 to 1); probability of vaccination 
-# successfully providing immunity (i.e. moving vaccinated individual to group V)
-vaccine_efficacy <- 1.0       
-# Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
-time_inc <- 1.0            
+mode_start <- 1           
+# SEIRV data from end of a previous run to use as input (if mode_start = 2; not 
+# used here and hence set to NULL)
+start_SEIRV <- NULL   
+# Type of time variation of FOI_spillover and R0; here set to 0 for constant values
+mode_time <- 0
 # Number of particles to run
 n_particles <- 10     
 # Number of threads to run
@@ -78,9 +79,9 @@ deterministic <- FALSE
 We use the Model_Run() function to run the model for the inputs above:
 
 ```{r,eval=FALSE}
-test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
-                   start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
-                   time_inc, n_particles, n_threads, deterministic)
+test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data, year0,
+                   vaccine_efficacy, time_inc, output_type, mode_start,
+                   start_SEIRV, mode_time, n_particles, n_threads, deterministic)
 ```
 
 The output of Model_Run(), when output_type is set to "full", includes, for each particle, date information, the total force of infection FOI_total at each data point, the numbers of people in groups S, E, I, R and V at each time point organized by age group, and the number of newly infectious people (C) at each time point organized by age group. We use the plot_model function from the YEPaux package to display values of S, R and V (added together across all age groups) over time, with error bars to show the variation between particles caused by stochasticity if relevant.
@@ -94,9 +95,9 @@ print(plot)
 The model can be run in deterministic mode by setting the 'deterministic' flag to TRUE. In this mode, the number of new infections at each time point is calculated by multiplying the number of susceptible individuals by the total force of infection, rather than via sampling a binomial distribution.
 
 ```{r,eval=FALSE}
-test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data,
-                   start_SEIRV, output_type, year0, mode_start, vaccine_efficacy, 
-                   time_inc, n_particles, n_threads, deterministic=TRUE)
+test1 <- Model_Run(FOI_spillover, R0, vacc_data, pop_data, years_data, year0,
+                   vaccine_efficacy, time_inc, output_type, mode_start,
+                   start_SEIRV, mode_time, n_particles, n_threads, deterministic=TRUE)
 plot <- plot_model_output(test1)
 print(plot)
 ```

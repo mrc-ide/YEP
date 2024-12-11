@@ -10,29 +10,19 @@
 #'
 #' [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 #'
-#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
-#'
-#' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
 #' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time point
 #' @param R0_values Array of values of basic reproduction number for human-human transmission by region and time point
+#' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
 #' @param sero_template Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
 #'   and number of samples
 #' @param case_template Annual reported case/death data template - data frame with region and year
 #' @param vaccine_efficacy Fractional vaccine efficacy
-#' @param p_severe_inf Probability of an infection being severe
-#' @param p_death_severe_inf Probability of a severe infection resulting in death
-#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
-#' @param p_rep_death Probability of reporting of a fatal infection
+#' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0
-#'    based only) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
-#'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
-#' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
-#' @param n_reps number of stochastic repetitions
-#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
 #'  If mode_time = 0, no time variation (constant values)\cr
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
@@ -40,6 +30,12 @@
 #'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
 #'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
 #'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+#' @param n_reps number of stochastic repetitions
+#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
+#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
+#' @param p_rep_death Probability of reporting of a fatal infection
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
 #' @param output_frame TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
@@ -47,11 +43,10 @@
 #' '
 #' @export
 #'
-Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(),sero_template = NULL,case_template = NULL,
-                             vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39, p_rep_severe = 1.0,
-                             p_rep_death = 1.0,mode_start = 1,start_SEIRV = NULL, time_inc = 1.0,n_reps = 1,
-                             deterministic = FALSE, mode_time = 0,  mode_parallel = FALSE,cluster = NULL,
-                             output_frame = FALSE){
+Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),sero_template = NULL,case_template = NULL,
+                             vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
+                             n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                             p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE){
 
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -133,12 +128,11 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
     model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
-                                vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
-                                years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
-                                MoreArgs = list(year0 = input_data$years_labels[1],mode_start = mode_start,
-                                              vaccine_efficacy = vaccine_efficacy, time_inc = time_inc,
-                                              n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
-                                              mode_time = mode_time))
+                                  vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
+                                  years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
+                                  MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
+                                                  time_inc = time_inc,mode_start = mode_start,mode_time = mode_time,
+                                                  n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
   }
 
   #Save relevant output data from each region
@@ -148,11 +142,10 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
     if(mode_parallel == FALSE){
       model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
-                               years_data = c(year_data_begin[n_region]:year_end[n_region]),
-                               start_SEIRV = start_SEIRV[[n_region]],output_type = output_types[n_region],
-                               year0 = input_data$years_labels[1],mode_start = mode_start,
-                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
-                               n_threads = n_reps, deterministic = deterministic, mode_time = mode_time)
+                               years_data = c(year_data_begin[n_region]:year_end[n_region]), year0 = input_data$years_labels[1],
+                               vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, output_type = output_types[n_region],
+                               mode_start = mode_start, start_SEIRV = start_SEIRV[[n_region]],mode_time = mode_time,
+                               n_particles = n_reps,n_threads = n_reps, deterministic = deterministic)
     } else {
       model_output = model_output_all[[n_region]]
     }
@@ -224,27 +217,18 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #' @details This function is used to generate annual burden data in the format used by the Vaccine Impact
 #'   Modelling Consortium (VIMC) [TBA]
 #'
-#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
-#'
-#' @param input_data List of population and vaccination data for multiple regions
 #' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
 #' @param R0_values Values for each region of the basic reproduction number for human-human transmission
+#' @param input_data List of population and vaccination data for multiple regions
 #' @param template Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy
 #'   for each line
 #' @param vaccine_efficacy Fractional vaccine efficacy
-#' @param p_severe_inf Probability of an infection being severe
-#' @param p_death_severe_inf Probability of a severe infection resulting in death
-#' @param YLD_per_case TBA
+#' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-#'    R0 based only) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
-#'  If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
-#' @param time_inc Time increment in days to use in model (should be either 1.0 or 5.0 days)
-#' @param n_reps number of stochastic repetitions
-#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
 #'  If mode_time = 0, no time variation (constant values)\cr
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
@@ -252,18 +236,25 @@ Generate_Dataset <- function(input_data = list(),FOI_values = c(),R0_values = c(
 #'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
 #'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
 #'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+#' @param n_reps number of stochastic repetitions
+#' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
+#' @param p_severe_inf Probability of an infection being severe
+#' @param p_death_severe_inf Probability of a severe infection resulting in death
+#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
+#' @param p_rep_death Probability of reporting of a fatal infection
+#' @param YLD_per_case TBA
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
 #' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
-#'   to omit; will not work if mode_parallel is not set to "none".
+#'   to omit; will not work if mode_parallel is not set to FALSE.
 #' '
 #' @export
 #'
-Generate_VIMC_Burden_Dataset <- function(input_data = list(), FOI_values = c(), R0_values = c(), template = NULL,
-                                         vaccine_efficacy = 1.0, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                                         YLD_per_case = 0.006486, mode_start = 1, start_SEIRV = NULL,
-                                         time_inc = 1.0, n_reps = 1, deterministic = FALSE, mode_time = 0,
-                                         mode_parallel = FALSE, cluster = NULL, seed = NULL){
+Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),template = NULL,
+                                         vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
+                                         n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
+                                         p_rep_severe = 1.0,p_rep_death = 1.0,YLD_per_case = 0.006486, mode_parallel = FALSE,
+                                         cluster = NULL,seed = NULL){
 
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))

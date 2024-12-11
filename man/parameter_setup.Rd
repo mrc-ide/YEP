@@ -9,40 +9,39 @@ parameter_setup(
   R0 = c(),
   vacc_data = list(),
   pop_data = list(),
-  year0 = 1940,
   years_data = c(),
-  mode_start = 0,
+  year0 = 1940,
   vaccine_efficacy = 1,
-  start_SEIRV = list(),
   time_inc = 1,
+  mode_start = 0,
+  start_SEIRV = list(),
   mode_time = 0
 )
 }
 \arguments{
-\item{FOI_spillover}{Force of infection due to spillover from sylvatic reservoir (TBA)}
+\item{FOI_spillover}{Vector of values of force of infection due to spillover from sylvatic reservoir
+(size depends on mode_time)}
 
-\item{R0}{Reproduction number for urban spread of infection (TBA)}
+\item{R0}{Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
 
 \item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
 
 \item{pop_data}{Population by age group and year}
 
-\item{year0}{First year in population/vaccination data}
-
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
-\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
-If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age,
-R0 based only) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s) \cr
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
+\item{year0}{First year in population/vaccination data}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
-
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start = 0, only vaccinated individuals \cr
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
+
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
 
 \item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
  If mode_time = 0, no time variation (constant values)\cr
