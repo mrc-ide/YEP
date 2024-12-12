@@ -44,7 +44,7 @@ Model_Run_Many_Reps(
 "full" = SEIRVC + FOI for all steps and ages \cr
 "case" = annual total new infections (C) summed across all ages \cr
 "sero" = annual SEIRV \cr
-"case+sero" = annual SEIRVC, C summed across all ages \cr
+"case + sero" = annual SEIRVC, C summed across all ages \cr
 "case_alt" = annual total new infections not combined by age \cr
 "case_alt2" = total new infections combined by age for all steps}
 
@@ -53,21 +53,21 @@ If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
 If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
 
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start=2)}
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 
 \item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
 If mode_time = 0, no time variation (constant values)\cr
 If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
-If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
-If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
-If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12 * number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt) * number of years to consider)}
 
 \item{n_reps}{Number of repetitions (used to set number of particles and threads)}
 
 \item{division}{Number of particles/threads to run in one go (up to 20)}
 
-\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
+\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE
 '}
 }
 \description{

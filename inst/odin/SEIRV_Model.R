@@ -45,6 +45,7 @@ rate2 <- time_inc/t_infectious # Rate of transfer from I to R
 
 
 
+
 t_pt <- day/time_inc #Number of time points passed
 beta <- (R0[t_pt]*time_inc)/t_infectious #Daily exposure rate
 FOI_sum <-  min(FOI_max,beta*(sum(I)/P_tot) + (FOI_spillover[t_pt]*time_inc)) #Total force of infection
@@ -153,4 +154,6 @@ dim(dP2_all) <- c(N_age, n_years)
 dim(vacc_rate_daily) <- c(N_age, n_years)
 dim(FOI_spillover) <- n_t_pts
 dim(R0) <- n_t_pts
+
+
 
