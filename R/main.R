@@ -145,9 +145,6 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #' values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
 #' running a large number of repetitions (>20).
 #'
-#' #TODO: Harmonize order of variables between model running, dataset generation, and MCMC functions
-#'
-
 #' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
 #'   (size depends on mode_time)
 #' @param R0 Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)
