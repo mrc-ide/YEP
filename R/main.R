@@ -479,7 +479,7 @@ epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_con
   assert_that(all(c(coeffs_const, coeffs_var) >= 0), msg = "All environmental coefficients must have positive values")
   assert_that(colnames(enviro_data_const)[1] == "region")
 
-  base_output_values = as.vector(as.matrix(enviro_data_const[, c(2:ncol(enviro_data_const))]) % * % as.matrix(coeffs_const))
+  base_output_values = as.vector(as.matrix(enviro_data_const[, c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
 
   if(is.null(enviro_data_var) == FALSE){
     n_pts = dim(enviro_data_var$values)[3]

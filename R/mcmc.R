@@ -564,7 +564,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, lo
                                               deterministic = deterministic, mode_time = mode_time,
                                               mode_parallel = mode_parallel, cluster = cluster,
                                               i_FOI_const = i_FOI_const, i_FOI_var = i_FOI_var,
-                                              i_R0_const = i_R0_const, i_R0_var = i_R0_var)
+                                              i_R0_const = i_R0_const, i_R0_var = i_R0_var, n_env_vars = n_env_vars)
       gc() #Clear garbage to prevent memory creep
       results <- rbind(results, c(set, exp(log_params_prop), posterior_value))
       if(set == 1){colnames(results) = c("set", param_names, "posterior")}
