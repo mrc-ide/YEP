@@ -96,10 +96,12 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
   assert_that(all(regions %in% enviro_data_const$region),
               msg = "Time-invariant environmental data must be available for all regions in observed data")
   enviro_data_const = subset(enviro_data_const, enviro_data_const$region %in% regions)
-  assert_that(enviro_data_var_check(enviro_data_var))
-  assert_that(all(regions %in% enviro_data_var$regions),
-              msg = "Time-variant environmental data must be available for all regions in observed data")
-  enviro_data_var = enviro_data_var_truncate(enviro_data_var,regions)
+  if(is.null(enviro_data_var)==FALSE){
+    assert_that(enviro_data_var_check(enviro_data_var))
+    assert_that(all(regions %in% enviro_data_var$regions),
+                msg = "Time-variant environmental data must be available for all regions in observed data")
+    enviro_data_var = enviro_data_var_truncate(enviro_data_var,regions)
+  }
 
   #Get names of additional parameters to be estimated
   extra_estimated_params = c()
@@ -390,7 +392,7 @@ mcmc_checks <- function(log_params_ini = c(), n_regions = 1, prior_settings = li
 
   # Get names of environmental covariates
   assert_that(is.null(enviro_data_const) == FALSE, msg = "Constant environmental data required")
-  assert_that(is.null(enviro_data_var) == FALSE, msg = "Variable environmental data required")
+  #assert_that(is.null(enviro_data_var) == FALSE, msg = "Variable environmental data required")
   covar_names = c(names(enviro_data_const[c(2:ncol(enviro_data_const))]),enviro_data_var$env_vars) #TBC
   n_env_vars = length(covar_names)
 
