@@ -113,7 +113,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
   output_types = rep(NA,n_regions)
   for(n_region in 1:n_regions){
     if(is.na(case_line_list[[n_region]][1]) == FALSE){
-      if(is.na(sero_line_list[[n_region]][1]) == FALSE){ output_types[n_region] = "case+sero"}else{output_types[n_region] = "case"}
+      if(is.na(sero_line_list[[n_region]][1]) == FALSE){ output_types[n_region] = "case_sero"}else{output_types[n_region] = "case"}
     } else {
       output_types[n_region] = "sero"
     }
