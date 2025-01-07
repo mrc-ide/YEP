@@ -48,7 +48,7 @@ t_infectious <- 5 #Time cases remain infectious
 #'   "full" = SEIRVC + FOI for all steps and ages \cr
 #'   "case" = annual total new infections (C) summed across all ages \cr
 #'   "sero" = annual SEIRV \cr
-#'   "case+sero" = annual SEIRVC, C summed across all ages \cr
+#'   "case_sero" = annual SEIRVC, C summed across all ages \cr
 #'   "case_alt" = annual total new infections not combined by age \cr
 #'   "case_alt2" = total new infections combined by age for all steps
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
@@ -101,7 +101,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
     }  else {
       n_years = length(years_data)
       output_data = list(year = years_data)
-      if(output_type == "case+sero" || output_type == "sero"){
+      if(output_type == "case_sero" || output_type == "sero"){
         output_data$V = output_data$R = output_data$I = output_data$E = output_data$S = array(0, dim = c(N_age, n_particles, n_years))
         for(n_year in 1:n_years){
           pts = c(1:t_pts_out)[x_res[2, 1, ] == years_data[n_year]]
@@ -114,7 +114,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
           }
         }
       }
-      if(output_type == "case+sero" || output_type == "case"){
+      if(output_type == "case_sero" || output_type == "case"){
         output_data$C = array(0, dim = c(n_particles, n_years))
         for(n_year in 1:n_years){
           pts = c(1:t_pts_out)[x_res[2, 1, ] == years_data[n_year]]
@@ -158,7 +158,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #'   "full" = SEIRVC + FOI for all steps and ages \cr
 #'   "case" = annual total new infections (C) summed across all ages \cr
 #'   "sero" = annual SEIRV \cr
-#'   "case+sero" = annual SEIRVC, C summed across all ages \cr
+#'   "case_sero" = annual SEIRVC, C summed across all ages \cr
 #'   "case_alt" = annual total new infections not combined by age \cr
 #'   "case_alt2" = total new infections combined by age for all steps
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
@@ -210,10 +210,10 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
     } else {
       n_years = length(years_data)
       output_data = list(year = years_data)
-      if(output_type == "case+sero" || output_type == "sero"){
+      if(output_type == "case_sero" || output_type == "sero"){
         output_data$V = output_data$R = output_data$I = output_data$E = output_data$S = array(0, dim = c(N_age, n_reps, n_years))
       }
-      if(output_type == "case+sero" || output_type == "case"){ output_data$C = array(0, dim = c(n_reps, n_years)) }
+      if(output_type == "case_sero" || output_type == "case"){ output_data$C = array(0, dim = c(n_reps, n_years)) }
       if(output_type == "case_alt"){ output_data$C = array(0, dim = c(N_age, n_reps, n_years)) }
     }
   }
@@ -248,7 +248,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
       output_data$V[, n_p_values, ] = array(x_res[index$V, , ], dim)
       output_data$C[, n_p_values, ] = array(x_res[index$C, , ], dim)
     } else {
-      if(output_type == "case+sero" || output_type == "sero"){
+      if(output_type == "case_sero" || output_type == "sero"){
         for(n_year in 1:n_years){
           pts = c(1:t_pts_out)[x_res[2, 1, ] == years_data[n_year]]
           for(n_p in 1:n_particles){
@@ -261,7 +261,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
           }
         }
       }
-      if(output_type == "case+sero" || output_type == "case"){
+      if(output_type == "case_sero" || output_type == "case"){
         for(n_year in 1:n_years){
           pts = c(1:t_pts_out)[x_res[2, 1, ] == years_data[n_year]]
           for(n_p in 1:n_particles){
