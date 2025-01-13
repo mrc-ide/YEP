@@ -48,8 +48,8 @@ If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
- If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12 * number of years to consider) \cr
- If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt) * number of years to consider)
+ If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 '}
 }
 \description{

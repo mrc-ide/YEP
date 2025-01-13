@@ -201,7 +201,8 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
     return(list(model_sero_data = data.frame(region = sero_template$region,year = sero_template$year,
                                            age_min = sero_template$age_min,age_max = sero_template$age_max,
                                            samples = sero_template$samples,
-                                           positives = sero_template$samples*model_sero_data$sero),
+                                           positives = sero_template$samples*model_sero_data$sero,
+                                           vc_factor = sero_template$vc_factor),
                 model_case_data = data.frame(region = case_template$region,year = case_template$year,
                                            cases = model_case_values,deaths = model_death_values)))
   } else { #Minimal output for MCMC

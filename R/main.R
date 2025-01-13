@@ -61,8 +61,8 @@ t_infectious <- 5 #Time cases remain infectious
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
 #'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
-#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12 * number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt) * number of years to consider)
+#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' @param n_particles number of particles to use
 #' @param n_threads number of threads to use
 #' @param deterministic TRUE/FALSE  -  set model to run in deterministic mode if TRUE
@@ -77,8 +77,8 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   assert_that(n_particles <= 20, msg = "Number of particles must be 20 or less")
 
   N_age = length(pop_data[1, ]) #Number of age groups
-  step_begin = ((years_data[1] - year0) * (365/time_inc)) #Step at which data starts being saved for final output
-  step_end = ((max(years_data) + 1 - year0) * (365/time_inc)) - 1 #Step at which to end
+  step_begin = ((years_data[1] - year0)*(365/time_inc)) #Step at which data starts being saved for final output
+  step_end = ((max(years_data) + 1 - year0)*(365/time_inc)) - 1 #Step at which to end
   t_pts_out = step_end - step_begin + 1 #Number of time points in final output data
 
   x <- dust_system_create(SEIRV_Model, pars = parameter_setup(FOI_spillover, R0, vacc_data, pop_data, years_data, year0,
@@ -171,8 +171,8 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
 #'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
-#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12 * number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt) * number of years to consider)
+#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
 #' @param division Number of particles/threads to run in one go (up to 20)
 #' @param deterministic TRUE/FALSE  -  set model to run in deterministic mode if TRUE
@@ -190,12 +190,12 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
   if(n_divs == 1){
     n_particles_list = n_particles0
   } else {
-    n_particles_list = c(rep(n_particles0, n_divs - 1), n_reps - (division * (n_divs - 1)))
+    n_particles_list = c(rep(n_particles0, n_divs - 1), n_reps - (division*(n_divs - 1)))
   }
 
   N_age = length(pop_data[1, ]) #Number of age groups
-  step_begin = ((years_data[1] - year0) * (365/time_inc)) #Step at which data starts being saved for final output
-  step_end = ((max(years_data) + 1 - year0) * (365/time_inc)) - 1 #Step at which to end
+  step_begin = ((years_data[1] - year0)*(365/time_inc)) #Step at which data starts being saved for final output
+  step_end = ((max(years_data) + 1 - year0)*(365/time_inc)) - 1 #Step at which to end
   t_pts_out = step_end - step_begin + 1 #Number of time points in final output data
 
   if(output_type == "full"){
@@ -319,8 +319,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
 #'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
-#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12 * number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt) * number of years to consider)
+#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' '
 #' @export
 #'
@@ -344,8 +344,8 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
   assert_that(max(years_data) + 1 - year0 <= n_years, msg = "Period of years_data must lie within population data")
   assert_that(time_inc %in% c(1, 2.5, 5), msg = "time_inc must have value 1, 2.5 or 5 days")
   pts_year = 365.0/time_inc
-  n_t_pts = n_years * pts_year
-  n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years * 12, n_t_pts)
+  n_t_pts = n_years*pts_year
+  n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years*12, n_t_pts)
   assert_that(length(FOI_spillover) == n_req && length(R0) == n_req,
               msg = "Spillover FOI and R0 must be correct length for mode_time")
   inv_365 = 1.0/365.0
@@ -361,13 +361,13 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
       if(mode_time == 1){
         FOI_spillover_t = R0_t = rep(NA, n_t_pts)
         for(i in 1:n_years){
-          FOI_spillover_t[c(1:pts_year) + (i - 1) * pts_year] = rep(FOI_spillover[i], pts_year)
-          R0_t[c(1:pts_year) + (i - 1) * pts_year] = rep(R0[i], pts_year)
+          FOI_spillover_t[c(1:pts_year) + (i - 1)*pts_year] = rep(FOI_spillover[i], pts_year)
+          R0_t[c(1:pts_year) + (i - 1)*pts_year] = rep(R0[i], pts_year)
         }
       } else {
-        if(mode_time == 2){date_values = (1 + floor(12 * time_inc * inv_365 * c(0:(n_t_pts - 1))) %% 12)}
-        if(mode_time == 3){date_values = 1 + (floor(time_inc * c(0:(n_t_pts - 1))) %% pts_year)}
-        if(mode_time == 4){date_values = (1 + floor(12 * time_inc * inv_365 * c(0:(n_t_pts - 1))) %% 12) + sort(rep(c(1:n_years) - 1,
+        if(mode_time == 2){date_values = (1 + floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12)}
+        if(mode_time == 3){date_values = 1 + (floor(time_inc*c(0:(n_t_pts - 1))) %% pts_year)}
+        if(mode_time == 4){date_values = (1 + floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12) + sort(rep(c(1:n_years) - 1,
                                                                                                               pts_year))}
         FOI_spillover_t = FOI_spillover[date_values]
         R0_t = R0[date_values]
@@ -380,12 +380,12 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
   for(i in 1:N_age){ P0[i] = max(1.0, pop_data[1, i]) } #Set all population values to nonzero minimum to avoid NaN values
   for(n_year in 1:n_years){
     for(i in 1:N_age){
-      dP1_all[i, n_year] = max(1.0, pop_data[n_year + 1, i]) * inv_365
-      dP2_all[i, n_year] = max(1.0, pop_data[n_year, i]) * inv_365
+      dP1_all[i, n_year] = max(1.0, pop_data[n_year + 1, i])*inv_365
+      dP2_all[i, n_year] = max(1.0, pop_data[n_year, i])*inv_365
       if(i == 1){
-        vacc_rates[i, n_year] = vacc_data[n_year + 1, i] * inv_365
+        vacc_rates[i, n_year] = vacc_data[n_year + 1, i]*inv_365
       } else {
-        vacc_rates[i, n_year] = max(0.0, vacc_data[n_year + 1, i] - vacc_data[n_year, i - 1]) * inv_365
+        vacc_rates[i, n_year] = max(0.0, vacc_data[n_year + 1, i] - vacc_data[n_year, i - 1])*inv_365
       }
     }
   }
@@ -398,25 +398,25 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
     R_0 = start_SEIRV$R
     V_0 = start_SEIRV$V
   } else {
-    V_0 = P0 * vacc_initial
+    V_0 = P0*vacc_initial
     if(mode_start == 0){ #No initial immunity
-      S_0 = P0 * (1.0 - vacc_initial)
+      S_0 = P0*(1.0 - vacc_initial)
     } else { #Stratified herd immunity profile based on notional FOI
       ages = c(1:N_age) - 1
       if(R0_t[1] <= 1.0){
-        FOI_estimate = FOI_spillover[1] * 365.0
+        FOI_estimate = FOI_spillover[1]*365.0
       } else {
         estimation_results = nlm(imm_fraction_function, p =  - 4, R0_t[1], ages, P0/sum(P0))
-        FOI_estimate = min(0.1, (FOI_spillover[1] * 365.0) + exp(estimation_results$estimate))
+        FOI_estimate = min(0.1, (FOI_spillover[1]*365.0) + exp(estimation_results$estimate))
       }
-      herd_immunity = 1.0 - (exp( - FOI_estimate * (ages + 0.5)))
+      herd_immunity = 1.0 - (exp( - FOI_estimate*(ages + 0.5)))
 
       for(i in 1:N_age){
         if(vacc_initial[i]<herd_immunity[i]){
-          R_0[i] = P0[i] * (herd_immunity[i] - vacc_initial[i])
-          S_0[i] = P0[i] * (1.0 - herd_immunity[i])
+          R_0[i] = P0[i]*(herd_immunity[i] - vacc_initial[i])
+          S_0[i] = P0[i]*(1.0 - herd_immunity[i])
         } else {
-          S_0[i] = P0[i] * (1.0 - vacc_initial[i])
+          S_0[i] = P0[i]*(1.0 - vacc_initial[i])
         }
       }
     }
@@ -445,8 +445,8 @@ imm_fraction_function <- function(log_lambda =  - 4, R0 = 1.0, ages = c(0:100), 
   #TODO  -  Add assert_that functions
 
   lambda = exp(log_lambda)
-  immunity = 1.0 - (exp( - lambda * (ages + 0.5)))
-  imm_mean = sum(immunity * pop_fraction)
+  immunity = 1.0 - (exp( - lambda*(ages + 0.5)))
+  imm_mean = sum(immunity*pop_fraction)
   imm_mean_target = 1.0 - (1.0/R0)
   dev = abs(imm_mean_target - imm_mean)
 
@@ -483,7 +483,7 @@ epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_con
 
   if(is.null(enviro_data_var) == FALSE){
     n_pts = dim(enviro_data_var$values)[3]
-    var_output_values = colSums(coeffs_var * enviro_data_var$values)
+    var_output_values = colSums(coeffs_var*enviro_data_var$values)
     total_output_values = array(NA, dim = dim(var_output_values))
     for(i in 1:n_pts){ total_output_values[, i] = var_output_values[, i] + base_output_values }
   } else {
