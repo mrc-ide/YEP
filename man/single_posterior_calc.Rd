@@ -16,8 +16,7 @@ single_posterior_calc(
 \item{log_params_prop}{Proposed values of parameters to be estimated (natural logarithm of actual parameters)}
 
 \item{input_data}{List of population and vaccination data for multiple regions (created using data input
-creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process
-in MCMC}
+creation code and usually loaded from RDS file), with cross-reference tables added in MCMC}
 
 \item{obs_sero_data}{Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 positives}

@@ -44,7 +44,7 @@ Model_Run_Many_Reps(
 "full" = SEIRVC + FOI for all steps and ages \cr
 "case" = annual total new infections (C) summed across all ages \cr
 "sero" = annual SEIRV \cr
-"case + sero" = annual SEIRVC, C summed across all ages \cr
+"case_sero" = annual SEIRVC, C summed across all ages \cr
 "case_alt" = annual total new infections not combined by age \cr
 "case_alt2" = total new infections combined by age for all steps}
 

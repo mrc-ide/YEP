@@ -88,11 +88,14 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
                                                 msg = "Reporting probabilities required for case data")}
 
   #Process input data to check that all regions with sero and/or case data supplied are present, remove
-  #regions without any supplied data, and add cross-referencing tables for use when calculating likelihood. Take
-  #subset of environmental data and check that environmental data available for all regions
-  input_data = input_data_process(input_data, obs_sero_data, obs_case_data)
-  regions = names(table(input_data$region_labels)) #Regions in new processed input data list
-  n_regions = length(regions)
+  #regions without any supplied data. Take subset of environmental data and check that environmental
+  # data available for all regions
+  # input_data = input_data_process(input_data, obs_sero_data, obs_case_data)
+  # regions = names(table(input_data$region_labels)) #Regions in new processed input data list
+  # n_regions = length(regions)
+  regions = regions_breakdown(c(obs_sero_data$region,obs_case_data$region))
+  input_data = input_data_truncate(input_data,regions)
+  n_regions = length(input_data$region_labels)
   assert_that(all(regions %in% enviro_data_const$region),
               msg = "Time-invariant environmental data must be available for all regions in observed data")
   enviro_data_const = subset(enviro_data_const, enviro_data_const$region %in% regions)
@@ -225,8 +228,7 @@ MCMC <- function(log_params_ini = c(), input_data = list(), obs_sero_data = NULL
 #'
 #' @param log_params_prop Proposed values of parameters to be estimated (natural logarithm of actual parameters)
 #' @param input_data List of population and vaccination data for multiple regions (created using data input
-#'   creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process
-#'   in MCMC
+#'   creation code and usually loaded from RDS file), with cross-reference tables added in MCMC
 #' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.

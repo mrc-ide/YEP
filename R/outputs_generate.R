@@ -259,7 +259,6 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   assert_that(all(c("region","year","age_min","age_max","life_exp") %in% names(template)))
-  input_data = input_data_process(input_data,NULL,template)
   assert_that(vaccine_efficacy >= 0.0 && vaccine_efficacy <= 1.0,msg = "Vaccine efficacy must be between 0-1")
   assert_that(p_severe_inf >= 0.0 && p_severe_inf <= 1.0,msg = "Severe infection rate must be between 0-1")
   assert_that(p_death_severe_inf >= 0.0 && p_death_severe_inf <= 1.0,msg = "Severe infection fatality rate must be between 0-1")
@@ -270,16 +269,15 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
   regions = regions_breakdown(template$region)
   input_data = input_data_truncate(input_data,regions)
   n_regions = length(input_data$region_labels)
-
-  #Cross-reference templates with input regions
-  xref = template_region_xref(template,input_data$region_labels)
-
   assert_that(length(dim(FOI_values)) == 2,msg = "FOI_values must be 2-D array")
   assert_that(length(dim(R0_values)) == 2,msg = "R0_values must be 2-D array")
   assert_that(dim(FOI_values)[1] == n_regions,msg = "1st dimension of FOI_values must match number of regions to be modelled")
   assert_that(dim(R0_values)[1] == n_regions,msg = "1st dimension of R0_values must match number of regions to be modelled")
   if(mode_start == 2){assert_that(length(start_SEIRV) == n_regions,
-                                msg = "Number of start_SEIRV datasets must match number of regions")}
+                                  msg = "Number of start_SEIRV datasets must match number of regions")}
+
+  #Cross-reference templates with input regions
+  xref = template_region_xref(template,input_data$region_labels)
   n_lines_total = nrow(template)
 
   #Set up data structures to take modelled data

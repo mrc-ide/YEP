@@ -121,106 +121,107 @@ input_data_check <- function(input_data=list()){
   return(result)
 }
 #-------------------------------------------------------------------------------
-#' @title input_data_process
+# This function is greyed out due to possible redundancy - to be removed
+# @title input_data_process
 #'
-#' @description Cross-reference input data with serological and/or annual case/death data for comparison
+# @description Cross-reference input data with serological and/or annual case/death data for comparison
 #'
-#' @details This function, used to prepare input data for functions used to calculate the likelihood of observed data,
+# @details This function, used to prepare input data for functions used to calculate the likelihood of observed data,
 #'   amends a list of population and vaccination data used as input for other functions,
 #'   cross-referencing it with seroprevalence and/or case data and adding connection information.
 #'
-#' @param input_data List of population and vaccination data for multiple regions (created using create_input_data()
+# @param input_data List of population and vaccination data for multiple regions (created using create_input_data()
 #'   function and usually loaded from an RDS file)
-#' @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+# @param obs_sero_data Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 #'   positives
-#' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
+# @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
 #'
-#' @export
-#'
-input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_data=NULL){
+# @export
 
-  assert_that(input_data_check(input_data),msg="Input data must be in correct format")
-  if(is.null(obs_sero_data)==FALSE){
-    assert_that(max(obs_sero_data$year)<max(input_data$years_labels),msg="Input data years must encompass sero data range")
-  }
-  if(is.null(obs_case_data)==FALSE){
-    assert_that(max(obs_case_data$year)<max(input_data$years_labels),msg="Input data years must encompass case data range")
-  }
-  N_age=length(input_data$age_labels)
-  n_years=length(input_data$years_labels)
-
-  regions1=input_data$region_labels
-  n_regions1=length(regions1)
-  assert_that(all(regions1==sort(regions1)),msg="Region labels must be in alphabetical order")
-  regions_sero_com=unique(obs_sero_data$region)
-  regions_case_com=unique(obs_case_data$region)
-  regions_sero_unc=regions_case_unc=c()
-
-  for(region in regions_sero_com){regions_sero_unc=append(regions_sero_unc,strsplit(region,",")[[1]])}
-  for(region in regions_case_com){regions_case_unc=append(regions_case_unc,strsplit(region,",")[[1]])}
-  regions_sero_unc=unique(regions_sero_unc)
-  regions_case_unc=unique(regions_case_unc)
-  regions_all_data_unc=unique(c(regions_sero_unc,regions_case_unc))
-
-  for(region in regions_all_data_unc){
-    if(region %in% regions1==FALSE){
-      cat("\nInput data error - ",region," does not appear in input data\n",sep="")
-      stop()
-    }
-  }
-
-  input_regions_check=regions1 %in% regions_all_data_unc
-  regions2=regions1[input_regions_check]
-  n_regions2=length(regions2)
-
-  # #TODO - fix mechanism for skipping if update not needed
-  # if(n_regions2==n_regions1 && is.null(input_data$year_data_begin)==FALSE){
-  #   #Skip steps if the input data already has the same set of regions and the cross-reference tables
-  #   #assert_that() #Check all tables present
-  #   return(input_data)
-  # }else{
-
-    blank=rep(0,n_regions2)
-    flag_sero=flag_case=year_end=blank
-    year_data_begin=rep(Inf,n_regions2)
-    sero_line_list=case_line_list=list()
-    for(i in 1:n_regions2){
-      region=regions2[i]
-      if(region %in% regions_sero_unc){
-        flag_sero[i]=1
-        sero_line_list[[i]]=c(0)
-        for(j in 1:nrow(obs_sero_data)){
-          if(grepl(region,obs_sero_data$region[j])==TRUE){
-            sero_line_list[[i]]=append(sero_line_list[[i]],j)
-            year_data_begin[i]=min(obs_sero_data$year[j],year_data_begin[i])
-            year_end[i]=max(obs_sero_data$year[j],year_end[i])
-          }
-        }
-        sero_line_list[[i]]=sero_line_list[[i]][c(2:length(sero_line_list[[i]]))]
-      }
-      if(region %in% regions_case_unc){
-        flag_case[i]=1
-        case_line_list[[i]]=c(0)
-        for(j in 1:nrow(obs_case_data)){
-          if(grepl(region,obs_case_data$region[j])==TRUE){
-            case_line_list[[i]]=append(case_line_list[[i]],j)
-            year_data_begin[i]=min(obs_case_data$year[j],year_data_begin[i])
-            year_end[i]=max(obs_case_data$year[j],year_end[i])
-          }
-        }
-        case_line_list[[i]]=case_line_list[[i]][c(2:length(case_line_list[[i]]))]
-      }
-    }
-
-    return(list(region_labels=input_data$region_labels[input_regions_check],
-                years_labels=input_data$years_labels,age_labels=input_data$age_labels,
-                vacc_data=array(input_data$vacc_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
-                pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
-                year_data_begin=year_data_begin,year_end=year_end,flag_sero=flag_sero,flag_case=flag_case,
-                sero_line_list=sero_line_list,case_line_list=case_line_list))
-  #}
-}
+# input_data_process <- function(input_data=list(),obs_sero_data=NULL,obs_case_data=NULL){
+#
+#   assert_that(input_data_check(input_data),msg="Input data must be in correct format")
+#   if(is.null(obs_sero_data)==FALSE){
+#     assert_that(max(obs_sero_data$year)<max(input_data$years_labels),msg="Input data years must encompass sero data range")
+#   }
+#   if(is.null(obs_case_data)==FALSE){
+#     assert_that(max(obs_case_data$year)<max(input_data$years_labels),msg="Input data years must encompass case data range")
+#   }
+#   N_age=length(input_data$age_labels)
+#   n_years=length(input_data$years_labels)
+#
+#   regions1=input_data$region_labels
+#   n_regions1=length(regions1)
+#   assert_that(all(regions1==sort(regions1)),msg="Region labels must be in alphabetical order")
+#   regions_sero_com=unique(obs_sero_data$region)
+#   regions_case_com=unique(obs_case_data$region)
+#   regions_sero_unc=regions_case_unc=c()
+#
+#   for(region in regions_sero_com){regions_sero_unc=append(regions_sero_unc,strsplit(region,",")[[1]])}
+#   for(region in regions_case_com){regions_case_unc=append(regions_case_unc,strsplit(region,",")[[1]])}
+#   regions_sero_unc=unique(regions_sero_unc)
+#   regions_case_unc=unique(regions_case_unc)
+#   regions_all_data_unc=unique(c(regions_sero_unc,regions_case_unc))
+#
+#   for(region in regions_all_data_unc){
+#     if(region %in% regions1==FALSE){
+#       cat("\nInput data error - ",region," does not appear in input data\n",sep="")
+#       stop()
+#     }
+#   }
+#
+#   input_regions_check=regions1 %in% regions_all_data_unc
+#   regions2=regions1[input_regions_check]
+#   n_regions2=length(regions2)
+#
+#   # #TODO - fix mechanism for skipping if update not needed
+#   # if(n_regions2==n_regions1 && is.null(input_data$year_data_begin)==FALSE){
+#   #   #Skip steps if the input data already has the same set of regions and the cross-reference tables
+#   #   #assert_that() #Check all tables present
+#   #   return(input_data)
+#   # }else{
+#
+#     blank=rep(0,n_regions2)
+#     flag_sero=flag_case=year_end=blank
+#     year_data_begin=rep(Inf,n_regions2)
+#     sero_line_list=case_line_list=list()
+#     for(i in 1:n_regions2){
+#       region=regions2[i]
+#       if(region %in% regions_sero_unc){
+#         flag_sero[i]=1
+#         sero_line_list[[i]]=c(0)
+#         for(j in 1:nrow(obs_sero_data)){
+#           if(grepl(region,obs_sero_data$region[j])==TRUE){
+#             sero_line_list[[i]]=append(sero_line_list[[i]],j)
+#             year_data_begin[i]=min(obs_sero_data$year[j],year_data_begin[i])
+#             year_end[i]=max(obs_sero_data$year[j],year_end[i])
+#           }
+#         }
+#         sero_line_list[[i]]=sero_line_list[[i]][c(2:length(sero_line_list[[i]]))]
+#       }
+#       if(region %in% regions_case_unc){
+#         flag_case[i]=1
+#         case_line_list[[i]]=c(0)
+#         for(j in 1:nrow(obs_case_data)){
+#           if(grepl(region,obs_case_data$region[j])==TRUE){
+#             case_line_list[[i]]=append(case_line_list[[i]],j)
+#             year_data_begin[i]=min(obs_case_data$year[j],year_data_begin[i])
+#             year_end[i]=max(obs_case_data$year[j],year_end[i])
+#           }
+#         }
+#         case_line_list[[i]]=case_line_list[[i]][c(2:length(case_line_list[[i]]))]
+#       }
+#     }
+#
+#     return(list(region_labels=input_data$region_labels[input_regions_check],
+#                 years_labels=input_data$years_labels,age_labels=input_data$age_labels,
+#                 vacc_data=array(input_data$vacc_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
+#                 pop_data=array(input_data$pop_data[input_regions_check,,],dim=c(n_regions2,n_years,N_age)),
+#                 year_data_begin=year_data_begin,year_end=year_end,flag_sero=flag_sero,flag_case=flag_case,
+#                 sero_line_list=sero_line_list,case_line_list=case_line_list))
+#   #}
+# }
 #-------------------------------------------------------------------------------
 #' @title input_data_truncate
 #'
@@ -341,6 +342,9 @@ regions_breakdown <- function(region_labels=c()){
   return(regions_out)
 }
 #-------------------------------------------------------------------------------
+#Note: this function replaces input_data_process
+#TODO - Find ways to speed up
+#TODO - change way implemented in Generate_Dataset (allow to be done beforehand eg by MCMC)
 #' @title template_region_xref
 #'
 #' @description Cross-reference template data with individual regions
