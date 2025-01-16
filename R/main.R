@@ -492,3 +492,64 @@ epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_con
 
   return(total_output_values)
 }
+#-------------------------------------------------------------------------------
+#' @title param_prop_setup
+#'
+#' @description Set up proposed new log parameter values for next iteration in chain
+#'
+#' @details Takes in current values of parameter set used for Markov Chain Monte Carlo fitting and proposes new values
+#' from multivariate normal distribution where the existing values form the mean and the standard deviation is
+#' based on the chain covariance or (if the flag "adapt" is set to 1) a flat value based on the number of parameters.
+#'
+#' @param log_params Previous log parameter values used as input
+#' @param chain_cov Covariance calculated from previous iterations in chain
+#' @param adapt 0/1 flag indicating which type of covariance to use for proposition value (TBA)
+#' '
+#' @export
+#'
+param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
+
+  n_params = length(log_params)
+  if (adapt == 1) {
+    sigma = (5.6644*chain_cov)/n_params #'optimal' scaling of chain covariance (2.38 ^ 2)
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  } else {
+    sigma = (1.0e-4*diag(n_params))/n_params #this is an inital proposal covariance, see [Mckinley et al 2014] ((1e-2) ^ 2)
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  }
+
+  return(log_params_prop_a[1, ])
+}
+#-------------------------------------------------------------------------------
+#' @title create_param_labels
+#'
+#' @description Apply names to the parameters in a set used for data matching and parameter fitting
+#'
+#' @details Takes in environmental covariate data along with names of additional parameters (vaccine efficacy
+#' and reporting probabilities) and generates list of names for parameter set to use as input for fitting functions
+#'
+#' @param enviro_data_const TBA
+#' @param enviro_data_var TBA
+#' @param extra_estimated_params Vector of strings listing variable parameters besides ones determining FOI/R0 (may include
+#' vaccine efficacy and/or infection/death reporting probabilities and/or Brazil FOI adjustment factor)
+#'
+#' @export
+#'
+create_param_labels <- function(enviro_data_const = NULL, enviro_data_var = list(),
+                                extra_estimated_params = c("vacc_eff")){
+
+  #TODO - Assert_that functions
+
+  if(is.null(extra_estimated_params)){n_extra = 0}else{n_extra = length(extra_estimated_params)}
+  covar_names = c(names(enviro_data_const[c(2:ncol(enviro_data_const))]),enviro_data_var$env_vars) #TBC
+  n_env_vars = length(covar_names)
+  n_params = (2*n_env_vars)+n_extra
+  param_names = rep("", n_params)
+  for(i in 1:n_env_vars){
+    param_names[i] = paste("FOI_", covar_names[i], sep = "")
+    param_names[i+n_env_vars] = paste("R0_", covar_names[i], sep = "")
+  }
+  if(n_extra>0){param_names[(n_params-n_extra+1):n_params] = extra_estimated_params}
+
+  return(param_names)
+}
