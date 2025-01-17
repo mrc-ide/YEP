@@ -477,7 +477,8 @@ epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_con
   #TODO  -  Add assertthat checks
   assert_that(is.null(enviro_data_const) == FALSE) #TBC if made capable of using all-variable data
   assert_that(all(c(coeffs_const, coeffs_var) >= 0), msg = "All environmental coefficients must have positive values")
-  assert_that(colnames(enviro_data_const)[1] == "region")
+  assert_that(colnames(enviro_data_const)[1] == "region", msg = "Constant environmental data must contain regions")
+  assert_that(is.numeric(coeffs_const) && is.numeric(coeffs_var),msg="Coefficients must be in numerical vectors")
 
   base_output_values = as.vector(as.matrix(enviro_data_const[, c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
 

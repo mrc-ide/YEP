@@ -17,8 +17,6 @@ mcmc_prelim_fit2(
   n_reps = 1,
   enviro_data_const = list(),
   enviro_data_var = list(),
-  p_severe_inf = 0.12,
-  p_death_severe_inf = 0.39,
   deterministic = TRUE,
   mode_time = 0,
   mode_parallel = FALSE,
@@ -57,10 +55,6 @@ If mode_start = 2, use SEIRV input in list from previous run(s)}
 \item{enviro_data_const}{Data frame of values of constant environmental covariates (columns) by region (rows)}
 
 \item{enviro_data_var}{List containing values of time-varying environmental covariates (TBA)}
-
-\item{p_severe_inf}{Probability of an infection being severe}
-
-\item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 

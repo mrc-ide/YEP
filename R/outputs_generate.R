@@ -120,14 +120,17 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
   }
 
   if(mode_parallel){
-    vacc_data_subsets = pop_data_subsets = years_data_sets = list() #TODO - change input data?
+    FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = list() #TODO - change input data?
     for(n_region in 1:n_regions){
+      FOI_subsets[[n_region]] = FOI_values[n_region,]
+      R0_subsets[[n_region]] = R0_values[n_region,]
       vacc_data_subsets[[n_region]] = input_data$vacc_data[n_region,,]
       pop_data_subsets[[n_region]] = input_data$pop_data[n_region,,]
       years_data_sets[[n_region]] = c(year_data_begin[n_region]:year_end[n_region])
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
-    model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
+    #TODO - Test
+    model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_subsets, R0 = R0_subsets,
                                   vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                   years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
                                   MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
@@ -286,14 +289,16 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
 
   #Model all regions in parallel if parallel modes in use
   if(mode_parallel){
-    vacc_data_subsets = pop_data_subsets = years_data_sets = list() #TODO - change input data?
+    FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = list() #TODO - change input data?
     for(n_region in 1:n_regions){
+      FOI_subsets[[n_region]] = FOI_values[n_region,]
+      R0_subsets[[n_region]] = R0_values[n_region,]
       vacc_data_subsets[[n_region]] = input_data$vacc_data[n_region,,]
       pop_data_subsets[[n_region]] = input_data$pop_data[n_region,,]
       years_data_sets[[n_region]] = c(xref$year_data_begin[n_region]:xref$year_end[n_region])
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
-    model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_values, R0 = R0_values,
+    model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_subsets, R0 = R0_subsets,
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
                                 MoreArgs = list(output_type = "case_alt", year0 = input_data$years_labels[1],

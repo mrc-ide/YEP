@@ -17,8 +17,6 @@ MCMC2(
   n_reps = 1,
   enviro_data_const = list(),
   enviro_data_var = list(),
-  p_severe_inf = 0.12,
-  p_death_severe_inf = 0.39,
   deterministic = FALSE,
   mode_time = 1,
   mode_parallel = FALSE,
@@ -63,10 +61,6 @@ regions: Vector of region labels\cr
 env_vars: Vector of covariate names\cr
 values: Array of covariate values with dimensions (number of covariates, number of regions, number of time points).
 Number of time points must be correct for mode_time setting.\cr}
-
-\item{p_severe_inf}{Probability of an infection being severe}
-
-\item{p_death_severe_inf}{Probability of a severe infection resulting in death}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 

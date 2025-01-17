@@ -4,17 +4,19 @@
 \alias{mcmc_checks2}
 \title{mcmc_checks2}
 \usage{
-mcmc_checks2(params_data = list(), covar_names = c())
+mcmc_checks2(params_data = list(), covar_names = c(), check_initial = FALSE)
 }
 \arguments{
 \item{params_data}{TBA}
 
 \item{covar_names}{TBA}
+
+\item{check_initial}{TBA}
 }
 \description{
 Perform checks on parameter data
 }
 \details{
-This function, which is called by MCMC(), performs a number of checks on parameter data to
-ensure proper functionality. [TBA]
+This function, which is called by MCMC2() and mcmc_prelim_fit2(), performs a number of checks on parameter data
+to ensure proper functionality. [TBA]
 }
