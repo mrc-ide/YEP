@@ -24,9 +24,9 @@ positives}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 deaths}
 
-\item{...}{= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
-prior_settings, time_inc, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values, extra_estimated_params,
-deterministic, mode_time, mode_parallel, cluster, i_FOI_const, i_FOI_var, i_R0_const, i_R0_var}
+\item{...}{= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including params_data,
+mode_start, time_inc, n_reps, enviro_data, add_est_param_names,
+deterministic, mode_time, mode_parallel, cluster, i_FOI_const, i_FOI_var, i_R0_const, i_R0_var, i_FOI_prior, i_R0_prior}
 }
 \description{
 Function which calculates and outputs posterior likelihood of observing simulated data
