@@ -268,6 +268,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
   best_fit_results = list()
   log_params_min=log(params_data$min[params_data$estimate==TRUE])
   log_params_max=log(params_data$max[params_data$estimate==TRUE])
+  assert_that(all(is.finite(c(log_params_min,log_params_max))),msg="Limits must be finite")
 
   if(plot_graphs){
     xlabels = all_est_param_names
@@ -504,14 +505,14 @@ mcmc_params_data_create <- function(covar_names = c("Var1", "Var2"), add_est_par
   assert_that(all(add_est_param_names %in% extra_param_names))
 
   n_env_vars=length(covar_names)
-  n_extra=length(add_est_param_names)
+  n_extra=length(extra_param_names)
   nrows=(2*n_env_vars)+n_extra+2
 
   #Create data frame
   params_data=data.frame(name=c(paste0("FOI_",covar_names),paste0("R0_",covar_names),extra_param_names,"FOI","R0"),
                          initial=c(rep(1e-5,n_env_vars),rep(1e-3,n_env_vars),rep(1,n_extra),NA,NA),
                          max=c(rep(1e-4,n_env_vars),rep(10,n_env_vars),rep(1,n_extra),Inf,Inf),
-                         min=c(rep(1e-10,n_env_vars),rep(1e-4,n_env_vars),rep(0,n_extra),0,0),
+                         min=c(rep(1e-10,n_env_vars),rep(1e-4,n_env_vars),rep(1e-3,n_extra),0,0),
                          mean=c(rep(1e-10,n_env_vars),rep(1,n_env_vars),rep(1,n_extra),0,4.0),
                          sd=rep(1000,nrows),
                          estimate=c(rep(TRUE,2*n_env_vars),rep(FALSE,n_extra+2)))
