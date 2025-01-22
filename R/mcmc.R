@@ -250,7 +250,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
     const_covars = colnames(enviro_data_const)[c(2:ncol(enviro_data_const))]
     var_covars = enviro_data_var$env_vars
     covar_names = c(const_covars,var_covars)
-    checks <- mcmc_checks(params_data, covar_names, check_initial = TRUE)
+    checks <- mcmc_checks(params_data, covar_names, check_initial = FALSE)
     n_env_vars = length(covar_names)
     i_FOI_const = c(1:n_env_vars)[covar_names %in% const_covars]
     i_FOI_var = c(1:n_env_vars)[covar_names %in% var_covars]
