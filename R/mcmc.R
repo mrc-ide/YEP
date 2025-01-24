@@ -21,8 +21,7 @@ extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p
 #'   positives (TBA - instructions)
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no.
 #'   cases/no. deaths (TBA - instructions)
-#' @param filename_prefix Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a
-#'   name in the format: "(filename_prefix)XX.csv", e.g. Chain00.csv
+#' @param filename_prefix Prefix of output RDS file name, e.g. "Chain.Rds"
 #' @param Niter Total number of iterations to run
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
@@ -158,15 +157,18 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
       colnames(chain_cov_all) = "chain_cov_all"
     }
 
-    #Output chain to file every 10 iterations; start new file every 10,000 iterations
+    #Output chain to file every 10 iterations
     if (iter %% 10 == 0){
-      if (iter %% 10000 == 10){fileIndex = (iter-10)/10000}
-      if(fileIndex >=  10){fn = paste0(filename_prefix,fileIndex,".csv")}else{fn = paste0(filename_prefix,"0",fileIndex,".csv")}
+      # if (iter %% 10000 == 10){fileIndex = (iter-10)/10000}
+      # if(fileIndex >=  10){fn = paste0(filename_prefix,fileIndex,".csv")}else{fn = paste0(filename_prefix,"0",fileIndex,".csv")}
+      fn=paste0(filename_prefix,".Rds")
       if(file.exists(fn) == FALSE){file.create(fn)}
-      lines = min(((fileIndex*10000) + 1), iter):iter
+      # lines = min(((fileIndex*10000) + 1), iter):iter
 
-      data_out <- cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[lines,]
-      if(fileAccess(fn, 2) == 0){write.csv(data_out, fn, row.names = FALSE)}
+      #data_out <- cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[c(1:iter),]
+      data_out <- cbind(posterior_current, posterior_prop, exp(chain))[c(1:iter),]
+      # if(fileAccess(fn, 2) == 0){write.csv(data_out, fn, row.names = FALSE)}
+      saveRDS(data_out, file = fn)
     }
 
     #Decide whether next iteration will be adaptive
@@ -179,7 +181,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
     }
   }
 
-  return(NULL)
+  return(data.frame(cbind(posterior_current, exp(chain))))
+  #return(NULL)
 }
 #-------------------------------------------------------------------------------
 #' @title mcmc_prelim_fit

@@ -40,8 +40,7 @@ positives (TBA - instructions)}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no.
 cases/no. deaths (TBA - instructions)}
 
-\item{filename_prefix}{Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a
-name in the format: "(filename_prefix)XX.csv", e.g. Chain00.csv}
+\item{filename_prefix}{Prefix of output RDS file name, e.g. "Chain.Rds"}
 
 \item{Niter}{Total number of iterations to run}
 
