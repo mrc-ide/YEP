@@ -165,9 +165,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
       if(file.exists(fn) == FALSE){file.create(fn)}
       # lines = min(((fileIndex*10000) + 1), iter):iter
 
-      data_out <- cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[c(1:iter),]
-      # if(fileAccess(fn, 2) == 0){write.csv(data_out, fn, row.names = FALSE)}
-      saveRDS(data_out, file = fn)
+      saveRDS(data.frame(cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[c(1:iter),]),
+              file = fn)
     }
 
     #Decide whether next iteration will be adaptive
