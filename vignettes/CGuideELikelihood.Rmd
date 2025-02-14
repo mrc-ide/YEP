@@ -34,35 +34,31 @@ obs_sero_data <- read.csv(file = paste(path.package("YEP"),
 obs_case_data <- read.csv(file = paste(path.package("YEP"), 
                                     "/exdata/obs_case_data_example.csv",
                                        sep = ""), header = TRUE) 
-n_regions <- nrow(enviro_data)
-FOI_values=R0_values=rep(NA,n_regions)
-for(n_region in 1:n_regions){
- FOI_R0_values <- param_calc_enviro(enviro_coeffs = enviro_coeffs[1, ], 
-                  enviro_covar_values = enviro_data[n_region,c(2:ncol(enviro_data))])
- FOI_values[n_region] <- FOI_R0_values$FOI
- R0_values[n_region] <- FOI_R0_values$R0
-}
-vaccine_efficacy <- 1.0 
-p_severe_inf = 0.12 # Probability of an infection causing severe symptoms
-p_death_severe_inf = 0.39 # Probability of an infection with severe symptoms causing death
-p_rep_severe = 0.05 # Probability of reporting of an infection with severe (non-fatal) symptoms
-p_rep_death = 0.1 # Probability of reporting of a fatal infection
+FOI_values <- epi_param_calc(coeffs_const = as.numeric(enviro_coeffs[1,c(1:5)]), coeffs_var = c(0), 
+                             enviro_data_const = enviro_data, enviro_data_var = NULL)
+R0_values <- epi_param_calc(coeffs_const = as.numeric(enviro_coeffs[1,c(1:5)]), coeffs_var = c(0), 
+                            enviro_data_const = enviro_data, enviro_data_var = NULL)  
+time_inc <- 1.0       
 mode_start <- 1     
-start_SEIRV <- NULL       
-time_inc <- 1.0            
+start_SEIRV <- NULL  
+mode_time <- 0
 n_reps <- 1    
 deterministic <- TRUE
-mode_parallel <- "none"
-cluster <- NULL
+p_severe_inf <- 0.12 # Probability of an infection causing severe symptoms
+p_death_severe_inf <- 0.39 # Probability of an infection with severe symptoms causing death
+p_rep_severe <- 0.05 # Probability of reporting of an infection with severe (non-fatal) symptoms
+p_rep_death <- 0.1 # Probability of reporting of a fatal infection  
+mode_parallel <- FALSE
 ```
 
 Modelled data to use for the likelihood calculation is created using Generate_Dataset() as in Worked Example 3:
 
 ```{r,eval=FALSE}
 set.seed(1)
-model_data <- Generate_Dataset(input_data,FOI_values,R0_values,obs_sero_data,obs_case_data,vaccine_efficacy,
-                             p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,mode_start,
-                             start_SEIRV,time_inc,n_reps,deterministic,mode_parallel,cluster=NULL)
+model_data <- Generate_Dataset(FOI_values,R0_values,input_data,obs_sero_data,obs_case_data,vaccine_efficacy,
+                               time_inc,mode_start,start_SEIRV,mode_time,n_reps,deterministic,
+                               p_severe_inf,p_death_severe_inf,p_rep_severe,p_rep_death,
+                               mode_parallel,cluster=NULL)
 ```
 
 The likelihood of the observed serological data based on the epidemiological parameters is calculated using a gamma distribution, with (for each line of data) the modelled seroprevalence as the probability of "success", the number of samples for the specified region, age range and year as the number of "observations", and the number of positive tests as the number of "successes".

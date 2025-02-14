@@ -472,7 +472,7 @@ imm_fraction_function <- function(log_lambda =  - 4, R0 = 1.0, ages = c(0:100), 
 #' '
 #' @export
 #'
-epi_param_calc <- function(coeffs_const = c(), coeffs_var = c(), enviro_data_const = data.frame(), enviro_data_var = NULL){
+epi_param_calc <- function(coeffs_const = c(0), coeffs_var = c(0), enviro_data_const = data.frame(), enviro_data_var = NULL){
   #TODO  -  Ensure function works if only variable covariates? (Now works for const only or const + var)
   #TODO  -  Add assertthat checks
   assert_that(is.null(enviro_data_const) == FALSE) #TBC if made capable of using all-variable data

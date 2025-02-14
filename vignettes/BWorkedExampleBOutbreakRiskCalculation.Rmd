@@ -29,10 +29,9 @@ input_data <- readRDS(file = paste(path.package("YEP"),"/exdata/input_data_examp
 n_reps = 100 # Number of stochastic repetitions
 years_data = c(1990:2000)
 model_data <- Model_Run_Many_Reps(FOI_spillover = 1.0e-8, R0 = 0.0, vacc_data = input_data$vacc_data[1,,], 
-                             pop_data = input_data$pop_data[1,,], years_data,
-                             start_SEIRV = NULL, output_type = "case", year0 = input_data$years_labels[1], 
-                             mode_start = 1, vaccine_efficacy = 1.0, time_inc = 1.0, 
-                             n_reps = n_reps, division = 10, mode_time = 0)
+                                  pop_data = input_data$pop_data[1,,], years_data, year0 = input_data$years_labels[1],
+                                  vaccine_efficacy = 1.0, time_inc = 1.0, output_type = "case", mode_start = 1,  
+                                  start_SEIRV = NULL, mode_time = 0,  n_reps = n_reps, division = 10)
 ```
 
 We can calculate the number of reported cases by year for a single repetition using the case_data_calculate() function:
