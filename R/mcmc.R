@@ -1,6 +1,7 @@
 # Version of mcmc.R with functions updated to streamline parameter implementation
 # Global variable - additional parameter names
 extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe","p_rep_death","m_FOI_Brazil")
+#TODO - Add provision for parameters of temperature/precipitation functional forms?
 #-------------------------------------------------------------------------------
 #' @title MCMC
 #'
@@ -362,6 +363,7 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
   #Get additional values, calculate associated prior values
   prior_like = 0
   vaccine_efficacy = p_severe_inf = p_death_severe_inf = p_rep_severe = p_rep_death = m_FOI_Brazil = 1.0
+  #TODO - Add provision for parameters of temperature/precipitation functional forms?
   for(var_name in extra_param_names){
     i=match(var_name,consts$params_data$name)
     if(var_name %in% consts$add_est_param_names){
@@ -385,6 +387,9 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
 
   #If prior is finite so far, get FOI and R0 values and calculate any associated prior
   if(is.finite(prior_like)){
+
+    #TODO - If parameters of temperature/precipitation functional forms included, add functional form conversion of temp/precip enviro data?
+    #consts$enviro_data_var
 
     FOI_values = epi_param_calc(exp(log_params_prop[consts$i_FOI_const]), exp(log_params_prop[consts$i_FOI_var]),
                                 consts$enviro_data_const, consts$enviro_data_var)
