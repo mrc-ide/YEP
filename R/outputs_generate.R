@@ -40,13 +40,16 @@
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
 #' @param output_frame TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
 #'   or calculated values only (if FALSE)
+#' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
+#'   to omit; will not work if mode_parallel is not set to FALSE.
 #' '
 #' @export
 #'
 Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),sero_template = NULL,case_template = NULL,
                              vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
                              n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                             p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE){
+                             p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE,
+                             seed = NULL){
 
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -143,6 +146,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 
     #Run model if not using parallelization
     if(mode_parallel == FALSE){
+      if(is.null(seed) == FALSE && deterministic == FALSE){set.seed(seed)}
       model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(year_data_begin[n_region]:year_end[n_region]), year0 = input_data$years_labels[1],

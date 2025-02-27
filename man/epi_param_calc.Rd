@@ -5,8 +5,8 @@
 \title{epi_param_calc}
 \usage{
 epi_param_calc(
-  coeffs_const = c(),
-  coeffs_var = c(),
+  coeffs_const = c(0),
+  coeffs_var = c(0),
   enviro_data_const = data.frame(),
   enviro_data_var = NULL
 )

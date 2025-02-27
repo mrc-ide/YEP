@@ -23,7 +23,8 @@ Generate_Dataset(
   p_rep_death = 1,
   mode_parallel = FALSE,
   cluster = NULL,
-  output_frame = FALSE
+  output_frame = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -74,7 +75,10 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 \item{cluster}{Cluster of threads to use if mode_parallel = TRUE}
 
 \item{output_frame}{TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
-  or calculated values only (if FALSE)
+or calculated values only (if FALSE)}
+
+\item{seed}{Optional random seed value to set before running each region for stochastic normalization; set to NULL
+  to omit; will not work if mode_parallel is not set to FALSE.
 '}
 }
 \description{
