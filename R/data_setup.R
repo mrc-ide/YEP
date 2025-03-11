@@ -343,8 +343,7 @@ regions_breakdown <- function(region_labels=c()){
 }
 #-------------------------------------------------------------------------------
 #Note: this function replaces input_data_process
-#TODO - Find ways to speed up
-#TODO - change way implemented in Generate_Dataset (allow to be done beforehand eg by MCMC)
+#TODO - change way implemented in Generate_Dataset (allow to be done beforehand eg by MCMC)?
 #' @title template_region_xref
 #'
 #' @description Cross-reference template data with individual regions
@@ -368,22 +367,22 @@ template_region_xref <- function(template=list(),regions=c()){
 
   n_lines=nrow(template)
   n_regions=length(regions)
+  template_regions=names(table(template$region))
+  n_template_regions=length(template_regions)
+  line_template_regions=match(template$region,template_regions)
   output=list(line_list=list(),year_data_begin=rep(Inf,n_regions),year_end=rep(-Inf,n_regions))
 
   for(n_region in 1:n_regions){
     region=regions[n_region]
-    output$line_list[[n_region]]=NA
-    flag_started=FALSE
-    for(n_line in 1:n_lines){
-      if(grepl(region,template$region[n_line])==TRUE){
-        if(flag_started){output$line_list[[n_region]]=append(output$line_list[[n_region]],n_line)} else {
-          output$line_list[[n_region]]=c(n_line)
-          flag_started=TRUE
-        }
-        output$year_data_begin[n_region]=min(template$year[n_line],output$year_data_begin[n_region])
-        output$year_end[n_region]=max(template$year[n_line],output$year_end[n_region])
+    template_regions_i=c()
+    for(n_region2 in 1:n_template_regions){
+      if(grepl(region,template_regions[n_region2])){
+        template_regions_i=append(template_regions_i,n_region2)
       }
     }
+    output$line_list[[n_region]]=c(1:n_lines)[line_template_regions %in% template_regions_i]
+    output$year_data_begin[n_region]=min(template$year[output$line_list[[n_region]]])
+    output$year_end[n_region]=max(template$year[output$line_list[[n_region]]])
   }
 
   return(output)

@@ -27,9 +27,9 @@ Generate_VIMC_Burden_Dataset(
 )
 }
 \arguments{
-\item{FOI_values}{Values for each region of the force of infection due to spillover from sylvatic reservoir}
+\item{FOI_values}{Array of values of force of infection due to spillover from sylvatic reservoir by region + time point}
 
-\item{R0_values}{Values for each region of the basic reproduction number for human-human transmission}
+\item{R0_values}{Array of values of basic reproduction number for human-human transmission by region and time point}
 
 \item{input_data}{List of population and vaccination data for multiple regions}
 

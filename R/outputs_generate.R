@@ -225,8 +225,8 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 #' @details This function is used to generate annual burden data in the format used by the Vaccine Impact
 #'   Modelling Consortium (VIMC) [TBA]
 #'
-#' @param FOI_values Values for each region of the force of infection due to spillover from sylvatic reservoir
-#' @param R0_values Values for each region of the basic reproduction number for human-human transmission
+#' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time point
+#' @param R0_values Array of values of basic reproduction number for human-human transmission by region and time point
 #' @param input_data List of population and vaccination data for multiple regions
 #' @param template Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy
 #'   for each line
