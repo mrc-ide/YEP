@@ -80,5 +80,3 @@ input_data2 <- create_input_data(vacc_data, pop_data,
                                  regions = names(table(vacc_data$region)), 
                                  years = as.numeric(names(table(vacc_data$year))))
 ```
-
-[TBA - Sources for age-stratified population and vaccination data]

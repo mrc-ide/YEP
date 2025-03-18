@@ -86,4 +86,12 @@ dataset1 <- Generate_Dataset(FOI_values, R0_values, input_data, sero_template, c
                              mode_parallel, cluster=FALSE,output_frame)
 ```
 
-[TBA]
+The output is a list containing data frames for serological and case data:
+
+```{r,eval=FALSE}
+head(dataset1$model_sero_data,3)
+```
+
+```{r,eval=FALSE}
+head(dataset1$model_case_data,21)
+```
