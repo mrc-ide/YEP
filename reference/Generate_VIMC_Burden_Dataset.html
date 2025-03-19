@@ -52,19 +52,22 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">Generate_VIMC_Burden_Dataset</span><span class="op">(</span></span>
-<span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  FOI_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  R0_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  template <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  vaccine_efficacy <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  p_severe_inf <span class="op">=</span> <span class="fl">0.12</span>,</span>
-<span>  p_death_severe_inf <span class="op">=</span> <span class="fl">0.39</span>,</span>
-<span>  YLD_per_case <span class="op">=</span> <span class="fl">0.006486</span>,</span>
+<span>  time_inc <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  mode_start <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  start_SEIRV <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  dt <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mode_time <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  deterministic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  p_severe_inf <span class="op">=</span> <span class="fl">0.12</span>,</span>
+<span>  p_death_severe_inf <span class="op">=</span> <span class="fl">0.39</span>,</span>
+<span>  p_rep_severe <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  p_rep_death <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  YLD_per_case <span class="op">=</span> <span class="fl">0.006486</span>,</span>
 <span>  mode_parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -75,52 +78,50 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-input-data">input_data<a class="anchor" aria-label="anchor" href="#arg-input-data"></a></dt>
-<dd><p>List of population and vaccination data for multiple regions</p></dd>
-
-
-<dt id="arg-foi-values">FOI_values<a class="anchor" aria-label="anchor" href="#arg-foi-values"></a></dt>
-<dd><p>Values for each region of the force of infection due to spillover from sylvatic reservoir</p></dd>
+<dl><dt id="arg-foi-values">FOI_values<a class="anchor" aria-label="anchor" href="#arg-foi-values"></a></dt>
+<dd><p>Array of values of force of infection due to spillover from sylvatic reservoir by region + time point</p></dd>
 
 
 <dt id="arg-r-values">R0_values<a class="anchor" aria-label="anchor" href="#arg-r-values"></a></dt>
-<dd><p>Values for each region of the basic reproduction number for human-human transmission</p></dd>
+<dd><p>Array of values of basic reproduction number for human-human transmission by region and time point</p></dd>
+
+
+<dt id="arg-input-data">input_data<a class="anchor" aria-label="anchor" href="#arg-input-data"></a></dt>
+<dd><p>List of population and vaccination data for multiple regions</p></dd>
 
 
 <dt id="arg-template">template<a class="anchor" aria-label="anchor" href="#arg-template"></a></dt>
-<dd><p>Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy for each line</p></dd>
+<dd><p>Burden data in VIMC format, with regions, years, minimum and maximum age, and life expectancy
+for each line</p></dd>
 
 
 <dt id="arg-vaccine-efficacy">vaccine_efficacy<a class="anchor" aria-label="anchor" href="#arg-vaccine-efficacy"></a></dt>
 <dd><p>Fractional vaccine efficacy</p></dd>
 
 
-<dt id="arg-p-severe-inf">p_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-severe-inf"></a></dt>
-<dd><p>Probability of an infection being severe</p></dd>
-
-
-<dt id="arg-p-death-severe-inf">p_death_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-death-severe-inf"></a></dt>
-<dd><p>Probability of a severe infection resulting in death</p></dd>
-
-
-<dt id="arg-yld-per-case">YLD_per_case<a class="anchor" aria-label="anchor" href="#arg-yld-per-case"></a></dt>
-<dd><p>TBA</p></dd>
+<dt id="arg-time-inc">time_inc<a class="anchor" aria-label="anchor" href="#arg-time-inc"></a></dt>
+<dd><p>Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)</p></dd>
 
 
 <dt id="arg-mode-start">mode_start<a class="anchor" aria-label="anchor" href="#arg-mode-start"></a></dt>
-<dd><p>Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start=0, only vaccinated individuals
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
-If mode_start=2, use SEIRV input in list from previous run(s)
-If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)</p></dd>
+<dd><p>Flag indicating how to set initial population immunity level in addition to vaccination <br>
+If mode_start = 0, only vaccinated individuals <br>
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) <br>
+If mode_start = 2, use SEIRV input in list from previous run(s)</p></dd>
 
 
 <dt id="arg-start-seirv">start_SEIRV<a class="anchor" aria-label="anchor" href="#arg-start-seirv"></a></dt>
 <dd><p>SEIRV data from end of a previous run to use as input (list of datasets, one per region)</p></dd>
 
 
-<dt id="arg-dt">dt<a class="anchor" aria-label="anchor" href="#arg-dt"></a></dt>
-<dd><p>Time increment in days to use in model (should be either 1.0 or 5.0 days)</p></dd>
+<dt id="arg-mode-time">mode_time<a class="anchor" aria-label="anchor" href="#arg-mode-time"></a></dt>
+<dd><p>Type of time dependence of FOI_spillover and R0 to be used: <br>
+If mode_time = 0, no time variation (constant values)<br>
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) <br>
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) <br>
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) <br>
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) <br>
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)</p></dd>
 
 
 <dt id="arg-n-reps">n_reps<a class="anchor" aria-label="anchor" href="#arg-n-reps"></a></dt>
@@ -131,17 +132,37 @@ If mode_start=3, shift some non-vaccinated individuals into recovered to give he
 <dd><p>TRUE/FALSE - set model to run in deterministic mode if TRUE</p></dd>
 
 
+<dt id="arg-p-severe-inf">p_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-severe-inf"></a></dt>
+<dd><p>Probability of an infection being severe</p></dd>
+
+
+<dt id="arg-p-death-severe-inf">p_death_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-death-severe-inf"></a></dt>
+<dd><p>Probability of a severe infection resulting in death</p></dd>
+
+
+<dt id="arg-p-rep-severe">p_rep_severe<a class="anchor" aria-label="anchor" href="#arg-p-rep-severe"></a></dt>
+<dd><p>Probability of reporting of a severe but non-fatal infection</p></dd>
+
+
+<dt id="arg-p-rep-death">p_rep_death<a class="anchor" aria-label="anchor" href="#arg-p-rep-death"></a></dt>
+<dd><p>Probability of reporting of a fatal infection</p></dd>
+
+
+<dt id="arg-yld-per-case">YLD_per_case<a class="anchor" aria-label="anchor" href="#arg-yld-per-case"></a></dt>
+<dd><p>TBA</p></dd>
+
+
 <dt id="arg-mode-parallel">mode_parallel<a class="anchor" aria-label="anchor" href="#arg-mode-parallel"></a></dt>
 <dd><p>TRUE/FALSE - set model to run in parallel using cluster if TRUE</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
-<dd><p>Cluster of threads to use if mode_parallel=TRUE</p></dd>
+<dd><p>Cluster of threads to use if mode_parallel = TRUE</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Optional random seed value to set before running each region for stochastic normalization; set to NULL
-  to omit; will not work if mode_parallel is not set to "none".
+  to omit; will not work if mode_parallel is not set to FALSE.
 '</p></dd>
 
 </dl></div>

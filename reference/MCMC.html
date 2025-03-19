@@ -52,22 +52,20 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MCMC</span><span class="op">(</span></span>
-<span>  log_params_ini <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  params_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"FOI_var1"</span>, initial <span class="op">=</span> <span class="fl">1</span>, max <span class="op">=</span> <span class="cn">Inf</span>, min <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>, mean <span class="op">=</span></span>
+<span>    <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span>, estimate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs_sero_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  obs_case_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  filename_prefix <span class="op">=</span> <span class="st">"Chain"</span>,</span>
 <span>  Niter <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  mode_start <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  prior_settings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"zero"</span><span class="op">)</span>,</span>
-<span>  dt <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mode_start <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  time_inc <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  p_severe_inf <span class="op">=</span> <span class="fl">0.12</span>,</span>
-<span>  p_death_severe_inf <span class="op">=</span> <span class="fl">0.39</span>,</span>
-<span>  add_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vaccine_efficacy <span class="op">=</span> <span class="fl">1</span>, p_rep_severe <span class="op">=</span> <span class="fl">1</span>, p_rep_death <span class="op">=</span> <span class="fl">1</span>, m_FOI_Brazil</span>
-<span>    <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  enviro_data_const <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  enviro_data_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  deterministic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  mode_time <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  mode_parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -77,19 +75,13 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-log-params-ini">log_params_ini<a class="anchor" aria-label="anchor" href="#arg-log-params-ini"></a></dt>
-<dd><p>Initial values of parameters to be estimated. These should always be the log() values of the
-actual parameters, ordered as follows: <br>
-1) A number of environmental coefficients used to calculate spillover force of infection values from environmental
-covariates equal to the number of environmental covariates listed in the enviro_data frame. Values should be in the
-order of the columns in the environmental data frame. <br>
-2) A number of environmental coefficients used to calculate basic reproduction number
-values from environmental covariates equal to the number of environmental covariates listed in the enviro_data
-frame. Values should be in the order of the columns in the environmental data frame. <br>
-3) Values of the additional parameters (reported vaccination effectiveness vaccine_efficacy, severe case reporting
-probability p_rep_severe, and fatal case reporting probability p_rep_death, and Brazil spillover FOI multiplier m_FOI_Brazil);
-if these are to be estimated, in the order vaccine_efficacy-&gt;p_rep_severe-&gt;p_rep_death-&gt;m_FOI_Brazil. If these parameters
-are to be estimated, the values separately supplied to this function (see add_values below) should be set to NA.</p></dd>
+<dl><dt id="arg-params-data">params_data<a class="anchor" aria-label="anchor" href="#arg-params-data"></a></dt>
+<dd><p>#Data frame of parameter information containing names, initial values, maximum and minimum values,
+mean and standard deviation (for prior calculation) and flag indicating whether parameter estimated or fixed<br>
+Parameters to include: coefficients of environmental covariates to calculate FOI_spillover and R0, reported
+vaccination effectiveness, probability of severe case reporting, probability of fatal case reporting, Brazil
+FOI_spillover multiplier, FOI_spillover and R0 (latter two never estimated, included only for priors)<br>
+TBA - instructions</p></dd>
 
 
 <dt id="arg-input-data">input_data<a class="anchor" aria-label="anchor" href="#arg-input-data"></a></dt>
@@ -99,17 +91,16 @@ code and usually loaded from RDS file)</p></dd>
 
 <dt id="arg-obs-sero-data">obs_sero_data<a class="anchor" aria-label="anchor" href="#arg-obs-sero-data"></a></dt>
 <dd><p>Seroprevalence data for comparison, by region, year &amp; age group, in format no. samples/no.
-positives</p></dd>
+positives (TBA - instructions)</p></dd>
 
 
 <dt id="arg-obs-case-data">obs_case_data<a class="anchor" aria-label="anchor" href="#arg-obs-case-data"></a></dt>
 <dd><p>Annual reported case/death data for comparison, by region and year, in format no.
-cases/no. deaths</p></dd>
+cases/no. deaths (TBA - instructions)</p></dd>
 
 
 <dt id="arg-filename-prefix">filename_prefix<a class="anchor" aria-label="anchor" href="#arg-filename-prefix"></a></dt>
-<dd><p>Prefix of names for output files; function outputs a CSV file every 10,000 iterations with a name in the
-format: "(filename_prefix)XX.csv", e.g. Chain00.csv</p></dd>
+<dd><p>Prefix of output RDS file name, e.g. "Chain.Rds"</p></dd>
 
 
 <dt id="arg-niter">Niter<a class="anchor" aria-label="anchor" href="#arg-niter"></a></dt>
@@ -119,25 +110,11 @@ format: "(filename_prefix)XX.csv", e.g. Chain00.csv</p></dd>
 <dt id="arg-mode-start">mode_start<a class="anchor" aria-label="anchor" href="#arg-mode-start"></a></dt>
 <dd><p>Flag indicating how to set initial population immunity level in addition to vaccination <br>
 If mode_start = 0, only vaccinated individuals <br>
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) <br>
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)</p></dd>
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) <br>
+If mode_start = 2, use SEIRV input in list from previous run(s)</p></dd>
 
 
-<dt id="arg-prior-settings">prior_settings<a class="anchor" aria-label="anchor" href="#arg-prior-settings"></a></dt>
-<dd><p>List containing settings for priors: must contain text named "type":
-If type = "zero", prior probability is always zero <br>
-If type = "flat", prior probability is zero if log parameter values in designated ranges param_min_limits and param_max_limits,
- -Inf otherwise; param_min_limits and param_max_limits included in prior_settings as vectors of same length as log_params_ini <br>
-If type = "norm", prior probability is given by truncated normal distribution calculation on parameter values with settings based
-on vectors of values in prior_settings: <br>
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) <br>
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  <br>
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) <br>
- + param_min_limits and param_max_limits (lower and upper limits applied to truncated normal distributions)</p></dd>
-
-
-<dt id="arg-dt">dt<a class="anchor" aria-label="anchor" href="#arg-dt"></a></dt>
+<dt id="arg-time-inc">time_inc<a class="anchor" aria-label="anchor" href="#arg-time-inc"></a></dt>
 <dd><p>time increment in days (must be 1 or 5)</p></dd>
 
 
@@ -145,29 +122,30 @@ on vectors of values in prior_settings: <br>
 <dd><p>Number of times to repeat calculations to get average likelihood at each iteration</p></dd>
 
 
-<dt id="arg-enviro-data">enviro_data<a class="anchor" aria-label="anchor" href="#arg-enviro-data"></a></dt>
-<dd><p>Data frame of values of environmental covariates (columns) by region (rows)</p></dd>
+<dt id="arg-enviro-data-const">enviro_data_const<a class="anchor" aria-label="anchor" href="#arg-enviro-data-const"></a></dt>
+<dd><p>Data frame of values of constant environmental covariates (columns) by region (rows)</p></dd>
 
 
-<dt id="arg-p-severe-inf">p_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-severe-inf"></a></dt>
-<dd><p>Probability of an infection being severe</p></dd>
-
-
-<dt id="arg-p-death-severe-inf">p_death_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-death-severe-inf"></a></dt>
-<dd><p>Probability of a severe infection resulting in death</p></dd>
-
-
-<dt id="arg-add-values">add_values<a class="anchor" aria-label="anchor" href="#arg-add-values"></a></dt>
-<dd><p>List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
- indicate that they are part of the fitted  parameter set <br>
-vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) <br>
-p_rep_severe Probability of observation of severe infection <br>
-p_rep_death Probability of observation of death <br>
-m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered)</p></dd>
+<dt id="arg-enviro-data-var">enviro_data_var<a class="anchor" aria-label="anchor" href="#arg-enviro-data-var"></a></dt>
+<dd><p>List containing time-varying environmental covariate data:<br>
+regions: Vector of region labels<br>
+env_vars: Vector of covariate names<br>
+values: Array of covariate values with dimensions (number of covariates, number of regions, number of time points).
+Number of time points must be correct for mode_time setting.<br></p></dd>
 
 
 <dt id="arg-deterministic">deterministic<a class="anchor" aria-label="anchor" href="#arg-deterministic"></a></dt>
 <dd><p>TRUE/FALSE - set model to run in deterministic mode if TRUE</p></dd>
+
+
+<dt id="arg-mode-time">mode_time<a class="anchor" aria-label="anchor" href="#arg-mode-time"></a></dt>
+<dd><p>Type of time dependence of FOI_spillover and R0 to be used: <br>
+If mode_time = 0, no time variation (constant values)<br>
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) <br>
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) <br>
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) <br>
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) <br>
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)</p></dd>
 
 
 <dt id="arg-mode-parallel">mode_parallel<a class="anchor" aria-label="anchor" href="#arg-mode-parallel"></a></dt>

@@ -70,8 +70,7 @@
 
 <dt id="arg-input-data">input_data<a class="anchor" aria-label="anchor" href="#arg-input-data"></a></dt>
 <dd><p>List of population and vaccination data for multiple regions (created using data input
-creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process
-in MCMC</p></dd>
+creation code and usually loaded from RDS file), with cross-reference tables added in MCMC</p></dd>
 
 
 <dt id="arg-obs-sero-data">obs_sero_data<a class="anchor" aria-label="anchor" href="#arg-obs-sero-data"></a></dt>
@@ -85,9 +84,9 @@ deaths</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
-prior_settings, dt, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
-deterministic, mode_parallel, cluster</p></dd>
+<dd><p>= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including params_data,
+mode_start, time_inc, n_reps, enviro_data, add_est_param_names,
+deterministic, mode_time, mode_parallel, cluster, i_FOI_const, i_FOI_var, i_R0_const, i_R0_var, i_FOI_prior, i_R0_prior</p></dd>
 
 </dl></div>
     <div class="section level2">

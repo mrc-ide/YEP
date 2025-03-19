@@ -58,21 +58,17 @@ values in order to find approximate values giving maximum posterior likelihood</
 <span>  n_iterations <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_param_sets <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_bounds <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  log_params_min <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  log_params_max <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  params_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  input_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs_sero_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  obs_case_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  mode_start <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  prior_settings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"zero"</span><span class="op">)</span>,</span>
-<span>  dt <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  mode_start <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  time_inc <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_reps <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  enviro_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  p_severe_inf <span class="op">=</span> <span class="fl">0.12</span>,</span>
-<span>  p_death_severe_inf <span class="op">=</span> <span class="fl">0.39</span>,</span>
-<span>  add_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vaccine_efficacy <span class="op">=</span> <span class="fl">1</span>, p_rep_severe <span class="op">=</span> <span class="fl">1</span>, p_rep_death <span class="op">=</span> <span class="fl">1</span>, m_FOI_Brazil</span>
-<span>    <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  enviro_data_const <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  enviro_data_var <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  deterministic <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mode_time <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  mode_parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  plot_graphs <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -96,12 +92,8 @@ values in order to find approximate values giving maximum posterior likelihood</
 maximum/minimum values</p></dd>
 
 
-<dt id="arg-log-params-min">log_params_min<a class="anchor" aria-label="anchor" href="#arg-log-params-min"></a></dt>
-<dd><p>Initial lower limits of estimated parameter values (natural logarithm of actual limits)</p></dd>
-
-
-<dt id="arg-log-params-max">log_params_max<a class="anchor" aria-label="anchor" href="#arg-log-params-max"></a></dt>
-<dd><p>Initial upper limits of estimated parameter values (natural logarithm of actual limits)</p></dd>
+<dt id="arg-params-data">params_data<a class="anchor" aria-label="anchor" href="#arg-params-data"></a></dt>
+<dd><p>TBA</p></dd>
 
 
 <dt id="arg-input-data">input_data<a class="anchor" aria-label="anchor" href="#arg-input-data"></a></dt>
@@ -122,22 +114,11 @@ deaths</p></dd>
 <dt id="arg-mode-start">mode_start<a class="anchor" aria-label="anchor" href="#arg-mode-start"></a></dt>
 <dd><p>Flag indicating how to set initial population immunity level in addition to vaccination <br>
 If mode_start = 0, only vaccinated individuals <br>
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) <br>
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) <br></p></dd>
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) <br>
+If mode_start = 2, use SEIRV input in list from previous run(s)</p></dd>
 
 
-<dt id="arg-prior-settings">prior_settings<a class="anchor" aria-label="anchor" href="#arg-prior-settings"></a></dt>
-<dd><p>List containing settings for priors: must contain text named "type":
-If type = "zero", prior probability is always zero <br>
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: <br>
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) <br>
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  <br>
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) <br></p></dd>
-
-
-<dt id="arg-dt">dt<a class="anchor" aria-label="anchor" href="#arg-dt"></a></dt>
+<dt id="arg-time-inc">time_inc<a class="anchor" aria-label="anchor" href="#arg-time-inc"></a></dt>
 <dd><p>time increment in days (must be 1 or 5)</p></dd>
 
 
@@ -145,29 +126,20 @@ If type = "norm", prior probability is given by dnorm calculation on parameter v
 <dd><p>Number of repetitions</p></dd>
 
 
-<dt id="arg-enviro-data">enviro_data<a class="anchor" aria-label="anchor" href="#arg-enviro-data"></a></dt>
-<dd><p>Data frame of values of environmental covariates (columns) by region (rows)</p></dd>
+<dt id="arg-enviro-data-const">enviro_data_const<a class="anchor" aria-label="anchor" href="#arg-enviro-data-const"></a></dt>
+<dd><p>Data frame of values of constant environmental covariates (columns) by region (rows)</p></dd>
 
 
-<dt id="arg-p-severe-inf">p_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-severe-inf"></a></dt>
-<dd><p>Probability of an infection being severe</p></dd>
-
-
-<dt id="arg-p-death-severe-inf">p_death_severe_inf<a class="anchor" aria-label="anchor" href="#arg-p-death-severe-inf"></a></dt>
-<dd><p>Probability of a severe infection resulting in death</p></dd>
-
-
-<dt id="arg-add-values">add_values<a class="anchor" aria-label="anchor" href="#arg-add-values"></a></dt>
-<dd><p>List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
- indicate that they are part of the fitted  parameter set <br>
-vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) <br>
-p_rep_severe Probability of observation of severe infection <br>
-p_rep_death Probability of observation of death <br>
-m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered)</p></dd>
+<dt id="arg-enviro-data-var">enviro_data_var<a class="anchor" aria-label="anchor" href="#arg-enviro-data-var"></a></dt>
+<dd><p>List containing values of time-varying environmental covariates (TBA)</p></dd>
 
 
 <dt id="arg-deterministic">deterministic<a class="anchor" aria-label="anchor" href="#arg-deterministic"></a></dt>
 <dd><p>TRUE/FALSE - set model to run in deterministic mode if TRUE</p></dd>
+
+
+<dt id="arg-mode-time">mode_time<a class="anchor" aria-label="anchor" href="#arg-mode-time"></a></dt>
+<dd><p>TBA</p></dd>
 
 
 <dt id="arg-mode-parallel">mode_parallel<a class="anchor" aria-label="anchor" href="#arg-mode-parallel"></a></dt>
