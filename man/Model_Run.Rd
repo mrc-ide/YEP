@@ -10,21 +10,23 @@ Model_Run(
   vacc_data = list(),
   pop_data = list(),
   years_data = c(1940:1941),
-  start_SEIRV = list(),
-  output_type = "full",
   year0 = 1940,
-  mode_start = 0,
   vaccine_efficacy = 1,
-  dt = 1,
+  time_inc = 1,
+  output_type = "full",
+  mode_start = 0,
+  start_SEIRV = list(),
+  mode_time = 0,
   n_particles = 1,
   n_threads = 1,
   deterministic = FALSE
 )
 }
 \arguments{
-\item{FOI_spillover}{Force of infection due to spillover from sylvatic reservoir}
+\item{FOI_spillover}{Vector of values of force of infection due to spillover from sylvatic reservoir
+(size depends on mode_time)}
 
-\item{R0}{Basic reproduction number for urban spread of infection}
+\item{R0}{Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
 
 \item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
 
@@ -32,40 +34,48 @@ Model_Run(
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input}
-
-\item{output_type}{Type of data to output:
-"full" = SEIRVC + FOI for all steps and ages
-"case" = annual total new infections (C) summed across all ages
-"sero" = annual SEIRV
-"case+sero" = annual SEIRVC, cases summed across all ages
-"case_alt" = annual total new infections not combined by age
-"case_alt2" = total new infections combined by age for all steps}
-
 \item{year0}{First year in population/vaccination data}
-
-\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination
-If mode_start = 0, only vaccinated individuals
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only)
-If mode_start = 2, use SEIRV input in list from previous run(s)
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 
-\item{dt}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+
+\item{output_type}{Type of data to output: \cr
+"full" = SEIRVC + FOI for all steps and ages \cr
+"case" = annual total new infections (C) summed across all ages \cr
+"sero" = annual SEIRV \cr
+"case_sero" = annual SEIRVC, C summed across all ages \cr
+"case_alt" = annual total new infections not combined by age \cr
+"case_alt2" = total new infections combined by age for all steps}
+
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start = 0, only vaccinated individuals \cr
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
+
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
+
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time = 0, no time variation (constant values)\cr
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
 
 \item{n_particles}{number of particles to use}
 
 \item{n_threads}{number of threads to use}
 
-\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE
+\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE
 '}
 }
 \description{
-Run SEIRV model for single region (Model_Run_Multi_Input can be used to run multiple regions in parallel)
+Run SEIRV model for single region
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
 for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
-values, infection numbers and/or total force of infection values.
+values, infection numbers and/or total force of infection values. Run up to 20 particles (Model_Run_Many_Reps
+can be used to run larger numbers of particles).
 }

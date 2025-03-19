@@ -22,8 +22,10 @@ Data is generated as described in [Worked Example 1](https://mrc-ide.github.io/Y
 library(YEP)
 input_data <- readRDS(file=paste(path.package("YEP"),
                                  "/exdata/input_data_example.Rds",sep=""))
-model_data <- Model_Run(1.0e-7, 0.0, input_data$vacc_data[1,,], input_data$pop_data[1,,], c(1990:2000),
-                   NULL, "full", input_data$years_labels[1], 1, 1.0, 1.0, 1, 1, FALSE)
+model_data <- Model_Run(FOI_spillover = 1.0e-8, R0 = 0.0, vacc_data = input_data$vacc_data[1,,], 
+                        pop_data = input_data$pop_data[1,,], years_data, year0 = input_data$years_labels[1],
+                        vaccine_efficacy = 1.0, time_inc = 1.0, output_type = "full", mode_start = 1,  
+                        start_SEIRV = NULL, mode_time = 0, n_particles = 1, n_threads = 1, deterministic = TRUE)
 ```
 
 Values can be quickly combined across age categories by running the convert_model_output_combine_by_age() function from YEPaux:

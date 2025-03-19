@@ -18,5 +18,12 @@ function and usually loaded from an RDS file)}
 Truncate input data list for shorter set of regions and/or years
 }
 \details{
+amends a list of population and vaccination data used as input for other functions,
+  cross-referencing it with seroprevalence and/or case data and adding connection information.
+
+  function and usually loaded from an RDS file)
+  positives
+  deaths
+
 TBA
 }

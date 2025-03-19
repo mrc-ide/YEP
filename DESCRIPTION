@@ -12,13 +12,15 @@ LazyData: true
 RoxygenNote: 7.3.2
 LinkingTo:
     cpp11,
-    dust
+    dust2,
+    monty
 Imports:
     assertthat,
     dde,
+    dust2,
     graphics,
     mvtnorm,
-    odin.dust,
+    odin2,
     R.utils,
     stats,
     tgp,
@@ -30,8 +32,7 @@ Suggests:
     rmarkdown
 SystemRequirements: C++
 Remotes:
-    mrc-ide/dust,
-    mrc-ide/odin,
-    mrc-ide/odin.dust
+    mrc-ide/dust2,
+    mrc-ide/odin2
 VignetteBuilder: knitr
 URL: https://mrc-ide.github.io/YEP/

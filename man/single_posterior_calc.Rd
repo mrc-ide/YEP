@@ -16,8 +16,7 @@ single_posterior_calc(
 \item{log_params_prop}{Proposed values of parameters to be estimated (natural logarithm of actual parameters)}
 
 \item{input_data}{List of population and vaccination data for multiple regions (created using data input
-creation code and usually loaded from RDS file), with cross-reference tables added using input_data_process
-in MCMC}
+creation code and usually loaded from RDS file), with cross-reference tables added in MCMC}
 
 \item{obs_sero_data}{Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
 positives}
@@ -25,9 +24,9 @@ positives}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 deaths}
 
-\item{...}{= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including mode_start,
-prior_settings, dt, n_reps, enviro_data, p_severe_inf, p_death_severe_inf, add_values list, extra_estimated_params,
-deterministic, mode_parallel, cluster}
+\item{...}{= Constant parameters/flags/etc. loaded to or determined by mcmc() and mcmc_prelim_fit, including params_data,
+mode_start, time_inc, n_reps, enviro_data, add_est_param_names,
+deterministic, mode_time, mode_parallel, cluster, i_FOI_const, i_FOI_var, i_R0_const, i_R0_var, i_FOI_prior, i_R0_prior}
 }
 \description{
 Function which calculates and outputs posterior likelihood of observing simulated data

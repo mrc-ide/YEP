@@ -22,58 +22,64 @@ We load input data, environmental data and the observed data to be used for comp
 library(YEP)
 input_data <- readRDS(file = paste(path.package("YEP"), 
                                    "/exdata/input_data_example.Rds", sep = ""))
-enviro_data <- read.csv(file = paste(path.package("YEP"), 
+enviro_data_const <- read.csv(file = paste(path.package("YEP"), 
                                      "/exdata/enviro_data_example.csv", sep = ""),
                         header = TRUE)
-n_env_vars = ncol(enviro_data)-1
+enviro_data_var <- NULL
+n_env_vars = ncol(enviro_data_const)-1
 obs_sero_data <- read.csv(file = paste(path.package("YEP"), 
                                        "/exdata/obs_sero_data_example.csv", 
                                        sep = ""), header = TRUE)
 obs_case_data <- read.csv(file = paste(path.package("YEP"), 
                                        "/exdata/obs_case_data_example.csv", 
                                        sep = ""), header = TRUE)
-obs_outbreak_data <- NULL
 # Values of environmental coefficients to use as initial parameter values
 enviro_coeffs_ini <- as.numeric(read.csv(file=paste(path.package("YEP"),
                         "/exdata/enviro_coeffs_example.csv", sep = ""), header = TRUE)) 
 ```
 
-We set additional inputs as follows. The parameters varied in the chain are the natural logarithm values of the actual parameters of interest; the inputs log_params_min, log_params_max and log_params_ini are set accordingly. The maximum, minimum and initial values of the varied parameters must be entered into log_params_min, log_params_max and log_params_ini in the following order:
-
--Values of spillover FOI or the coefficients used to calculate spillover FOI from environmental data  
--Values of R0 or the coefficients used to calculate R0 from environmental data (if R0 is to be varied)  
--Vaccine efficacy (if varied)  
--Severe non-fatal case reporting probability (if varied)  
--Fatal case reporting probability (if varied)
-
-The maximum and minimum values are not all necessarily used; if prior_type is set to "flat", then they are hard limits for all parameters. If prior_type is set to "zero" or "norm", only the limits for p_rep_severe and p_rep_death are used.
+We input parameter data including initial values and prior settings through the params_data data frame:
 
 ```{r,eval=FALSE}
-# Initial log parameter values
-log_params_ini <- c(log(enviro_coeffs_ini), log(c(0.1,0.2))) 
+covar_names = colnames(enviro_data_const)[c(1:n_env_vars)+1]
+add_est_param_names=c("vaccine_efficacy","p_rep_severe","p_rep_death")
+params_data=mcmc_params_data_create(covar_names,add_est_param_names)
+params_data$min[c(1:5)]=1.0e-11
+params_data$initial[params_data$name=="vaccine_efficacy"]=0.975
+params_data$min[params_data$name=="vaccine_efficacy"]=0.95
+params_data$mean[params_data$name=="vaccine_efficacy"]=0.975
+params_data$initial[params_data$name=="p_rep_severe"]=0.5
+params_data$min[params_data$name=="p_rep_severe"]=0.01
+params_data$max[params_data$name=="p_rep_severe"]=0.5
+params_data$mean[params_data$name=="p_rep_severe"]=0.5
+params_data$initial[params_data$name=="p_rep_death"]=0.5
+params_data$min[params_data$name=="p_rep_death"]=0.01
+params_data$max[params_data$name=="p_rep_death"]=0.5
+params_data$mean[params_data$name=="p_rep_death"]=0.5
+params_data$initial[c(1:(2*n_env_vars))]=enviro_coeffs_ini
+checks <- mcmc_checks(params_data, covar_names, check_initial = TRUE)
+params_data
+```
+
+We set additional values:
+
+```{r,eval=FALSE}
 # Prefix to be used for .csv output files; a new file is created every 10,000 
-# iterations with incremental number suffixes (Chain0.csv, Chain1.csv, etc.)
+# iterations with incremental number suffixes (Chain00.csv, Chain01.csv, etc.)
 filename_prefix <- "Chain" 
 #Number of iterations to run
-Niter <- 1 
+Niter <- 10 
 # Flag indicating how to set initial population immunity level
 mode_start <- 1 
-# Type of prior likelihood calculation to use
-prior_settings <- list(type="zero")
 # Time increment in days
-dt <- 5.0 
+time_inc <- 5.0 
 # Number of repetitions for which to run model and obtain average outputs
-n_reps <- 5 
-# Probability of an infection causing severe symptoms
-p_severe_inf = 0.12
-# Probability of an infection with severe symptoms causing death
-p_death_severe_inf = 0.39
-# Additional values: severe and fatal case reporting probability are set to NULL due to being estimated
-# as variables; vaccine efficacy and Brazil spillover FOI multiplier set to 1.0 as constants.
-add_values=list(p_rep_severe = NA, p_rep_death = NA, vaccine_efficacy = 1.0, m_FOI_Brazil = 1.0)
+n_reps <- 1 
 # True/false flag indicating whether or not to run model in deterministic mode
 # (so that binomial calculations give average instead of randomized output)
-deterministic = FALSE
+deterministic = TRUE
+# Type of time variation of FOI_spillover and R0; here set to 0 for constant values
+mode_time <- 0
 # Variable to set different modes for running on multiple processors simultaneously;
 # here set to "none" so that parallel processing is not used
 mode_parallel=FALSE
@@ -82,9 +88,9 @@ mode_parallel=FALSE
 We then run the MCMC() function. Output data recorded at each iteration is saved to an output file every 10 iterations. Likelihood is calculated as described in Guide 4 [Link TBA].
 
 ```{r,eval=FALSE}
-MCMC(log_params_ini, input_data, obs_sero_data, obs_case_data, filename_prefix, 
-     Niter, mode_start, prior_settings, dt, n_reps, enviro_data, p_severe_inf, 
-     p_death_severe_inf, add_values, deterministic,mode_parallel,NULL)
+mcmc_out <- MCMC(params_data, input_data, obs_sero_data, obs_case_data, filename_prefix, 
+                 Niter, mode_start, time_inc, n_reps, enviro_data_const, enviro_data_var, 
+                 deterministic,mode_time,mode_parallel,NULL)
 ```
 
 The saved output of MCMC() takes the form of a data frame of values of the current likelihood (posterior_current), likelihood calculated from proposed parameter values (posterior_prop), current and proposed parameter values, a flag indicating whether the proposed parameter values were accepted (set to 1 if they were accepted, 0 if they were not), and the chain covariance.

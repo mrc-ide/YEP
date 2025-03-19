@@ -5,32 +5,34 @@
 \title{Generate_Dataset}
 \usage{
 Generate_Dataset(
-  input_data = list(),
   FOI_values = c(),
   R0_values = c(),
+  input_data = list(),
   sero_template = NULL,
   case_template = NULL,
   vaccine_efficacy = 1,
+  time_inc = 1,
+  mode_start = 1,
+  start_SEIRV = NULL,
+  mode_time = 0,
+  n_reps = 1,
+  deterministic = FALSE,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
   p_rep_severe = 1,
   p_rep_death = 1,
-  mode_start = 1,
-  start_SEIRV = NULL,
-  dt = 1,
-  n_reps = 1,
-  deterministic = FALSE,
   mode_parallel = FALSE,
   cluster = NULL,
-  output_frame = FALSE
+  output_frame = FALSE,
+  seed = NULL
 )
 }
 \arguments{
+\item{FOI_values}{Array of values of force of infection due to spillover from sylvatic reservoir by region + time point}
+
+\item{R0_values}{Array of values of basic reproduction number for human-human transmission by region and time point}
+
 \item{input_data}{List of population and vaccination data for multiple regions in standard format [TBA]}
-
-\item{FOI_values}{Vector of values of the force of infection due to spillover from sylvatic reservoir}
-
-\item{R0_values}{Vector of values of the basic reproduction number for human-human transmission}
 
 \item{sero_template}{Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
 and number of samples}
@@ -38,6 +40,27 @@ and number of samples}
 \item{case_template}{Annual reported case/death data template - data frame with region and year}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
+
+\item{time_inc}{Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)}
+
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start = 0, only vaccinated individuals \cr
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s)}
+
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
+
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time = 0, no time variation (constant values)\cr
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
+
+\item{n_reps}{number of stochastic repetitions}
+
+\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 
 \item{p_severe_inf}{Probability of an infection being severe}
 
@@ -47,26 +70,15 @@ and number of samples}
 
 \item{p_rep_death}{Probability of reporting of a fatal infection}
 
-\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
-If mode_start=0, only vaccinated individuals \cr
-If mode_start=1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
-If mode_start=2, use SEIRV input in list from previous run(s) \cr
-If mode_start=3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age)}
-
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
-
-\item{dt}{Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)}
-
-\item{n_reps}{number of stochastic repetitions}
-
-\item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
-
 \item{mode_parallel}{TRUE/FALSE - set model to run in parallel using cluster if TRUE}
 
-\item{cluster}{Cluster of threads to use if mode_parallel=TRUE}
+\item{cluster}{Cluster of threads to use if mode_parallel = TRUE}
 
 \item{output_frame}{TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
-  or calculated values only (if FALSE)
+or calculated values only (if FALSE)}
+
+\item{seed}{Optional random seed value to set before running each region for stochastic normalization; set to NULL
+  to omit; will not work if mode_parallel is not set to FALSE.
 '}
 }
 \description{

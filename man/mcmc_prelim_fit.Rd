@@ -8,21 +8,17 @@ mcmc_prelim_fit(
   n_iterations = 1,
   n_param_sets = 1,
   n_bounds = 1,
-  log_params_min = NULL,
-  log_params_max = NULL,
+  params_data = list(),
   input_data = list(),
   obs_sero_data = list(),
   obs_case_data = list(),
-  mode_start = 0,
-  prior_settings = list(type = "zero"),
-  dt = 1,
+  mode_start = 1,
+  time_inc = 1,
   n_reps = 1,
-  enviro_data = list(),
-  p_severe_inf = 0.12,
-  p_death_severe_inf = 0.39,
-  add_values = list(vaccine_efficacy = 1, p_rep_severe = 1, p_rep_death = 1, m_FOI_Brazil
-    = 1),
+  enviro_data_const = list(),
+  enviro_data_var = list(),
   deterministic = TRUE,
+  mode_time = 0,
   mode_parallel = FALSE,
   cluster = NULL,
   plot_graphs = FALSE
@@ -36,9 +32,7 @@ mcmc_prelim_fit(
 \item{n_bounds}{= Number of parameter sets (with highest likelihood values) to take at each iteration to create new
 maximum/minimum values}
 
-\item{log_params_min}{Initial lower limits of estimated parameter values (natural logarithm of actual limits)}
-
-\item{log_params_max}{Initial upper limits of estimated parameter values (natural logarithm of actual limits)}
+\item{params_data}{TBA}
 
 \item{input_data}{List of population and vaccination data for multiple regions (created using data input creation
 code and usually loaded from RDS file)}
@@ -51,36 +45,20 @@ deaths}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (uniform by age, R0 based only) \cr
-If mode_start = 3, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr}
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s)}
 
-\item{prior_settings}{List containing settings for priors: must contain text named "type":
-If type = "zero", prior probability is always zero \cr
-If type = "norm", prior probability is given by dnorm calculation on parameter values with settings based on vectors of values
- in prior_settings: \cr
- norm_params_mean and norm_params_sd (vectors of mean and standard deviation values applied to log FOI/R0
- parameters and to actual values of additional parameters) \cr
- + FOI_mean + FOI_sd (mean + standard deviation of computed FOI, single values)  \cr
- + R0_mean + R0_sd (mean + standard deviation of computed R0, single values) \cr}
-
-\item{dt}{time increment in days (must be 1 or 5)}
+\item{time_inc}{time increment in days (must be 1 or 5)}
 
 \item{n_reps}{Number of repetitions}
 
-\item{enviro_data}{Data frame of values of environmental covariates (columns) by region (rows)}
+\item{enviro_data_const}{Data frame of values of constant environmental covariates (columns) by region (rows)}
 
-\item{p_severe_inf}{Probability of an infection being severe}
-
-\item{p_death_severe_inf}{Probability of a severe infection resulting in death}
-
-\item{add_values}{List of parameters in addition to those governing FOI/R0, either giving a fixed value or giving NA to
- indicate that they are part of the fitted  parameter set \cr
-vaccine_efficacy Vaccine efficacy (proportion of reported vaccinations causing immunity) (must be present) \cr
-p_rep_severe Probability of observation of severe infection \cr
-p_rep_death Probability of observation of death \cr
-m_FOI_Brazil Multiplier of spillover FOI for Brazil regions (only relevant if regions in Brazil to be considered)}
+\item{enviro_data_var}{List containing values of time-varying environmental covariates (TBA)}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
+
+\item{mode_time}{TBA}
 
 \item{mode_parallel}{TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed}
 
