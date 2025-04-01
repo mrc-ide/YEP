@@ -26,6 +26,7 @@ t_infectious <- 5 #Time cases remain infectious
   library.dynam.unload("YEP", libpath)
 }
 #-------------------------------------------------------------------------------
+# TODO - Add provision for monthly case data
 #' @title Model_Run
 #'
 #' @description Run SEIRV model for single region
@@ -483,6 +484,7 @@ epi_param_calc <- function(coeffs_const = c(0), coeffs_var = c(0), enviro_data_c
   base_output_values = as.vector(as.matrix(enviro_data_const[, c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
 
   if(is.null(enviro_data_var) == FALSE){
+    #assert_that(all(enviro_data_const$region))
     n_pts = dim(enviro_data_var$values)[3]
     var_output_values = colSums(coeffs_var*enviro_data_var$values)
     total_output_values = array(NA, dim = dim(var_output_values))

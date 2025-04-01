@@ -57,8 +57,9 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
   if(is.null(sero_template) == FALSE){
     assert_that(all(c("region","year","age_min","age_max","samples","vc_factor") %in% names(sero_template)))
   }
-  if(is.null(case_template) == FALSE){
+  if(is.null(case_template) == FALSE){ #TODO - add option for monthly data
     assert_that(all(c("region","year") %in% names(case_template)))
+    #if("month" %in% names(case_template)){flag_monthly_cases=TRUE}else{flag_monthly_cases=FALSE}
     assert_that(p_severe_inf >= 0.0 && p_severe_inf <= 1.0,msg = "Severe infection rate must be between 0-1")
     assert_that(p_death_severe_inf >= 0.0 && p_death_severe_inf <= 1.0,
                 msg = "Fatality rate of severe infections must be between 0-1")
