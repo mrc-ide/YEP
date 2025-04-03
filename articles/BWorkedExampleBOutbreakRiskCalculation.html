@@ -102,7 +102,7 @@ than 20. To run a large number of stochastic repetitions, the
 Model_Run_Many_Reps() function should be used instead. This function can
 accept any number of repetitions (n_reps), splitting them into groups of
 particles of a size up to 20 (division) and running those groups
-sequentially. Here we set output_type = “case” so that
+sequentially. Here we set output_type = “infs” so that
 Model_Run_Many_Reps() only outputs annual total infection data, since
 this is what we are interested in.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -113,7 +113,7 @@ this is what we are interested in.</p>
 <span><span class="va">years_data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1990</span><span class="op">:</span><span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="va">model_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Model_Run_Many_Reps.html">Model_Run_Many_Reps</a></span><span class="op">(</span>FOI_spillover <span class="op">=</span> <span class="fl">1.0e-8</span>, R0 <span class="op">=</span> <span class="fl">0.0</span>, vacc_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">vacc_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, </span>
 <span>                                  pop_data <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">pop_data</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span>, <span class="va">years_data</span>, year0 <span class="op">=</span> <span class="va">input_data</span><span class="op">$</span><span class="va">years_labels</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
-<span>                                  vaccine_efficacy <span class="op">=</span> <span class="fl">1.0</span>, time_inc <span class="op">=</span> <span class="fl">1.0</span>, output_type <span class="op">=</span> <span class="st">"case"</span>, mode_start <span class="op">=</span> <span class="fl">1</span>,  </span>
+<span>                                  vaccine_efficacy <span class="op">=</span> <span class="fl">1.0</span>, time_inc <span class="op">=</span> <span class="fl">1.0</span>, output_type <span class="op">=</span> <span class="st">"infs"</span>, mode_start <span class="op">=</span> <span class="fl">1</span>,  </span>
 <span>                                  start_SEIRV <span class="op">=</span> <span class="cn">NULL</span>, mode_time <span class="op">=</span> <span class="fl">0</span>,  n_reps <span class="op">=</span> <span class="va">n_reps</span>, division <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p>We can calculate the number of reported cases by year for a single
 repetition using the case_data_calculate() function:</p>
