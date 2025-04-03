@@ -354,8 +354,7 @@ regions_breakdown <- function(region_labels=c()){
 #'  regions is c("AGO.1_1","AGO.2_1","AGO.3_1",...), then that line requires data from regions 1, 2 and 3.
 #'
 #'  This function is used when generating a dataset from one or more templates; it is normally used by the functions
-#'  Generate_Dataset, Generate_Sero_Dataset, Generate_Case_Dataset, Generate_VIMC_Burden_Dataset and
-#'  Generate_Multiple_Datasets. It returns a list containing [TBA].
+#'  Generate_Dataset, Generate_VIMC_Burden_Dataset and Generate_Multiple_Datasets. It returns a list containing [TBA].
 #'
 #' @param template List containing one or more sets of template data (serological data, case data or burden data)
 #' @param regions Vector of individual regions
@@ -380,9 +379,13 @@ template_region_xref <- function(template=list(),regions=c()){
         template_regions_i=append(template_regions_i,n_region2)
       }
     }
-    output$line_list[[n_region]]=c(1:n_lines)[line_template_regions %in% template_regions_i]
-    output$year_data_begin[n_region]=min(template$year[output$line_list[[n_region]]])
-    output$year_end[n_region]=max(template$year[output$line_list[[n_region]]])
+    if(is.null(template_regions_i)==FALSE){
+      output$line_list[[n_region]]=c(1:n_lines)[line_template_regions %in% template_regions_i]
+      output$year_data_begin[n_region]=min(template$year[output$line_list[[n_region]]])
+      output$year_end[n_region]=max(template$year[output$line_list[[n_region]]])
+    } else {
+      output$line_list[[n_region]]=NA
+    }
   }
 
   return(output)

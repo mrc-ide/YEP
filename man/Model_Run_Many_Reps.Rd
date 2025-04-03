@@ -38,15 +38,15 @@ Model_Run_Many_Reps(
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 
-\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{output_type}{Type of data to output: \cr
 "full" = SEIRVC + FOI for all steps and ages \cr
-"case" = annual total new infections (C) summed across all ages \cr
+"infs" = annual total new infections (C) summed across all ages \cr
 "sero" = annual SEIRV \cr
-"case_sero" = annual SEIRVC, C summed across all ages \cr
-"case_alt" = annual total new infections not combined by age \cr
-"case_alt2" = total new infections combined by age for all steps}
+"infs_sero" = annual SEIRVC, C summed across all ages \cr
+"infs_alt" = annual total new infections not combined by age \cr
+"infs_alt2" = total new infections combined by age for all steps}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr

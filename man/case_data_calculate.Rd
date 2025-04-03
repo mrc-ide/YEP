@@ -30,6 +30,7 @@ case_data_calculate(
 
 \item{output_type}{Type of output to produce:
 "annual" - Total reported cases and reported deaths by year
+"monthly" - Total reported cases and reported deaths by year/month
 "pts" - Total reported cases and reported deaths for every time point, summed over age groups
 "full" - Reported cases and reported deaths for every time point and age group}
 

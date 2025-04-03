@@ -21,6 +21,5 @@ Examines template data (serological, case or burden) and compares with vector of
  regions is c("AGO.1_1","AGO.2_1","AGO.3_1",...), then that line requires data from regions 1, 2 and 3.
 
  This function is used when generating a dataset from one or more templates; it is normally used by the functions
- Generate_Dataset, Generate_Sero_Dataset, Generate_Case_Dataset, Generate_VIMC_Burden_Dataset and
- Generate_Multiple_Datasets. It returns a list containing [TBA].
+ Generate_Dataset, Generate_VIMC_Burden_Dataset and Generate_Multiple_Datasets. It returns a list containing [TBA].
 }

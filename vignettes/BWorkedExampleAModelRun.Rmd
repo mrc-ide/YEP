@@ -48,11 +48,11 @@ vaccine_efficacy <- 1.0
 time_inc <- 1.0     
 # Type of data to output
 #'   "full" = SEIRVC + FOI for all steps and ages
-#'   "case" = annual total new infections (C) summed across all ages
+#'   "infs" = annual total new infections (C) summed across all ages
 #'   "sero" = annual SEIRV
-#'   "case+sero" = annual SEIRVC, cases summed across all ages
-#'   "case_alt" = annual total new infections not combined by age
-#'   "case_alt2" = total new infections combined by age for all steps
+#'   "infs+sero" = annual SEIRVC, cases summed across all ages
+#'   "infs_alt" = annual total new infections not combined by age
+#'   "infs_alt2" = total new infections combined by age for all steps
 output_type <- "full"    
 # Flag indicating how to set initial population immunity level in addition to
 # vaccination

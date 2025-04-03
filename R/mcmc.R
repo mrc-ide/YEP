@@ -95,6 +95,10 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
     all_est_param_names = params_data$name[params_data$estimate==TRUE]
     n_params=length(all_est_param_names)
     add_est_param_names=all_est_param_names[c(((2*n_env_vars)+1):n_params)]
+
+    # Cross-reference regions
+    if(is.null(obs_sero_data)){xref_sero=NULL}else{xref_sero=template_region_xref(obs_sero_data,input_data$region_labels)}
+    if(is.null(obs_case_data)){xref_case=NULL}else{xref_case=template_region_xref(obs_case_data,input_data$region_labels)}
   }
 
   #MCMC setup
@@ -107,6 +111,7 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
   adapt = 0
   posterior_value_current = -Inf
 
+  time0=Sys.time()
   #Iterative estimation
   for (iter in 1:Niter){
 
@@ -122,7 +127,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
                                                  mode_parallel = mode_parallel, cluster = cluster,
                                                  i_FOI_const = i_FOI_const, i_FOI_var = i_FOI_var,
                                                  i_R0_const = i_R0_const, i_R0_var = i_R0_var,
-                                                 i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior, n_env_vars = n_env_vars)
+                                                 i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior,
+                                                 n_env_vars = n_env_vars, xref_sero = xref_sero, xref_case = xref_case)
     gc() #Clear garbage to prevent memory creep
 
     if(is.finite(posterior_value_prop) == FALSE) {
@@ -178,6 +184,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
       adapt = 0
       chain_cov = 1
     }
+    time1=Sys.time()
+    cat("\n Iteration ",iter,"\tTime elapsed:",time1-time0,"\tRate: ",iter/(as.numeric(time1)-as.numeric(time0)))
   }
 
   return(data.frame(cbind(posterior_current, exp(chain))))
@@ -265,6 +273,10 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
     all_est_param_names = params_data$name[params_data$estimate==TRUE]
     n_params=length(all_est_param_names)
     add_est_param_names=all_est_param_names[c(((2*n_env_vars)+1):n_params)]
+
+    # Cross-reference regions
+    if(is.null(obs_sero_data)){xref_sero=NULL}else{xref_sero=template_region_xref(obs_sero_data,input_data$region_labels)}
+    if(is.null(obs_case_data)){xref_case=NULL}else{xref_case=template_region_xref(obs_case_data,input_data$region_labels)}
   }
 
   best_fit_results = list()
@@ -300,7 +312,8 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
                                               mode_parallel = mode_parallel, cluster = cluster,
                                               i_FOI_const = i_FOI_const, i_FOI_var = i_FOI_var,
                                               i_R0_const = i_R0_const, i_R0_var = i_R0_var,
-                                              i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior, n_env_vars = n_env_vars)
+                                              i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior,
+                                              n_env_vars = n_env_vars, xref_sero = xref_sero, xref_case = xref_case)
       gc() #Clear garbage to prevent memory creep
       results <- rbind(results, c(set, exp(log_params_prop), posterior_value))
       if(set == 1){colnames(results) = c("set", all_est_param_names, "posterior")}
@@ -415,7 +428,8 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
     dataset <- Generate_Dataset(FOI_values, R0_values, input_data, obs_sero_data, obs_case_data, vaccine_efficacy,
                                 consts$time_inc,consts$mode_start, start_SEIRV = NULL, consts$mode_time, consts$n_reps,
                                 consts$deterministic, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death,
-                                consts$mode_parallel, consts$cluster, output_frame = FALSE)
+                                consts$mode_parallel, consts$cluster, output_frame = FALSE, seed = NULL, #TBC?
+                                xref_sero = consts$xref_sero, xref_case = consts$xref_case)
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data) == FALSE){

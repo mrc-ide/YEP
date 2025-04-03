@@ -24,7 +24,9 @@ Generate_Dataset(
   mode_parallel = FALSE,
   cluster = NULL,
   output_frame = FALSE,
-  seed = NULL
+  seed = NULL,
+  xref_sero = NULL,
+  xref_case = NULL
 )
 }
 \arguments{
@@ -78,7 +80,11 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 or calculated values only (if FALSE)}
 
 \item{seed}{Optional random seed value to set before running each region for stochastic normalization; set to NULL
-  to omit; will not work if mode_parallel is not set to FALSE.
+to omit; will not work if mode_parallel is not set to FALSE.}
+
+\item{xref_sero}{TBA}
+
+\item{xref_case}{TBA
 '}
 }
 \description{

@@ -42,6 +42,8 @@
 #'   or calculated values only (if FALSE)
 #' @param seed Optional random seed value to set before running each region for stochastic normalization; set to NULL
 #'   to omit; will not work if mode_parallel is not set to FALSE.
+#' @param xref_sero TBA
+#' @param xref_case TBA
 #' '
 #' @export
 #'
@@ -49,7 +51,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
                              vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
                              n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                              p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE,
-                             seed = NULL){
+                             seed = NULL, xref_sero=NULL, xref_case=NULL){
 
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
                                                      " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
@@ -76,14 +78,14 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 
   #Cross-reference templates with input regions
   if(is.null(sero_template) == FALSE){
-    xref_sero = template_region_xref(sero_template,input_data$region_labels)
+    if(is.null(xref_sero)){xref_sero = template_region_xref(sero_template,input_data$region_labels)}
     sero_line_list = xref_sero$line_list
   } else {
     xref_sero = data.frame(year_data_begin = rep(Inf,n_regions),year_end = rep(-Inf,n_regions))
     sero_line_list = rep(NA,n_regions)
   }
   if(is.null(case_template) == FALSE){
-    xref_case = template_region_xref(case_template,input_data$region_labels)
+    if(is.null(xref_case)){xref_case = template_region_xref(case_template,input_data$region_labels)}
     case_line_list = xref_case$line_list
   } else {
     xref_case = data.frame(year_data_begin = rep(Inf,n_regions),year_end = rep(-Inf,n_regions))
@@ -117,7 +119,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
   output_types = rep(NA,n_regions)
   for(n_region in 1:n_regions){
     if(is.na(case_line_list[[n_region]][1]) == FALSE){
-      if(is.na(sero_line_list[[n_region]][1]) == FALSE){ output_types[n_region] = "case_sero"}else{output_types[n_region] = "case"}
+      if(is.na(sero_line_list[[n_region]][1]) == FALSE){ output_types[n_region] = "infs_sero"}else{output_types[n_region] = "infs"}
     } else {
       output_types[n_region] = "sero"
     }
@@ -306,7 +308,7 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
     model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_subsets, R0 = R0_subsets,
                                 vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
                                 years_data = years_data_sets, start_SEIRV = start_SEIRV,
-                                MoreArgs = list(output_type = "case_alt", year0 = input_data$years_labels[1],
+                                MoreArgs = list(output_type = "infs_alt", year0 = input_data$years_labels[1],
                                               mode_start = mode_start, vaccine_efficacy = vaccine_efficacy,
                                               time_inc = time_inc, n_particles = n_reps, n_threads = 1 ,
                                               deterministic = deterministic, mode_time = mode_time))
@@ -321,7 +323,7 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
       model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
-                               start_SEIRV = start_SEIRV[[n_region]],output_type = "case_alt",
+                               start_SEIRV = start_SEIRV[[n_region]],output_type = "infs_alt",
                                year0 = input_data$years_labels[1],mode_start = mode_start,
                                vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, n_particles = n_reps,
                                n_threads = n_reps, deterministic = deterministic, mode_time = mode_time)
