@@ -17,6 +17,7 @@ LinkingTo:
 Imports:
     assertthat,
     dde,
+    dplyr,
     dust2,
     graphics,
     mvtnorm,

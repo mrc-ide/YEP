@@ -9,6 +9,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @useDynLib YEP, .registration = TRUE
 #' @importFrom assertthat assert_that
 #' @import dde
+#' @importFrom dplyr between
 #' @import dust2
 #' @importFrom graphics axis matplot par
 #' @importFrom mvtnorm rmvnorm
@@ -342,7 +343,7 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
   N_age = length(pop_data[1, ])
   assert_that(length(vacc_data[, 1]) == n_years + 1, msg = "Population and vaccination data must be for same time periods")
   assert_that(length(vacc_data[1, ]) == N_age, msg = "No. age groups in population and vaccination data must match")
-  assert_that(vaccine_efficacy <= 1.0 && vaccine_efficacy >= 0.0, msg = "Vaccine efficacy must be between 0 and 1")
+  assert_that(between(vaccine_efficacy,0.0,1.0),msg = "Vaccine efficacy must be between 0-1")
   assert_that(years_data[1] >= year0, msg = "First data year must be greater than or equal to year0")
   assert_that(max(years_data) + 1 - year0 <= n_years, msg = "Period of years_data must lie within population data")
   assert_that(time_inc %in% c(1, 2.5, 5), msg = "time_inc must have value 1, 2.5 or 5 days")
