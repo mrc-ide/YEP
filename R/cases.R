@@ -44,10 +44,17 @@ case_data_calculate <- function(model_data = list(), n_p = 1, p_severe_inf = 0.1
       }else{
         infs=sum(model_data$C[n_p,model_data$year==years[n_year]])
       }
-      severe_infs=rbinom(1,floor(infs),p_severe_inf)
-      deaths=rbinom(1,severe_infs,p_death_severe_inf)
-      case_data$rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
-      case_data$rep_cases[n_year]=case_data$rep_deaths[n_year] + rbinom(1,severe_infs-deaths,p_rep_severe)
+      if(deterministic){
+        severe_infs=infs*p_severe_inf
+        deaths=severe_infs*p_death_severe_inf
+        case_data$rep_deaths[n_year]=deaths*p_rep_death
+        case_data$rep_cases[n_year]=case_data$rep_deaths[n_year] + ((severe_infs-deaths)*p_rep_severe)
+      }else{
+        severe_infs=rbinom(1,floor(infs),p_severe_inf)
+        deaths=rbinom(1,severe_infs,p_death_severe_inf)
+        case_data$rep_deaths[n_year]=rbinom(1,deaths,p_rep_death)
+        case_data$rep_cases[n_year]=case_data$rep_deaths[n_year] + rbinom(1,severe_infs-deaths,p_rep_severe)
+      }
     }
   } else {
     if(output_type=="pts"){
@@ -55,10 +62,17 @@ case_data_calculate <- function(model_data = list(), n_p = 1, p_severe_inf = 0.1
       case_data=data.frame(rep_cases=rep(NA,n_pts),rep_deaths=rep(NA,n_pts))
       for(n_pt in 1:n_pts){
         if(input_type=="age_split"){infs=sum(model_data$C[,n_p,n_pt])}else{infs=sum(model_data$C[n_p,n_pt])}
-        severe_infs=rbinom(1,floor(infs),p_severe_inf)
-        deaths=rbinom(1,severe_infs,p_death_severe_inf)
-        case_data$rep_deaths[n_pt]=rbinom(1,deaths,p_rep_death)
-        case_data$rep_cases[n_pt]=case_data$rep_deaths[n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+        if(deterministic){
+          severe_infs=infs*p_severe_inf
+          deaths=severe_infs*p_death_severe_inf
+          case_data$rep_deaths[n_pt]=deaths*p_rep_death
+          case_data$rep_cases[n_pt]=case_data$rep_deaths[n_pt] + ((severe_infs-deaths)*p_rep_severe)
+        }else{
+          severe_infs=rbinom(1,floor(infs),p_severe_inf)
+          deaths=rbinom(1,severe_infs,p_death_severe_inf)
+          case_data$rep_deaths[n_pt]=rbinom(1,deaths,p_rep_death)
+          case_data$rep_cases[n_pt]=case_data$rep_deaths[n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+        }
       }
     } else {
       if(output_type=="full"){
@@ -66,30 +80,43 @@ case_data_calculate <- function(model_data = list(), n_p = 1, p_severe_inf = 0.1
         case_data=list(rep_cases=array(NA,dim=c(N_age,n_pts)),rep_deaths=array(NA,dim=c(N_age,n_pts)))
         for(n_pt in 1:n_pts){
           if(input_type=="age_split"){infs=sum(model_data$C[,n_p,n_pt])}else{infs=sum(model_data$C[n_p,n_pt])}
-          severe_infs=rbinom(1,floor(infs),p_severe_inf)
-          deaths=rbinom(1,severe_infs,p_death_severe_inf)
-          case_data$rep_deaths[,n_pt]=rbinom(1,deaths,p_rep_death)
-          case_data$rep_cases[,n_pt]=case_data$rep_deaths[n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+          if(deterministic){
+            severe_infs=infs*p_severe_inf
+            deaths=severe_infs*p_death_severe_inf
+            case_data$rep_deaths[,n_pt]=deaths*p_rep_death
+            case_data$rep_cases[,n_pt]=case_data$rep_deaths[,n_pt] + ((severe_infs-deaths)*p_rep_severe)
+          }else{
+            severe_infs=rbinom(1,floor(infs),p_severe_inf)
+            deaths=rbinom(1,severe_infs,p_death_severe_inf)
+            case_data$rep_deaths[,n_pt]=rbinom(1,deaths,p_rep_death)
+            case_data$rep_cases[,n_pt]=case_data$rep_deaths[,n_pt] + rbinom(1,severe_infs-deaths,p_rep_severe)
+          }
         }
       } else {
-        #TODO - Test
-        # years=unique(model_data$year)
-        # n_years=length(years)
-        # n_months=n_years*12
-        # months=c(1:n_months)
-        # model_data$month=ceiling((model_data$day-model_data$day[1]+1)*(12/365))
-        # case_data=data.frame(rep_cases=rep(NA,n_months),rep_deaths=rep(NA,n_months))
-        # for(n_month in 1:n_months){
-        #   if(input_type=="age_split"){
-        #     infs=sum(model_data$C[,n_p,model_data$month==months[n_month]])
-        #   }else{
-        #     infs=sum(model_data$C[n_p,model_data$month==months[n_month]])
-        #   }
-        #   severe_infs=rbinom(1,floor(infs),p_severe_inf)
-        #   deaths=rbinom(1,severe_infs,p_death_severe_inf)
-        #   case_data$rep_deaths[n_month]=rbinom(1,deaths,p_rep_death)
-        #   case_data$rep_cases[n_month]=case_data$rep_deaths[n_month] + rbinom(1,severe_infs-deaths,p_rep_severe)
-        # }
+        years=unique(model_data$year)
+        n_years=length(years)
+        n_months=n_years*12
+        months=c(1:n_months)
+        model_data$month=ceiling((model_data$day-model_data$day[1]+1)*(12/365))
+        case_data=data.frame(rep_cases=rep(NA,n_months),rep_deaths=rep(NA,n_months))
+        for(n_month in 1:n_months){
+          if(input_type=="age_split"){
+            infs=sum(model_data$C[,n_p,model_data$month==months[n_month]])
+          }else{
+            infs=sum(model_data$C[n_p,model_data$month==months[n_month]])
+          }
+          if(deterministic){
+            severe_infs=infs*p_severe_inf
+            deaths=severe_infs*p_death_severe_inf
+            case_data$rep_deaths[n_month]=deaths*p_rep_death
+            case_data$rep_cases[n_month]=case_data$rep_deaths[n_month] + ((severe_infs-deaths)*p_rep_severe)
+          }else{
+            severe_infs=rbinom(1,floor(infs),p_severe_inf)
+            deaths=rbinom(1,severe_infs,p_death_severe_inf)
+            case_data$rep_deaths[n_month]=rbinom(1,deaths,p_rep_death)
+            case_data$rep_cases[n_month]=case_data$rep_deaths[n_month] + rbinom(1,severe_infs-deaths,p_rep_severe)
+          }
+        }
       }
     }
   }
