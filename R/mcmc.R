@@ -111,7 +111,7 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
   adapt = 0
   posterior_value_current = -Inf
 
-  time0=Sys.time()
+  #time0=Sys.time()
   #Iterative estimation
   for (iter in 1:Niter){
 
@@ -172,8 +172,11 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
       if(file.exists(fn) == FALSE){file.create(fn)}
       # lines = min(((fileIndex*10000) + 1), iter):iter
 
-      saveRDS(data.frame(cbind(posterior_current, posterior_prop, exp(chain), flag_accept, exp(chain_prop), chain_cov_all)[c(1:iter),]),
-              file = fn)
+      if(is.writeable(fn)){
+        saveRDS(data.frame(cbind(posterior_current, posterior_prop, exp(chain), flag_accept,
+                                 exp(chain_prop), chain_cov_all)[c(1:iter),]),
+                file = fn)
+      }
     }
 
     #Decide whether next iteration will be adaptive
@@ -184,8 +187,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
       adapt = 0
       chain_cov = 1
     }
-    time1=Sys.time()
-    cat("\n Iteration ",iter,"\tTime elapsed:",time1-time0,"\tRate: ",iter/(as.numeric(time1)-as.numeric(time0)))
+    # time1=Sys.time()
+    # cat("\n Iteration ",iter,"\tTime elapsed:",time1-time0,"\tRate: ",iter/(as.numeric(time1)-as.numeric(time0)))
   }
 
   return(data.frame(cbind(posterior_current, exp(chain))))
