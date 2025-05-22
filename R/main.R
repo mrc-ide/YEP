@@ -62,9 +62,9 @@ t_infectious <- 5 #Time cases remain infectious
 #'  If mode_time = 0, no time variation (constant values)\cr
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
-#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
+#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/time_inc) \cr
 #'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/time_inc)*number of years to consider)
 #' @param n_particles number of particles to use
 #' @param n_threads number of threads to use
 #' @param deterministic TRUE/FALSE  -  set model to run in deterministic mode if TRUE
@@ -173,9 +173,9 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #'  If mode_time = 0, no time variation (constant values)\cr
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
-#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
+#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/time_inc) \cr
 #'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/time_inc)*number of years to consider)
 #' @param n_reps Number of repetitions (used to set number of particles and threads)
 #' @param division Number of particles/threads to run in one go (up to 20)
 #' @param deterministic TRUE/FALSE  -  set model to run in deterministic mode if TRUE
@@ -322,18 +322,19 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #'  If mode_time = 0, no time variation (constant values)\cr
 #'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
 #'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
-#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/dt) \cr
+#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/time_inc) \cr
 #'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/time_inc)*number of years to consider)
 #' '
 #' @export
 #'
 parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), pop_data = list(), years_data = c(), year0 = 1940,
                             vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 0, start_SEIRV = list(), mode_time = 0){
 
-  assert_that(mode_start %in% c(0, 1, 2, 3), msg = "mode_start must have value 0, 1, 2 or 3  -  NB 3 should be changed to 1")
-  if(mode_start == 3){mode_start = 1} #Temporary fix until mode_start harmonized across all functions/examples
-  if(mode_start == 2){assert_that(is.null(start_SEIRV$S) == FALSE, msg = "When mode_start = 2, start_SEIRV data required")}
+  assert_that(mode_start %in% c(0, 1, 2), msg = "mode_start must have value 0, 1, or 2")
+  #if(mode_start == 3){mode_start = 1} #Temporary fix until mode_start harmonized across all functions/examples
+  if(mode_start == 2){assert_that(is.null(start_SEIRV$S) == FALSE,
+                                  msg = "When mode_start = 2, start_SEIRV data required")}
   assert_that(mode_time %in% c(0:5), msg = "mode_time must be an integer between 0 and 5")
   assert_that(all(FOI_spillover >= 0.0))
   assert_that(all(R0 >= 0.0))
@@ -341,7 +342,8 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
   assert_that(length(pop_data[1, ]) > 1, msg = "Need population data for multiple age groups")
   n_years = length(pop_data[, 1]) - 1
   N_age = length(pop_data[1, ])
-  assert_that(length(vacc_data[, 1]) == n_years + 1, msg = "Population and vaccination data must be for same time periods")
+  assert_that(length(vacc_data[, 1]) == n_years + 1,
+              msg = "Population and vaccination data must be for same time periods")
   assert_that(length(vacc_data[1, ]) == N_age, msg = "No. age groups in population and vaccination data must match")
   assert_that(between(vaccine_efficacy,0.0,1.0),msg = "Vaccine efficacy must be between 0-1")
   assert_that(years_data[1] >= year0, msg = "First data year must be greater than or equal to year0")
@@ -354,30 +356,17 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
               msg = "Spillover FOI and R0 must be correct length for mode_time")
   inv_365 = 1.0/365.0
 
-  if(mode_time == 0){
-    FOI_spillover_t = rep(FOI_spillover, n_t_pts)
-    R0_t = rep(R0, n_t_pts)
-  } else {
-    if(mode_time == 5){
-      FOI_spillover_t = FOI_spillover
-      R0_t = R0
-    } else {
-      if(mode_time == 1){
-        FOI_spillover_t = R0_t = rep(NA, n_t_pts)
-        for(i in 1:n_years){
-          FOI_spillover_t[c(1:pts_year) + (i - 1)*pts_year] = rep(FOI_spillover[i], pts_year)
-          R0_t[c(1:pts_year) + (i - 1)*pts_year] = rep(R0[i], pts_year)
-        }
-      } else {
-        if(mode_time == 2){date_values = (1 + floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12)}
-        if(mode_time == 3){date_values = 1 + (floor(time_inc*c(0:(n_t_pts - 1))) %% pts_year)}
-        if(mode_time == 4){date_values = (1 + floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12) + sort(rep(c(1:n_years) - 1,
-                                                                                                              pts_year))}
-        FOI_spillover_t = FOI_spillover[date_values]
-        R0_t = R0[date_values]
-      }
-    }
-  }
+  date_values = switch(mode_time + 1,
+                       rep(1, n_t_pts),
+                       sort(rep(c(1:n_years),pts_year)),
+                       1 + (floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12),
+                       1 + (floor(time_inc*c(0:(n_t_pts - 1))) %% pts_year),
+                       1 + (floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12) + (12*sort(rep(c(1:n_years) - 1,
+                                                                                                pts_year))),
+                       c(1:n_t_pts))
+
+  FOI_spillover_t = FOI_spillover[date_values]
+  R0_t = R0[date_values]
 
   P0 = S_0 = E_0 = I_0 = R_0 = V_0 = rep(0, N_age)
   dP1_all = dP2_all = vacc_rates = array(NA, dim = c(N_age, n_years))
@@ -405,13 +394,15 @@ parameter_setup <- function(FOI_spillover = c(), R0 = c(), vacc_data = list(), p
     V_0 = P0*vacc_initial
     if(mode_start == 0){ #No initial immunity
       S_0 = P0*(1.0 - vacc_initial)
-    } else { #Stratified herd immunity profile based on notional FOI
+    } else { #Stratified herd immunity profile based on notional FOI (averaged over first year)
+      R0_year0=mean(R0_t[c(1:pts_year)])
+      FOI_spillover_year0=mean(FOI_spillover_t[c(1:pts_year)])
       ages = c(1:N_age) - 1
-      if(R0_t[1] <= 1.0){
-        FOI_estimate = FOI_spillover[1]*365.0
+      if(R0_year0 <= 1.0){
+        FOI_estimate = FOI_spillover_year0*365.0
       } else {
-        estimation_results = nlm(imm_fraction_function, p =  - 4, R0_t[1], ages, P0/sum(P0))
-        FOI_estimate = min(0.1, (FOI_spillover[1]*365.0) + exp(estimation_results$estimate))
+        estimation_results = nlm(imm_fraction_function, p =  - 4, R0_year0, ages, P0/sum(P0))
+        FOI_estimate = min(0.1, (FOI_spillover_year0*365.0) + exp(estimation_results$estimate))
       }
       herd_immunity = 1.0 - (exp( - FOI_estimate*(ages + 0.5)))
 

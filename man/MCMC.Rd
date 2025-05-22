@@ -46,8 +46,7 @@ cases/no. deaths (TBA - instructions)}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s)}
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr}
 
 \item{time_inc}{time increment in days (must be 1 or 5)}
 

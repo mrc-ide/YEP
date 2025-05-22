@@ -27,7 +27,6 @@ extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param time_inc time increment in days (must be 1 or 5)
 #' @param n_reps Number of times to repeat calculations to get average likelihood at each iteration
 #' @param enviro_data_const Data frame of values of constant environmental covariates (columns) by region (rows)
@@ -59,7 +58,7 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
   {
     # Checks
     assert_that(is.logical(deterministic))
-    assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3 (NB 3 should be changed to 1)")
+    assert_that(mode_start %in% c(0, 1), msg = "mode_start must have value 0 or 1")
     if(is.null(obs_case_data)==FALSE){
       assert_that(all(obs_case_data$cases==round(obs_case_data$cases,0)),msg="Case data values must be integers")
       assert_that(all(obs_case_data$deaths==round(obs_case_data$deaths,0)),msg="Case data values must be integers")
@@ -215,7 +214,6 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s)
 #' @param time_inc time increment in days (must be 1 or 5)
 #' @param n_reps Number of repetitions
 #' @param enviro_data_const Data frame of values of constant environmental covariates (columns) by region (rows)
@@ -237,7 +235,7 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
   {
     # Checks
     assert_that(is.logical(deterministic))
-    assert_that(mode_start %in% c(0, 1, 3), msg = "mode_start must have value 0, 1 or 3 (NB 3 should be changed to 1)")
+    assert_that(mode_start %in% c(0, 1), msg = "mode_start must have value 0 or 1")
     if(is.null(obs_case_data)==FALSE){
       assert_that(all(obs_case_data$cases==round(obs_case_data$cases,0)),msg="Case data values must be integers")
       assert_that(all(obs_case_data$deaths==round(obs_case_data$deaths,0)),msg="Case data values must be integers")
@@ -413,7 +411,7 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
       if(substr(input_data$region_labels[n_region],1,3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}
     }
     prior_like = prior_like  +
-      sum(log(dtrunc(rowMeans(FOI_values), "norm",
+      sum(log(dtrunc(rowMeans(FOI_values), "norm", #TODO - change to use log(FOI)?
                      a = consts$params_data$min[consts$i_FOI_prior], b = consts$params_data$max[consts$i_FOI_prior],
                      mean = consts$params_data$mean[consts$i_FOI_prior], sd = consts$params_data$sd[consts$i_FOI_prior]))) +
       sum(log(dtrunc(rowMeans(R0_values), "norm",
