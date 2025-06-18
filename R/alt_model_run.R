@@ -19,6 +19,7 @@
 #' @param output_type Type of data to output: \cr
 #'   "full" = SEIRVC + FOI for all steps and ages \cr
 #'   "infs" = annual total new infections (C) summed across all ages \cr
+#'   "sero" = TBA
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
@@ -42,7 +43,7 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
                       start_SEIRV = list(), mode_time = 0, n_particles = 1, n_threads = 1, deterministic = FALSE) {
 
   #TODO Add assert_that functions (NB  -  Some checks carried out in parameter_setup)
-  assert_that(output_type %in% c("full","annual"))
+  assert_that(output_type %in% c("full","infs","sero"))
   assert_that(n_particles <= 20, msg = "Number of particles must be 20 or less")
 
   N_age = length(pop_data[1, ]) #Number of age groups
@@ -69,10 +70,18 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
     dim = c(N_age, n_particles, t_pts_out)
     output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ], FOI_total = x_res[3, , ]/time_inc,
                        S = array(x_res[index$S, , ], dim), E = array(x_res[index$E, , ], dim), I = array(x_res[index$I, , ], dim),
-                       R = array(x_res[index$R, , ], dim), V = array(x_res[index$V, , ], dim), C = array(x_res[index$C, , ], dim))
+                       R = array(x_res[index$R, , ], dim), V = array(x_res[index$V, , ], dim), C = array(x_res[index$C, , ], dim),
+                       C_annual = array(x_res[index$C_annual, , ], dim))
+
   } else {
-    output_data = list(year = x_res[2, 1, ])
-    output_data$C = colSums(x_res[index$C_annual, , ])
+    output_data = list(year = years_data)
+    if(output_type == "infs"){
+      output_data$C = array(colSums(x_res[index$C_annual, , ]), dim=c(n_particles,t_pts_out))
+    } else {
+      dim = c(N_age, n_particles, t_pts_out)
+      output_data$R_annual=array(x_res[index$R_annual, , ], dim)
+      output_data$SEIR_annual=array(x_res[index$SEIR_annual, , ], dim)
+    }
   }
   x_res = NULL
   gc()

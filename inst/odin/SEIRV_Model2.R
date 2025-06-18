@@ -60,8 +60,12 @@ update(R[2:N_age]) <- max(Pmin, R[i] + R_new[i] - vacc_rate[i]*R[i]*inv_P_nV[i] 
 update(V[1]) <- max(Pmin, V[1] + vacc_rate[1] - (dP2[1]*V[1]*inv_P[1]))
 update(V[2:N_age]) <- max(Pmin, V[i] + vacc_rate[i] + (dP1[i]*V[i-1]*inv_P[i-1]) - (dP2[i]*V[i]*inv_P[i]))
 update(C[1:N_age]) <- I_new[i]
-update(C_cu[1:N_age]) <- if(flag_year==1) I_new[i] else C_cu[i] + I_new[i]
+update(C_cu[1:N_age]) <- if(flag_year==1) 0 else C_cu[i] + I_new[i]
 update(C_annual[1:N_age]) <- if(flag_year==1) C_cu[i] + I_new[i] else 0
+update(R_cu[1:N_age]) <- if(flag_year==1) 0 else R_cu[i] + R[i]
+update(R_annual[1:N_age]) <- if(flag_year==1) R_cu[i] + R[i] else 0
+update(SEIR_cu[1:N_age]) <- if(flag_year==1) 0 else SEIR_cu[i] + S[i]+E[i]+I[i]+R[i]
+update(SEIR_annual[1:N_age]) <- if(flag_year==1) SEIR_cu[i] + S[i]+E[i]+I[i]+R[i] else 0
 
 #Initial values-----------------------------------------------------------------
 initial(day) <- time_inc
@@ -75,6 +79,10 @@ initial(V[1:N_age]) <- V_0[i]
 initial(C[1:N_age]) <- 0
 initial(C_cu[1:N_age]) <- 0
 initial(C_annual[1:N_age]) <- 0
+initial(R_cu[1:N_age]) <- 0
+initial(R_annual[1:N_age]) <- 0
+initial(SEIR_cu[1:N_age]) <- 0
+initial(SEIR_annual[1:N_age]) <- 0
 
 #Dimensions---------------------------------------------------------------------
 dim(S) <- N_age
@@ -85,6 +93,10 @@ dim(V) <- N_age
 dim(C) <- N_age
 dim(C_cu) <- N_age
 dim(C_annual) <- N_age
+dim(R_cu) <- N_age
+dim(R_annual) <- N_age
+dim(SEIR_cu) <- N_age
+dim(SEIR_annual) <- N_age
 
 dim(dP1)<-N_age
 dim(dP2)<-N_age
