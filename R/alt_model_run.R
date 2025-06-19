@@ -1,3 +1,8 @@
+#TODO:
+# -Consolidate new model versions into one
+# -Create new version of Generate_Dataset
+# -Run speed tests on desktop and on cluster
+
 #' @title Model_Run2
 #'
 #' @description Run SEIRV model for single region (alternate version)
