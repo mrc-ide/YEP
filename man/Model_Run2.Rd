@@ -42,7 +42,8 @@ Model_Run2(
 
 \item{output_type}{Type of data to output: \cr
 "full" = SEIRVC + FOI for all steps and ages \cr
-"infs" = annual total new infections (C) summed across all ages \cr}
+"infs" = annual total new infections (C) summed across all ages \cr
+"sero" = TBA}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
