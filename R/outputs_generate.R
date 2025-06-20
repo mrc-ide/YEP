@@ -148,7 +148,8 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
                                   years_data = years_data_sets, start_SEIRV = start_SEIRV, output_type = output_types,
                                   MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
                                                   time_inc = time_inc,mode_start = mode_start,mode_time = mode_time,
-                                                  n_particles = n_reps, n_threads = 1 ,deterministic = deterministic))
+                                                  n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
+                                                  seed = seed))
   }
 
   #Save relevant output data from each region
@@ -162,7 +163,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
                                years_data = c(year_data_begin[n_region]:year_end[n_region]), year0 = input_data$years_labels[1],
                                vaccine_efficacy = vaccine_efficacy, time_inc = time_inc, output_type = output_types[n_region],
                                mode_start = mode_start, start_SEIRV = start_SEIRV[[n_region]],mode_time = mode_time,
-                               n_particles = n_reps,n_threads = n_reps, deterministic = deterministic)
+                               n_particles = n_reps,n_threads = n_reps, deterministic = deterministic, seed = seed)
     } else {
       model_output = model_output_all[[n_region]]
     }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{parameter_setup}
 \alias{parameter_setup}
-\title{Parameter setup}
+\title{parameter_setup}
 \usage{
 parameter_setup(
   FOI_spillover = c(),

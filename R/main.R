@@ -68,12 +68,14 @@ t_infectious <- 5 #Time cases remain infectious
 #' @param n_particles number of particles to use
 #' @param n_threads number of threads to use
 #' @param deterministic TRUE/FALSE  -  set model to run in deterministic mode if TRUE
+#' @param seed Random seed (set to NULL if not to be used)
 #' '
 #' @export
 #'
 Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_data = list(), years_data = c(1940:1941),
                       year0 = 1940, vaccine_efficacy = 1.0, time_inc = 1.0, output_type = "full", mode_start = 0,
-                      start_SEIRV = list(), mode_time = 0, n_particles = 1, n_threads = 1, deterministic = FALSE) {
+                      start_SEIRV = list(), mode_time = 0, n_particles = 1, n_threads = 1, deterministic = FALSE,
+                      seed=NULL) {
 
   #TODO Add assert_that functions (NB  -  Some checks carried out in parameter_setup)
   assert_that(output_type %in% c("full","infs","sero","infs_sero","infs_alt","infs_alt2"))
@@ -87,7 +89,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   x <- dust_system_create(SEIRV_Model, pars = parameter_setup(FOI_spillover, R0, vacc_data, pop_data, years_data, year0,
                                                               vaccine_efficacy, time_inc, mode_start, start_SEIRV, mode_time),
                           n_particles = n_particles, n_threads = n_threads, time = 0, dt = 1,
-                          deterministic = deterministic, preserve_particle_dimension = TRUE)
+                          seed = seed, deterministic = deterministic, preserve_particle_dimension = TRUE)
   index = dust_unpack_index(x)
   dust_system_set_state_initial(x)
   x_res <- dust_system_simulate(x, times = c(step_begin:step_end))
@@ -298,7 +300,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
   return(output_data)
 }
 #-------------------------------------------------------------------------------
-#' @title Parameter setup
+#' @title parameter_setup
 #'
 #' @description Set up parameters to input into model
 #'

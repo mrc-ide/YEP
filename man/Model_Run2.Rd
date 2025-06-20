@@ -19,7 +19,8 @@ Model_Run2(
   mode_time = 0,
   n_particles = 1,
   n_threads = 1,
-  deterministic = FALSE
+  deterministic = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -64,7 +65,9 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 
 \item{n_threads}{number of threads to use}
 
-\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE
+\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE}
+
+\item{seed}{Random seed (set to NULL if not to be used)
 '}
 }
 \description{
