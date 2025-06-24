@@ -330,8 +330,8 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
   }
   #TBC
   region_groups=list()
-  region_groups[[1]]=which(input_data$region_labels %in% sero_template$region)
-  region_groups[[2]]=which(input_data$region_labels %in% case_template$region)
+  region_groups[[1]]=which(input_data$region_labels %in% regions_breakdown(sero_template$region))
+  region_groups[[2]]=which(input_data$region_labels %in% regions_breakdown(case_template$region))
   n_groups=length(region_groups)
   year_data_begin=year_end=rep(NA,n_groups)
   year_data_begin[1]=min(sero_template$year)
@@ -392,8 +392,8 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
     } else {
       model_output = Model_Run2(FOI_spillover = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2])),
                                 R0 = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2])),
-                                vacc_data = input_data$vacc_data[i_regions,,],
-                                pop_data = input_data$pop_data[i_regions,,],
+                                vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
+                                pop_data = array(input_data$pop_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
                                 years_data = c(year_data_begin[n_group]:year_end[n_group]),
                                 year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
                                 time_inc = time_inc, output_type = output_types[[n_group]],mode_start = mode_start,
