@@ -1,5 +1,4 @@
 #TODO:
-# -Create new version of Generate_Dataset
 # -Run speed tests on desktop and on cluster
 #-------------------------------------------------------------------------------
 #' @title Model_Run2
@@ -24,7 +23,7 @@
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (if mode_start = 2)
 #' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
 #'  If mode_time = 0, no time variation (constant values)\cr
@@ -52,19 +51,19 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
   N_age = length(pop_data[1, 1, ]) #Number of age groups
   n_regions = length(pop_data[, 1, 1])
   if(output_type=="full"){
-    #model = SEIRV_Model
+    model = SEIRV_Model_mr01_basic
     step_begin = ((years_data[1] - year0)*(365/time_inc)) #Step at which data starts being saved for final output
     step_end = ((max(years_data) + 1 - year0)*(365/time_inc)) - 1 #Step at which to end
     time_pts = c(step_begin:step_end)
   } else {
-    #model = SEIRV_Model2
+    if(output_type=="sero"){model=SEIRV_Model_mr02_sero}else{model=SEIRV_Model_mr03_infs}
     i_year_begin=years_data[1] - year0 + 1
     i_year_end=max(years_data) + 1 - year0
     time_pts = (c(i_year_begin:i_year_end)*(365/time_inc))-1
   }
-  t_pts_out=length(time_pts)#Number of time points in final output data
+  t_pts_out=length(time_pts) #Number of time points in final output data
 
-  x <- dust_system_create(SEIRV_Model2,
+  x <- dust_system_create(model,
                            pars = parameter_setup2(FOI_spillover, R0,vacc_data, pop_data,
                                                    years_data, year0, vaccine_efficacy, time_inc, mode_start,
                                                    start_SEIRV,mode_time),
@@ -360,17 +359,36 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
 
   #Set up vector of output types to get from model
   #TBC
-  output_types=rep(NA,n_groups)
-  output_types=c("sero","infs")
+  #output_types=rep(NA,n_groups)
+  output_types=list()
+  output_types[[1]]="sero"
+  output_types[[2]]="infs"
 
   if(mode_parallel){
-    #TBA
+    FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = start_SEIRV_sets = list()
+    for(n_group in 1:n_groups){
+      i_regions=region_groups[[n_group]]
+      FOI_subsets[[n_group]] = FOI_values[i_regions,]
+      R0_subsets[[n_group]] = R0_values[i_regions,]
+      vacc_data_subsets[[n_group]] = input_data$vacc_data[i_regions,,]
+      pop_data_subsets[[n_group]] = input_data$pop_data[i_regions,,]
+      years_data_sets[[n_group]] = c(year_data_begin[n_group]:year_end[n_group])
+      start_SEIRV_sets[[n_group]] = list() #TBA
+    }
+
+    model_output_all = clusterMap(cl = cluster,fun = Model_Run2, FOI_spillover = FOI_subsets, R0 = R0_subsets,
+                                  vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
+                                  years_data = years_data_sets, start_SEIRV = start_SEIRV_sets, output_type = output_types,
+                                  MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
+                                                  time_inc = time_inc,mode_start = mode_start,mode_time = mode_time,
+                                                  n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
+                                                  seed = seed))
   }
 
   for(n_group in 1:n_groups){
     i_regions=region_groups[[n_group]]
     if(mode_parallel){
-      #TBA
+      model_output = model_output_all[[n_group]]
     } else {
       model_output = Model_Run2(FOI_spillover = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2])),
                                 R0 = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2])),
@@ -379,7 +397,7 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
                                 years_data = c(year_data_begin[n_group]:year_end[n_group]),
                                 year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
                                 time_inc = time_inc, output_type = output_types[n_group],mode_start = mode_start,
-                                start_SEIRV = start_SEIRV[[n_group]],mode_time = mode_time,n_particles = n_reps,
+                                start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
                                 n_threads = n_reps, deterministic = deterministic, seed = seed)
     }
     t_pts = length(model_output$year)

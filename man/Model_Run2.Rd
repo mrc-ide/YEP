@@ -49,7 +49,7 @@ Model_Run2(
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
+If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 

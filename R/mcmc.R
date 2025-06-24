@@ -1,6 +1,7 @@
 # Version of mcmc.R with functions updated to streamline parameter implementation
 # Global variable - additional parameter names
-extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe","p_rep_death","m_FOI_Brazil")
+extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
+                       "p_rep_death","m_FOI_Brazil")
 #TODO - Add provision for parameters of temperature/precipitation functional forms?
 #-------------------------------------------------------------------------------
 #' @title MCMC
@@ -517,7 +518,8 @@ mcmc_checks <- function(params_data = list(), covar_names = c(), check_initial =
 #'
 #' @export
 #'
-mcmc_params_data_create <- function(covar_names = c("Var1", "Var2"), add_est_param_names = "vaccine_efficacy"){
+mcmc_params_data_create <- function(covar_names = c("Var1", "Var2"),
+                                    add_est_param_names = "vaccine_efficacy"){
   assert_that(all(c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
                     "p_rep_death") %in% extra_param_names))
   assert_that(all(add_est_param_names %in% extra_param_names))
@@ -527,7 +529,8 @@ mcmc_params_data_create <- function(covar_names = c("Var1", "Var2"), add_est_par
   nrows=(2*n_env_vars)+n_extra+2
 
   #Create data frame
-  params_data=data.frame(name=c(paste0("FOI_",covar_names),paste0("R0_",covar_names),extra_param_names,"FOI","R0"),
+  params_data=data.frame(name=c(paste0("FOI_",covar_names),paste0("R0_",covar_names),extra_param_names,
+                                "FOI","R0"),
                          initial=c(rep(1e-5,n_env_vars),rep(1e-3,n_env_vars),rep(1,n_extra),NA,NA),
                          max=c(rep(1e-4,n_env_vars),rep(10,n_env_vars),rep(1,n_extra),Inf,Inf),
                          min=c(rep(1e-10,n_env_vars),rep(1e-4,n_env_vars),rep(1e-3,n_extra),0,0),
