@@ -368,8 +368,8 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
     FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = start_SEIRV_sets = list()
     for(n_group in 1:n_groups){
       i_regions=region_groups[[n_group]]
-      FOI_subsets[[n_group]] = FOI_values[i_regions,]
-      R0_subsets[[n_group]] = R0_values[i_regions,]
+      FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2]))
+      R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2]))
       vacc_data_subsets[[n_group]] = input_data$vacc_data[i_regions,,]
       pop_data_subsets[[n_group]] = input_data$pop_data[i_regions,,]
       years_data_sets[[n_group]] = c(year_data_begin[n_group]:year_end[n_group])
@@ -396,7 +396,7 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
                                 pop_data = input_data$pop_data[i_regions,,],
                                 years_data = c(year_data_begin[n_group]:year_end[n_group]),
                                 year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
-                                time_inc = time_inc, output_type = output_types[n_group],mode_start = mode_start,
+                                time_inc = time_inc, output_type = output_types[[n_group]],mode_start = mode_start,
                                 start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
                                 n_threads = n_reps, deterministic = deterministic, seed = seed)
     }
