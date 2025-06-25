@@ -14,7 +14,7 @@
 #' @param age_max = Maximum age of age group
 #' @param years = Years for which to calculate average annual seroprevalence
 #' @param vc_factor = Proportion of patients tested for whom vaccine status unknown
-#' @param data = Output of Basic_Model_Run or Full_Model_Run
+#' @param data = Output of Model_Run
 #' @param n_p = Particle to select from data
 #' '
 #' @export

@@ -33,7 +33,7 @@ public:
         dust2::packing state;
       } packing;
       struct {
-        std::array<size_t, 13> state;
+        std::array<size_t, 15> state;
       } offset;
     } odin;
     struct dim_type {
@@ -48,6 +48,8 @@ public:
       dust2::array::dimensions<2> R_annual;
       dust2::array::dimensions<2> SEIR_cu;
       dust2::array::dimensions<2> SEIR_annual;
+      dust2::array::dimensions<2> V_cu;
+      dust2::array::dimensions<2> V_annual;
       dust2::array::dimensions<1> beta;
       dust2::array::dimensions<1> FOI_sum;
       dust2::array::dimensions<2> dP1;
@@ -143,6 +145,8 @@ public:
     dim.R_annual.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
     dim.SEIR_cu.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
     dim.SEIR_annual.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
+    dim.V_cu.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
+    dim.V_annual.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
     dim.beta.set({static_cast<size_t>(n_regions)});
     dim.FOI_sum.set({static_cast<size_t>(n_regions)});
     dim.dP1.set({static_cast<size_t>(n_regions), static_cast<size_t>(N_age)});
@@ -200,7 +204,9 @@ public:
       {"R_cu", std::vector<size_t>(dim.R_cu.dim.begin(), dim.R_cu.dim.end())},
       {"R_annual", std::vector<size_t>(dim.R_annual.dim.begin(), dim.R_annual.dim.end())},
       {"SEIR_cu", std::vector<size_t>(dim.SEIR_cu.dim.begin(), dim.SEIR_cu.dim.end())},
-      {"SEIR_annual", std::vector<size_t>(dim.SEIR_annual.dim.begin(), dim.SEIR_annual.dim.end())}
+      {"SEIR_annual", std::vector<size_t>(dim.SEIR_annual.dim.begin(), dim.SEIR_annual.dim.end())},
+      {"V_cu", std::vector<size_t>(dim.V_cu.dim.begin(), dim.V_cu.dim.end())},
+      {"V_annual", std::vector<size_t>(dim.V_annual.dim.begin(), dim.V_annual.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
     return shared_state{odin, dim, time_inc, n_regions, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, FOI_spillover, R0, vacc_rate_daily, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
@@ -299,6 +305,16 @@ public:
         state[i - 1 + (j - 1) * shared.dim.SEIR_annual.mult[1] + shared.odin.offset.state[12]] = 0;
       }
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_regions); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.V_cu.mult[1] + shared.odin.offset.state[13]] = 0;
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_regions); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.V_annual.mult[1] + shared.odin.offset.state[14]] = 0;
+      }
+    }
   }
   static void update(real_type time, real_type dt, const real_type* state, const shared_state& shared, internal_state& internal, rng_state_type& rng_state, real_type* state_next) {
     const auto day = state[0];
@@ -309,6 +325,7 @@ public:
     const auto * V = state + shared.odin.offset.state[7];
     const auto * R_cu = state + shared.odin.offset.state[9];
     const auto * SEIR_cu = state + shared.odin.offset.state[11];
+    const auto * V_cu = state + shared.odin.offset.state[13];
     const real_type year_i = monty::math::floor(day / 365) + 1;
     const real_type t_pt = day / shared.time_inc;
     const real_type flag_year = (std::fmod(static_cast<int>(day + shared.time_inc), 365) == 0 ? 1 : 0);
@@ -433,6 +450,16 @@ public:
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_regions); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
         state_next[i - 1 + (j - 1) * shared.dim.SEIR_annual.mult[1] + shared.odin.offset.state[12]] = (flag_year == 1 ? SEIR_cu[i - 1 + (j - 1) * shared.dim.SEIR_cu.mult[1]] + S[i - 1 + (j - 1) * shared.dim.S.mult[1]] + E[i - 1 + (j - 1) * shared.dim.E.mult[1]] + I[i - 1 + (j - 1) * shared.dim.I.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]] : 0);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_regions); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
+        state_next[i - 1 + (j - 1) * shared.dim.V_cu.mult[1] + shared.odin.offset.state[13]] = (flag_year == 1 ? 0 : V_cu[i - 1 + (j - 1) * shared.dim.V_cu.mult[1]] + V[i - 1 + (j - 1) * shared.dim.V.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_regions); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
+        state_next[i - 1 + (j - 1) * shared.dim.V_annual.mult[1] + shared.odin.offset.state[14]] = (flag_year == 1 ? V_cu[i - 1 + (j - 1) * shared.dim.V_cu.mult[1]] + V[i - 1 + (j - 1) * shared.dim.V.mult[1]] : 0);
       }
     }
   }

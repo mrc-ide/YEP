@@ -139,7 +139,14 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
       R0_subsets[[n_region]] = R0_values[n_region,]
       vacc_data_subsets[[n_region]] = input_data$vacc_data[n_region,,]
       pop_data_subsets[[n_region]] = input_data$pop_data[n_region,,]
-      years_data_sets[[n_region]] = c(year_data_begin[n_region]:year_end[n_region])
+      #Old - counts twice if for one year, does not affect sero as ratio, can affect case if for one year
+      #years_data_sets[[n_region]] = c(year_data_begin[n_region]:year_end[n_region])
+      #New - fixed
+      if(year_data_begin[n_region]==year_end[n_region]){
+        years_data_sets[[n_region]]=c(year_data_begin[n_region])
+      } else {
+        years_data_sets[[n_region]] = c(year_data_begin[n_region]:year_end[n_region])
+      }
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
     #TODO - Test

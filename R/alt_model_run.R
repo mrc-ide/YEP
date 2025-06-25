@@ -83,7 +83,8 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
                        V = array(x_res[index$V, , ], dim), C = array(x_res[index$C, , ], dim),
                        C_annual = array(x_res[index$C_annual, , ], dim),
                        R_annual = array(x_res[index$R_annual, , ], dim),
-                       SEIR_annual = array(x_res[index$SEIR_annual, , ], dim))
+                       SEIR_annual = array(x_res[index$SEIR_annual, , ], dim),
+                       V_annual = array(x_res[index$V_annual, , ], dim),)
 
   } else {
     output_data = list(year = years_data)
@@ -94,6 +95,7 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
     } else {
       output_data$R_annual=array(x_res[index$R_annual, , ], dim)
       output_data$SEIR_annual=array(x_res[index$SEIR_annual, , ], dim)
+      output_data$V_annual=array(x_res[index$V_annual, , ], dim)
     }
   }
   x_res = NULL
@@ -359,7 +361,6 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
 
   #Set up vector of output types to get from model
   #TBC
-  #output_types=rep(NA,n_groups)
   output_types=list()
   output_types[[1]]="sero"
   output_types[[2]]="infs"
@@ -372,7 +373,11 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
       R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2]))
       vacc_data_subsets[[n_group]] = input_data$vacc_data[i_regions,,]
       pop_data_subsets[[n_group]] = input_data$pop_data[i_regions,,]
-      years_data_sets[[n_group]] = c(year_data_begin[n_group]:year_end[n_group])
+      if(year_data_begin[n_group]==year_end[n_group]){
+        years_data_sets[[n_group]]=c(year_data_begin[n_group])
+      } else {
+        years_data_sets[[n_group]] = c(year_data_begin[n_group]:year_end[n_group])
+      }
       start_SEIRV_sets[[n_group]] = list() #TBA
     }
 
@@ -390,11 +395,16 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
     if(mode_parallel){
       model_output = model_output_all[[n_group]]
     } else {
+      if(year_data_begin[n_group]==year_end[n_group]){
+        years_data=c(year_data_begin[n_group])
+      } else {
+        years_data = c(year_data_begin[n_group]:year_end[n_group])
+      }
       model_output = Model_Run2(FOI_spillover = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2])),
                                 R0 = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2])),
                                 vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
                                 pop_data = array(input_data$pop_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
-                                years_data = c(year_data_begin[n_group]:year_end[n_group]),
+                                years_data = years_data,
                                 year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
                                 time_inc = time_inc, output_type = output_types[[n_group]],mode_start = mode_start,
                                 start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
@@ -404,6 +414,7 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
 
     for(n_region in i_regions){
       n_region2=match(regions[n_region],regions[region_groups[[n_group]]])
+
       #Compile case data if needed
       if(is.na(case_line_list[[n_region]][1]) == FALSE){
         case_line_list_region = case_line_list[[n_region]]
@@ -436,15 +447,19 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
       if(is.na(sero_line_list[[n_region]][1]) == FALSE){
         sero_line_list_region = sero_line_list[[n_region]]
         for(n_rep in 1:n_reps){
-          for(line in sero_line_list_region){
-            #TBC
-            i_ages=c((sero_template$age_min[line]+1):sero_template$age_max[line])
-            t_pt=match(sero_template$year[line],model_output$year)
-            samples=sum(model_output$SEIR_annual[n_region2,i_ages,n_rep,t_pt])
-            positives=sum(model_output$R_annual[n_region2,i_ages,n_rep,t_pt])
-            model_sero_data$samples[line] = model_sero_data$samples[line]+samples
-            model_sero_data$positives[line] = model_sero_data$positives[line] + positives
-          }
+          #TBC
+          sero_results = sero_calculate2_alt(sero_template[sero_line_list_region,],
+                                             model_output, n_region2, n_rep)
+          model_sero_data$samples[sero_line_list_region] = model_sero_data$samples[sero_line_list_region]+sero_results$samples
+          model_sero_data$positives[sero_line_list_region] = model_sero_data$positives[sero_line_list_region] + sero_results$positives
+          # for(line in sero_line_list_region){
+          #   i_ages=c((sero_template$age_min[line]+1):sero_template$age_max[line])
+          #   t_pt=match(sero_template$year[line],model_output$year)
+          #   samples=sum(model_output$SEIR_annual[n_region2,i_ages,n_rep,t_pt])
+          #   positives=sum(model_output$R_annual[n_region2,i_ages,n_rep,t_pt])
+          #   model_sero_data$samples[line] = model_sero_data$samples[line]+samples
+          #   model_sero_data$positives[line] = model_sero_data$positives[line] + positives
+          # }
         }
       }
     }
@@ -468,4 +483,56 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
     return(list(model_sero_values = model_sero_data$sero,model_case_values = model_case_values,
                 model_death_values = model_death_values))
   }
+}
+#-------------------------------------------------------------------------------
+#' @title sero_calculate2_alt
+#'
+#' @description Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
+#' and year(s)
+#'
+#' @details Takes in information on minimum and maximum ages of desired range(s), year(s) for which to calculate
+#' number of "samples" (people eligible for testing) and "positives" (people who would test positive), plus vc_factor
+#' (proportion of people for whom vaccination status unknown)
+#'
+#' @param sero_data Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
+#' people for whom vaccination status unknown)
+#' @param model_data SEIRV output of Model_Run2
+#' @param n_p Particle to select from model_data
+#' '
+#' @export
+#'
+sero_calculate2_alt <- function(sero_data=list(),model_data=list(),n_region=1,n_p=1){
+  assert_that(is.data.frame(sero_data))
+  assert_that(is.list(model_data))
+  assert_that(n_p<=dim(model_data$SEIR_annual)[3],msg="Specified particle number is unavailable")
+
+  nrows=nrow(sero_data)
+  output_frame=data.frame(samples=rep(NA,nrows),positives=rep(NA,nrows))
+
+  for(i in 1:nrows){
+    ages=c((sero_data$age_min[i]+1):sero_data$age_max[i])
+    year=sero_data$year[i]
+    vc_factor=sero_data$vc_factor[i]
+    n_t=which(model_data$year==year)
+    SEIR_sum=sum(model_data$SEIR_annual[n_region,ages,n_p,n_t])
+    R_sum=sum(model_data$R_annual[n_region,ages,n_p,n_t])
+    if(vc_factor>0){
+      V_sum=sum(model_data$V_annual[n_region,ages,n_p,n_t])
+      if(vc_factor==1){
+        samples=SEIR_sum+V_sum
+        positives=R_sum+V_sum
+      } else {
+        samples=SEIR_sum
+        T_sum=SEIR_sum+V_sum
+        positives=((1.0-vc_factor)*R_sum)+(vc_factor*(SEIR_sum/T_sum)*(R_sum+V_sum))
+      }
+    } else {
+      samples=SEIR_sum
+      positives=R_sum
+    }
+    output_frame$samples[i]=samples
+    output_frame$positives[i]=positives
+  }
+
+  return(output_frame)
 }

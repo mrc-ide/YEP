@@ -66,6 +66,8 @@ update(R_cu[1:n_regions,1:N_age]) <- if(flag_year==1) 0 else R_cu[i,j] + R[i,j]
 update(R_annual[1:n_regions,1:N_age]) <- if(flag_year==1) R_cu[i,j] + R[i,j] else 0
 update(SEIR_cu[1:n_regions,1:N_age]) <- if(flag_year==1) 0 else SEIR_cu[i,j] + S[i,j]+E[i,j]+I[i,j]+R[i,j]
 update(SEIR_annual[1:n_regions,1:N_age]) <- if(flag_year==1) SEIR_cu[i,j] + S[i,j]+E[i,j]+I[i,j]+R[i,j] else 0
+update(V_cu[1:n_regions,1:N_age]) <- if(flag_year==1) 0 else V_cu[i,j] + V[i,j]
+update(V_annual[1:n_regions,1:N_age]) <- if(flag_year==1) V_cu[i,j] + V[i,j] else 0
 
 #Initial values-----------------------------------------------------------------
 initial(day) <- time_inc
@@ -81,6 +83,8 @@ initial(R_cu[1:n_regions,1:N_age]) <- 0
 initial(R_annual[1:n_regions,1:N_age]) <- 0
 initial(SEIR_cu[1:n_regions,1:N_age]) <- 0
 initial(SEIR_annual[1:n_regions,1:N_age]) <- 0
+initial(V_cu[1:n_regions,1:N_age]) <- 0
+initial(V_annual[1:n_regions,1:N_age]) <- 0
 
 #Dimensions---------------------------------------------------------------------
 dim(FOI_total) <- n_regions
@@ -94,6 +98,8 @@ dim(R_cu) <- c(n_regions, N_age)
 dim(R_annual) <- c(n_regions, N_age)
 dim(SEIR_cu) <- c(n_regions, N_age)
 dim(SEIR_annual) <- c(n_regions, N_age)
+dim(V_cu) <- c(n_regions, N_age)
+dim(V_annual) <- c(n_regions, N_age)
 
 dim(beta) <- n_regions
 dim(FOI_sum) <- n_regions
