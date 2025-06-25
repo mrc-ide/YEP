@@ -22,7 +22,7 @@ sero_calculate(
 
 \item{vc_factor}{= Proportion of patients tested for whom vaccine status unknown}
 
-\item{data}{= Output of Basic_Model_Run or Full_Model_Run}
+\item{data}{= Output of Model_Run}
 
 \item{n_p}{= Particle to select from data
 '}
