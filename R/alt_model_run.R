@@ -352,18 +352,21 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
 
   if(mode_parallel){
     FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = start_SEIRV_sets = list()
+    n_years=dim(input_data$vacc_data)[2]
+    N_age=dim(input_data$vacc_data)[3]
     for(n_group in 1:n_groups){
       i_regions=region_grouping$region_groups[[n_group]]
       FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2]))
       R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2]))
-      vacc_data_subsets[[n_group]] = input_data$vacc_data[i_regions,,]
-      pop_data_subsets[[n_group]] = input_data$pop_data[i_regions,,]
+      vacc_data_subsets[[n_group]] = array(input_data$vacc_data[i_regions,,],dim=c(length(i_regions),n_years,N_age))
+      pop_data_subsets[[n_group]] = array(input_data$pop_data[i_regions,,],dim=c(length(i_regions),n_years,N_age))
       start_SEIRV_sets[[n_group]] = list() #TBA
     }
 
     model_output_all = clusterMap(cl = cluster,fun = Model_Run2, FOI_spillover = FOI_subsets, R0 = R0_subsets,
                                   vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
-                                  years_data = region_grouping$years_data, start_SEIRV = start_SEIRV_sets, output_type = region_grouping$output_types,
+                                  years_data = region_grouping$years_data, start_SEIRV = start_SEIRV_sets,
+                                  output_type = region_grouping$output_types,
                                   MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
                                                   time_inc = time_inc,mode_start = mode_start,mode_time = mode_time,
                                                   n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
