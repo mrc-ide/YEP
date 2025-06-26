@@ -85,9 +85,10 @@ Model_Run2 <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_da
   } else {
     output_data = list(year = years_data)
     if(output_type == "infs"){
-      C_annual = array(x_res[index$C_annual, , ], dim)
-      output_data$C = array(NA, c(n_regions,n_particles,t_pts_out))
-      for(i in 1:n_regions){output_data$C[i,,]=colSums(C_annual[i,,,])}
+      # C_annual = array(x_res[index$C_annual, , ], dim)
+      # output_data$C = array(NA, c(n_regions,n_particles,t_pts_out))
+      # for(i in 1:n_regions){output_data$C[i,,]=colSums(C_annual[i,,,])}
+      output_data$C_annual = array(x_res[index$C_annual, , ], dim)
     } else {
       output_data$R_annual=array(x_res[index$R_annual, , ], dim)
       output_data$SEIR_annual=array(x_res[index$SEIR_annual, , ], dim)
@@ -402,8 +403,9 @@ Generate_Dataset2 <- function(FOI_values = c(),R0_values = c(),input_data = list
         for(n_rep in 1:n_reps){
           rep_cases = rep_deaths = rep(0,n_lines)
           for(n_line in 1:n_lines){
-            pts = c(1:t_pts)[model_output$year == years_case[n_line]]
-            infs = sum(model_output$C[n_region2,n_rep,pts])
+            #pts = c(1:t_pts)[model_output$year == years_case[n_line]]
+            pts = which(model_output$year==years_case[n_line])
+            infs = sum(model_output$C_annual[n_region2,,n_rep,pts]) #sum over all ages
             if(deterministic){
               severe_infs = floor(infs)*p_severe_inf
               deaths = severe_infs*p_death_severe_inf

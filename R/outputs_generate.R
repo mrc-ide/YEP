@@ -324,6 +324,7 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
       R0_subsets[[n_region]] = R0_values[n_region,]
       vacc_data_subsets[[n_region]] = input_data$vacc_data[n_region,,]
       pop_data_subsets[[n_region]] = input_data$pop_data[n_region,,]
+      #TODO - change years_data to ensure no miscount for 1 year
       years_data_sets[[n_region]] = c(xref$year_data_begin[n_region]:xref$year_end[n_region])
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
@@ -342,6 +343,7 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
     #Run model if not using parallelization
     if(mode_parallel == FALSE){
       if(is.null(seed) == FALSE && deterministic == FALSE){set.seed(seed)}
+      #TODO - change years_data to ensure no miscount for 1 year
       model_output = Model_Run(FOI_spillover = FOI_values[n_region,],R0 = R0_values[n_region,],
                                vacc_data = input_data$vacc_data[n_region,,],pop_data = input_data$pop_data[n_region,,],
                                years_data = c(xref$year_data_begin[n_region]:xref$year_end[n_region]),
