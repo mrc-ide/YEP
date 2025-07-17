@@ -16,11 +16,9 @@
 <url><loc>https://mrc-ide.github.io/YEP/authors.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/index.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset.html</loc></url>
-<url><loc>https://mrc-ide.github.io/YEP/reference/Generate_Dataset2.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/Generate_VIMC_Burden_Dataset.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/MCMC.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/Model_Run.html</loc></url>
-<url><loc>https://mrc-ide.github.io/YEP/reference/Model_Run2.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/Model_Run_Many_Reps.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/case_data_calculate_multi.html</loc></url>
@@ -29,7 +27,6 @@
 <url><loc>https://mrc-ide.github.io/YEP/reference/enviro_data_var_check.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/enviro_data_var_truncate.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/epi_param_calc.html</loc></url>
-<url><loc>https://mrc-ide.github.io/YEP/reference/get_region_grouping.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/imm_fraction_function.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/index.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/input_data_check.html</loc></url>
@@ -39,11 +36,9 @@
 <url><loc>https://mrc-ide.github.io/YEP/reference/mcmc_prelim_fit.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/param_prop_setup.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/parameter_setup.html</loc></url>
-<url><loc>https://mrc-ide.github.io/YEP/reference/parameter_setup2.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/regions_breakdown.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/sero_calculate.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/sero_calculate2.html</loc></url>
-<url><loc>https://mrc-ide.github.io/YEP/reference/sero_calculate2_alt.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/sero_data_compare.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/single_posterior_calc.html</loc></url>
 <url><loc>https://mrc-ide.github.io/YEP/reference/template_region_xref.html</loc></url>
