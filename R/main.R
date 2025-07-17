@@ -58,6 +58,9 @@ t_infectious <- 5 #Time cases remain infectious
 #'   "full" = SEIRVC + FOI for all regions, steps and ages \cr
 #'   "infs" = annual total new infections (C_annual) by region and age \cr
 #'   "sero" = annual totals of SEIR, R and V by region and age for calculating seroprevalence
+#'   "infs_sero" = annual SEIRV, C summed across all ages \cr
+#'   "infs_alt" = annual total new infections not combined by age \cr
+#'   "infs_alt2" = total new infections combined by age for all steps
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
@@ -88,16 +91,16 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 
   N_age = length(pop_data[1, 1, ]) #Number of age groups
   n_regions = length(pop_data[, 1, 1])
-  if(output_type=="full"){
-    model = SEIRV_Model_mr01_basic
-    step_begin = ((years_data[1] - year0)*(365/time_inc)) #Step at which data starts being saved for final output
-    step_end = ((max(years_data) + 1 - year0)*(365/time_inc)) - 1 #Step at which to end
-    time_pts = c(step_begin:step_end)
-  } else {
+  if(output_type %in% c("sero","infs")){
     if(output_type=="sero"){model=SEIRV_Model_mr02_sero}else{model=SEIRV_Model_mr03_infs}
     i_year_begin=years_data[1] - year0 + 1
     i_year_end=max(years_data) + 1 - year0
     time_pts = (c(i_year_begin:i_year_end)*(365/time_inc))-1
+  } else {
+    model = SEIRV_Model_mr01_basic
+    step_begin = ((years_data[1] - year0)*(365/time_inc))
+    step_end = ((max(years_data) + 1 - year0)*(365/time_inc)) - 1
+    time_pts = c(step_begin:step_end)
   }
   t_pts_out=length(time_pts) #Number of time points in final output data
 
@@ -112,15 +115,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   index = dust_unpack_index(x)
 
   dim = c(n_regions, N_age, n_particles, t_pts_out)
-  if(output_type == "full"){
-    dim = c(n_regions, N_age, n_particles, t_pts_out)
-    output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ],
-                       FOI_total = array(x_res[3, , ]/time_inc, dim = c(n_regions,n_particles,t_pts_out)),
-                       S = array(x_res[index$S, , ], dim), E = array(x_res[index$E, , ], dim),
-                       I = array(x_res[index$I, , ], dim), R = array(x_res[index$R, , ], dim),
-                       V = array(x_res[index$V, , ], dim), C = array(x_res[index$C, , ], dim))
-
-  } else {
+  if(output_type %in% c("infs","s")){
     output_data = list(year = years_data)
     if(output_type == "infs"){
       output_data$C_annual = array(x_res[index$C_annual, , ], dim)
@@ -128,6 +123,23 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
       output_data$R_annual=array(x_res[index$R_annual, , ], dim)
       output_data$SEIR_annual=array(x_res[index$SEIR_annual, , ], dim)
       output_data$V_annual=array(x_res[index$V_annual, , ], dim)
+    }
+  } else {
+    if(output_type == "full"){
+      dim = c(n_regions, N_age, n_particles, t_pts_out)
+      output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ],
+                         FOI_total = array(x_res[3, , ]/time_inc, dim = c(n_regions,n_particles,t_pts_out)),
+                         S = array(x_res[index$S, , ], dim), E = array(x_res[index$E, , ], dim),
+                         I = array(x_res[index$I, , ], dim), R = array(x_res[index$R, , ], dim),
+                         V = array(x_res[index$V, , ], dim), C = array(x_res[index$C, , ], dim))
+    } else {
+      if(output_type == "infs_sero"){}#TBA
+      if(output_type == "infs_alt"){}#TBA
+      if(output_type == "infs_alt2"){ #TBC
+        output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ])
+        C_all=array(x_res[index$C, , ], dim = c(n_regions, N_age, n_particles, t_pts_out))
+        #output_data$C = f(C_all) #TBA
+      }
     }
   }
   x_res = NULL
