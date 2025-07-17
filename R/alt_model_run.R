@@ -1,5 +1,5 @@
-#TODO:
-# -Run speed tests on desktop and on cluster
+# Functions for running alternate odin2 model versions which run multiple regions at once and optionally
+# directly output cumulative annual data
 #-------------------------------------------------------------------------------
 #' @title Model_Run2
 #'

@@ -1,4 +1,4 @@
-# Alternate version with cumulative annual calculation and run over multiple regions
+# Alternate version run over multiple regions
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days

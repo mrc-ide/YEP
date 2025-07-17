@@ -555,3 +555,31 @@ mcmc_params_data_create <- function(covar_names = c("Var1", "Var2"),
 
   return(params_data)
 }
+#-------------------------------------------------------------------------------
+#' @title param_prop_setup
+#'
+#' @description Set up proposed new log parameter values for next iteration in chain
+#'
+#' @details Takes in current values of parameter set used for Markov Chain Monte Carlo fitting and proposes new values
+#' from multivariate normal distribution where the existing values form the mean and the standard deviation is
+#' based on the chain covariance or (if the flag "adapt" is set to 1) a flat value based on the number of parameters.
+#'
+#' @param log_params Previous log parameter values used as input
+#' @param chain_cov Covariance calculated from previous iterations in chain
+#' @param adapt 0/1 flag indicating which type of covariance to use for proposition value (TBA)
+#' '
+#' @export
+#'
+param_prop_setup <- function(log_params = c(), chain_cov = 1, adapt = 0){
+
+  n_params = length(log_params)
+  if (adapt == 1) {
+    sigma = (5.6644*chain_cov)/n_params #'optimal' scaling of chain covariance (2.38 ^ 2)
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  } else {
+    sigma = (1.0e-4*diag(n_params))/n_params #this is an inital proposal covariance, see [Mckinley et al 2014] ((1e-2) ^ 2)
+    log_params_prop_a = rmvnorm(n = 1, mean = log_params, sigma = sigma)
+  }
+
+  return(log_params_prop_a[1, ])
+}
