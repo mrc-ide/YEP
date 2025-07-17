@@ -5,8 +5,8 @@
 \title{parameter_setup}
 \usage{
 parameter_setup(
-  FOI_spillover = c(),
-  R0 = c(),
+  FOI_spillover = list(),
+  R0 = list(),
   vacc_data = list(),
   pop_data = list(),
   years_data = c(),
@@ -19,14 +19,13 @@ parameter_setup(
 )
 }
 \arguments{
-\item{FOI_spillover}{Vector of values of force of infection due to spillover from sylvatic reservoir
-(size depends on mode_time)}
+\item{FOI_spillover}{Matrix of values of force of infection due to spillover from sylvatic reservoir TBA}
 
-\item{R0}{Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
+\item{R0}{Matrix of values of basic reproduction number for urban spread of infection TBA}
 
-\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region, age group and year}
 
-\item{pop_data}{Population by age group and year}
+\item{pop_data}{Population by region, age group and year}
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 

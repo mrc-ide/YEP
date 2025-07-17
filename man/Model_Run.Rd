@@ -24,14 +24,14 @@ Model_Run(
 )
 }
 \arguments{
-\item{FOI_spillover}{Vector of values of force of infection due to spillover from sylvatic reservoir
+\item{FOI_spillover}{Matrix of values of force of infection due to spillover from sylvatic reservoir
 (size depends on mode_time)}
 
-\item{R0}{Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
+\item{R0}{Matrix of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
 
-\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region. age group and year}
 
-\item{pop_data}{Population by age group and year}
+\item{pop_data}{Population by region, age group and year}
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
@@ -42,17 +42,14 @@ Model_Run(
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{output_type}{Type of data to output: \cr
-"full" = SEIRVC + FOI for all steps and ages \cr
-"infs" = annual total new infections (C) summed across all ages \cr
-"sero" = annual SEIRV \cr
-"infs_sero" = annual SEIRVC, C summed across all ages \cr
-"infs_alt" = annual total new infections not combined by age \cr
-"infs_alt2" = total new infections combined by age for all steps}
+"full" = SEIRVC + FOI for all regions, steps and ages \cr
+"infs" = annual total new infections (C_annual) by region and age \cr
+"sero" = annual totals of SEIR, R and V by region and age for calculating seroprevalence}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
+If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 
@@ -74,11 +71,11 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 '}
 }
 \description{
-Run SEIRV model for single region
+Run SEIRV model for one or more regions using odin2 models
 }
 \details{
-Accepts epidemiological + population parameters and model settings; runs SEIRV model
-for one region over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
+Accepts epidemiological + population parameters and model settings; runs SEIRV model for one or
+more regions over a specified time period for a number of particles/threads and outputs time-dependent SEIRV
 values, infection numbers and/or total force of infection values. Run up to 20 particles (Model_Run_Many_Reps
 can be used to run larger numbers of particles).
 }

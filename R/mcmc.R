@@ -1,4 +1,4 @@
-# Version of mcmc.R with functions updated to streamline parameter implementation
+# TODO: Replace the contents of this file with new functions for running fitting using monty (in new file)
 # Global variable - additional parameter names
 extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
                        "p_rep_death","m_FOI_Brazil")

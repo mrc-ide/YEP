@@ -1,6 +1,6 @@
 # R file for functions relating to serological data in YEP package
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
+#TODO - Update for new model versions
 #' @title sero_calculate
 #'
 #' @description Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
@@ -57,7 +57,7 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
   return(sero_values)
 }
 #-------------------------------------------------------------------------------
-#' @title sero_calculate2
+#' @title sero_calculate2_alt
 #'
 #' @description Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
 #' and year(s)
@@ -68,16 +68,16 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
 #'
 #' @param sero_data Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 #' people for whom vaccination status unknown)
-#' @param model_data SEIRV output of Model_Run and similar functions
+#' @param model_data Annual cumulative SEIRV output of Model_Run2
+#' @param n_region Region number to select from model_data
 #' @param n_p Particle to select from model_data
 #' '
 #' @export
 #'
-sero_calculate2 <- function(sero_data=list(),model_data=list(),n_p=1){
+sero_calculate2_alt <- function(sero_data=list(),model_data=list(),n_region=1,n_p=1){
   assert_that(is.data.frame(sero_data))
   assert_that(is.list(model_data))
-  assert_that(is.null(model_data$S)==FALSE) #TODO - Improve model_data check
-  assert_that(n_p<=dim(model_data$S)[2],msg="Specified particle number is unavailable")
+  assert_that(n_p<=dim(model_data$SEIR_annual)[3],msg="Specified particle number is unavailable")
 
   nrows=nrow(sero_data)
   output_frame=data.frame(samples=rep(NA,nrows),positives=rep(NA,nrows))
@@ -87,21 +87,20 @@ sero_calculate2 <- function(sero_data=list(),model_data=list(),n_p=1){
     year=sero_data$year[i]
     vc_factor=sero_data$vc_factor[i]
     n_t=which(model_data$year==year)
-    S_sum=sum(model_data$S[ages,n_p,n_t])
-    E_sum=sum(model_data$E[ages,n_p,n_t])
-    I_sum=sum(model_data$I[ages,n_p,n_t])
-    R_sum=sum(model_data$R[ages,n_p,n_t])
-    samples=S_sum+E_sum+I_sum+R_sum
+    SEIR_sum=sum(model_data$SEIR_annual[n_region,ages,n_p,n_t])
+    R_sum=sum(model_data$R_annual[n_region,ages,n_p,n_t])
     if(vc_factor>0){
-      V_sum=sum(model_data$V[ages,n_p,n_t])
+      V_sum=sum(model_data$V_annual[n_region,ages,n_p,n_t])
       if(vc_factor==1){
-        samples=samples+V_sum
+        samples=SEIR_sum+V_sum
         positives=R_sum+V_sum
       } else {
-        T_sum=samples+V_sum
-        positives=((1.0-vc_factor)*R_sum)+(vc_factor*(samples/T_sum)*(R_sum+V_sum))
+        samples=SEIR_sum
+        T_sum=SEIR_sum+V_sum
+        positives=((1.0-vc_factor)*R_sum)+(vc_factor*(SEIR_sum/T_sum)*(R_sum+V_sum))
       }
     } else {
+      samples=SEIR_sum
       positives=R_sum
     }
     output_frame$samples[i]=samples
