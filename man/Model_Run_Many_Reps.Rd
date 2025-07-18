@@ -13,7 +13,7 @@ Model_Run_Many_Reps(
   year0 = 1940,
   vaccine_efficacy = 1,
   time_inc = 1,
-  output_type = "full",
+  mode_out = "full",
   mode_start = 0,
   start_SEIRV = list(),
   mode_time = 0,
@@ -40,7 +40,7 @@ Model_Run_Many_Reps(
 
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)model (should be 1.0, 2.5 or 5.0 days)}
 
-\item{output_type}{Type of data to output: \cr
+\item{mode_out}{Type of data to output: \cr
 "full" = SEIRVC + FOI for all steps and ages \cr
 "infs" = annual total new infections (C) summed across all ages \cr
 "sero" = annual SEIRV \cr
