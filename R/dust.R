@@ -67,3 +67,20 @@ SEIRV_Model_mr03_infs <- structure(
     has_compare = FALSE,
     has_adjoint = FALSE),
   default_dt = 1)
+SEIRV_Model_mr04_fit <- structure(
+  function() get("SEIRV_Model_mr04_fit"),
+  class = "dust_system_generator",
+  name = "SEIRV_Model_mr04_fit",
+  package = "YEP",
+  path = NULL,
+  parameters = data.frame(
+    name = c("time_inc", "n_r", "region_index_sero", "region_index_case", "sero_regions", "case_regions", "n_env_vars", "env_covar_values", "log_FOI_coeffs", "log_R0_coeffs", "n_sero_pts", "n_case_pts", "t_incubation", "t_latent", "t_infectious", "N_age", "vacc_rate_daily", "vaccine_efficacy", "sero_vc_factor", "sia_min", "sia_max", "p_severe_inf", "p_death_severe_inf", "p_rep_severe", "p_rep_death", "year0", "S_0", "E_0", "I_0", "R_0", "V_0", "dP1_all", "dP2_all", "n_years", "n_t_pts"),
+    type = c("real_type", "int", "real_type", "real_type", "real_type", "real_type", "int", "real_type", "real_type", "real_type", "int", "int", "real_type", "real_type", "real_type", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "int"),
+    constant = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE),
+    required = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
+    rank = c(0L, 0L, 2L, 2L, 1L, 1L, 0L, 3L, 1L, 1L, 0L, 0L, 0L, 0L, 0L, 0L, 3L, 0L, 1L, 1L, 1L, 0L, 0L, 0L, 0L, 0L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 0L, 0L)),
+  properties = list(
+    time_type = "discrete",
+    has_compare = TRUE,
+    has_adjoint = FALSE),
+  default_dt = 1)

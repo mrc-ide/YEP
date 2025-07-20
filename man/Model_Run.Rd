@@ -42,12 +42,12 @@ Model_Run(
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{mode_out}{Type of data to output: \cr
-If mode_out = 1, SEIRVC + FOI for all regions, steps and ages \cr
+If mode_out = 1, SEIRVC + FOI for all regions, steps and ages at every time point in years_data \cr
 If mode_out = 2 annual totals of SEIR, R and V by region and age for calculating seroprevalence
-If mode_out = 3, annual total new infections (C_annual) by region and age \cr
-If mode_out = 4, annual SEIRV, C summed across all ages \cr
-If mode_out = 5, annual total new infections not combined by age \cr
-If mode_out = 6, total new infections combined by age for all steps}
+If mode_out = 3, annual total new infections (C_annual) by region combined across age groups \cr
+If mode_out = 4, annual total new infections (C_annual) not combined by age \cr
+If mode_out = 5, total new infections (C) combined by age at every time point in years_data \cr
+If mode_out = 6 [TBA - combine outputs for 2 and 3, for case+sero data]}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr

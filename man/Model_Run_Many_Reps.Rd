@@ -13,13 +13,14 @@ Model_Run_Many_Reps(
   year0 = 1940,
   vaccine_efficacy = 1,
   time_inc = 1,
-  mode_out = "full",
+  mode_out = 1,
   mode_start = 0,
   start_SEIRV = list(),
   mode_time = 0,
   n_reps = 1,
   division = 10,
-  deterministic = FALSE
+  deterministic = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -41,12 +42,12 @@ Model_Run_Many_Reps(
 \item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{mode_out}{Type of data to output: \cr
-"full" = SEIRVC + FOI for all steps and ages \cr
-"infs" = annual total new infections (C) summed across all ages \cr
-"sero" = annual SEIRV \cr
-"infs_sero" = annual SEIRV, C summed across all ages \cr
-"infs_alt" = annual total new infections not combined by age \cr
-"infs_alt2" = total new infections combined by age for all steps}
+If mode_out = 1, SEIRVC + FOI for all regions, steps and ages at every time point in years_data \cr
+If mode_out = 2 annual totals of SEIR, R and V by region and age for calculating seroprevalence
+If mode_out = 3, annual total new infections (C_annual) by region combined across age groups \cr
+If mode_out = 4, annual total new infections (C_annual) not combined by age \cr
+If mode_out = 5, total new infections (C) combined by age at every time point in years_data \cr
+If mode_out = 6 [TBA - combine outputs for 2 and 3, for case+sero data]}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
@@ -67,7 +68,9 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 
 \item{division}{Number of particles/threads to run in one go (up to 20)}
 
-\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE
+\item{deterministic}{TRUE/FALSE  -  set model to run in deterministic mode if TRUE}
+
+\item{seed}{TBA
 '}
 }
 \description{
