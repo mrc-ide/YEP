@@ -391,42 +391,76 @@ template_region_xref <- function(template=list(),regions=c()){
 #-------------------------------------------------------------------------------
 #TODO - Update documentation
 #TODO - Add mode with 1 region per group for simple parallelization
+#TODO - Add provision for regions needing both case and sero data
 #' @title get_region_grouping
 #'
-#' @description Group regions from serology and case data templates
+#' @description Group regions from serology and case data template
 #'
 #' @details TBA
 #'
 #' @param regions TBA
-#' @param sero_template TBA
-#' @param case_template TBA
-#' @param xref_sero TBA
-#' @param xref_case TBA
-#' @param flag_simple TBA
+#' @param template TBA
+#' @param mode_grouping TBA
 #' '
 #' @export
 #'
-get_region_grouping <- function(regions=c(),sero_template=list(),case_template=list(),
-                                xref_sero=list(),xref_case=list(),flag_simple=TRUE){
-  region_grouping=list(region_groups=list(),output_types=list(),years_data=list())
+get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xref_sero=NULL,xref_case=NULL),
+                                mode_grouping=1){
 
-  if(flag_simple){ #Simple sero/case split
-    region_grouping$region_groups[[1]]=which(regions %in% regions_breakdown(sero_template$region))
-    region_grouping$region_groups[[2]]=which(regions %in% regions_breakdown(case_template$region))
-    region_grouping$output_types[[1]]="sero"
-    region_grouping$output_types[[2]]="infs"
-    n_groups=2
-    for(n_group in 1:n_groups){
-      if(n_group==1){
-        year_data_begin=min(sero_template$year)
-        year_end=max(sero_template$year)
-      } else{
-        year_data_begin=min(case_template$year)
-        year_end=max(case_template$year)
+  assert_that(mode_grouping %in% c(1:3),msg="mode_grouping must be between 1 and 3")
+  assert_that(any(is.null(template$sero) == FALSE,is.null(template$case) == FALSE),
+              msg = "Need serological and/or case data template(s)")
+  if(is.null(template$sero) == FALSE){
+    if(is.null(template$xref_sero)){template$xref_sero = template_region_xref(template$sero,regions)}
+    sero_line_list = template$xref_sero$line_list
+  } else { sero_line_list = rep(NA,n_regions) }
+  if(is.null(template$case) == FALSE){
+    if(is.null(template$xref_case)){template$xref_case = template_region_xref(template$case,regions)}
+    case_line_list = template$xref_case$line_list
+  } else { case_line_list = rep(NA,n_regions) }
+
+  regions_sero=regions_breakdown(template$sero$region)
+  regions_case=regions_breakdown(template$case$region)
+  #Temporary - check that no overlap between sero/case regions (TBC)
+  assert_that(all(regions_sero %in% regions_case == FALSE))
+
+  region_grouping=list(region_groups=list(),mode_out=list(),years_data=list(),
+                       sero_line_list = sero_line_list, case_line_list = case_line_list)
+
+  if(mode_grouping %in% c(1,2)){
+    if(mode_grouping==1){ #1 region per group
+      n_regions=length(regions)
+      for(i in 1:n_regions){
+        region=regions[i]
+        region_grouping$region_groups[[i]]=i
+        #TODO - fix for region in both templates
+        if(region %in% regions_sero){
+          region_grouping$mode_out[[i]]=2
+          index=c(1:nrow(template$sero))[template$sero$region==region]
+          year_data_begin=min(template$sero$year[index])
+          year_end=max(template$sero$year[index])
+        }else{
+          region_grouping$mode_out[[i]]=3
+          index=c(1:nrow(template$case))[template$case$region==region]
+          year_data_begin=min(template$case$year[index])
+          year_end=max(template$case$year[index])
+        }
+        region_grouping$years_data[[i]] = c(year_data_begin:year_end)
       }
-      if(year_data_begin==year_end){
-        region_grouping$years_data[[n_group]]=c(year_data_begin)
-      } else {
+    } else { #Simple sero/case split
+      region_grouping$region_groups[[1]]=which(regions %in% regions_sero)
+      region_grouping$region_groups[[2]]=which(regions %in% regions_case)
+      region_grouping$mode_out[[1]]=2
+      region_grouping$mode_out[[2]]=3
+      n_groups=2
+      for(n_group in 1:n_groups){
+        if(n_group==1){
+          year_data_begin=min(template$sero$year)
+          year_end=max(template$sero$year)
+        } else{
+          year_data_begin=min(template$case$year)
+          year_end=max(template$case$year)
+        }
         region_grouping$years_data[[n_group]] = c(year_data_begin:year_end)
       }
     }
@@ -434,19 +468,19 @@ get_region_grouping <- function(regions=c(),sero_template=list(),case_template=l
     n_regions=length(regions)
     codes=rep(NA,n_regions)
     for(i in 1:n_regions){
-      if(is.na(xref_sero$line_list[i])==FALSE){
+      if(is.na(sero_line_list[i])==FALSE){
         sero_flag=1
-        year_sero0=xref_sero$year_data_begin[i]
-        year_sero1=xref_sero$year_end[i]
+        year_sero0=template$xref_sero$year_data_begin[i]
+        year_sero1=template$xref_sero$year_end[i]
       }else{
         sero_flag=0
         year_sero0=Inf
         year_sero1=-Inf
       }
-      if(is.na(xref_case$line_list[i])==FALSE){
+      if(is.na(case_line_list[i])==FALSE){
         case_flag=1
-        year_case0=xref_case$year_data_begin[i]
-        year_case1=xref_case$year_end[i]
+        year_case0=template$xref_case$year_data_begin[i]
+        year_case1=template$xref_case$year_end[i]
       }else{
         case_flag=0
         year_case0=Inf
@@ -458,9 +492,9 @@ get_region_grouping <- function(regions=c(),sero_template=list(),case_template=l
     n_groups=length(group_codes)
     region_group_codes=match(codes,group_codes)
     for(n_group in 1:n_groups){
-      if(substr(group_codes[n_group],1,3)=="1_0"){region_grouping$output_types[[n_group]]="sero"}
-      if(substr(group_codes[n_group],1,3)=="0_1"){region_grouping$output_types[[n_group]]="infs"}
-      if(substr(group_codes[n_group],1,3)=="1_1"){region_grouping$output_types[[n_group]]=NULL} #TBC
+      if(substr(group_codes[n_group],1,3)=="1_0"){region_grouping$mode_out[[n_group]]=2}
+      if(substr(group_codes[n_group],1,3)=="0_1"){region_grouping$mode_out[[n_group]]=3}
+      #if(substr(group_codes[n_group],1,3)=="1_1"){region_grouping$mode_out[[n_group]]=6} #TBC
       region_grouping$region_groups[[n_group]]=which(region_group_codes==n_group)
       year_data_begin=as.numeric(substr(group_codes[n_group],5,8))
       year_end=as.numeric(substr(group_codes[n_group],10,13))
