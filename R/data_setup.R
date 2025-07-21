@@ -390,6 +390,7 @@ template_region_xref <- function(template=list(),regions=c()){
 }
 #-------------------------------------------------------------------------------
 #TODO - Update documentation
+#TODO - Add mode with 1 region per group for simple parallelization
 #' @title get_region_grouping
 #'
 #' @description Group regions from serology and case data templates

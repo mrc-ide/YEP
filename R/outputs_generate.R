@@ -2,7 +2,6 @@
 # R file for functions used to generate sets of annual serological data, annual case/death data
 # and annual burden (VIMC format) data
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
 #' @title Generate_Dataset
 #'
 #' @description Generate annual serological and/or case/death data
@@ -53,7 +52,7 @@
 #' '
 #' @export
 #'
-Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),template = list(),
+Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),template = list(sero=NULL,case=NULL),
                              vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
                              n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
                              p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE,
@@ -126,16 +125,17 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
     model_case_values = model_death_values = rep(0,nrow(template$case))
   }
 
+  n_years=length(input_data$years_labels)
+  N_age=length(input_data$age_labels)
   if(mode_parallel){
     FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = start_SEIRV_sets = list()
-    n_years=dim(input_data$vacc_data)[2]
-    N_age=dim(input_data$vacc_data)[3]
     for(n_group in 1:n_groups){
       i_regions=region_grouping$region_groups[[n_group]]
-      FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2]))
-      R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2]))
-      vacc_data_subsets[[n_group]] = array(input_data$vacc_data[i_regions,,],dim=c(length(i_regions),n_years,N_age))
-      pop_data_subsets[[n_group]] = array(input_data$pop_data[i_regions,,],dim=c(length(i_regions),n_years,N_age))
+      n_regions2=length(i_regions)
+      FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2]))
+      R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2]))
+      vacc_data_subsets[[n_group]] = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age))
+      pop_data_subsets[[n_group]] = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age))
       start_SEIRV_sets[[n_group]] = list() #TBA
     }
 
@@ -151,18 +151,19 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 
   for(n_group in 1:n_groups){
     i_regions=region_grouping$region_groups[[n_group]]
+    n_regions2=length(i_regions)
     if(mode_parallel){
       model_output = model_output_all[[n_group]]
     } else {
-      model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(length(i_regions),dim(FOI_values)[2])),
-                                R0 = array(R0_values[i_regions,],dim=c(length(i_regions),dim(R0_values)[2])),
-                                vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
-                                pop_data = array(input_data$pop_data[i_regions,,],dim=c(length(i_regions),length(input_data$years_labels),length(input_data$age_labels))),
-                                years_data = region_grouping$years_data[[n_group]],
-                                year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
-                                time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
-                                start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
-                                n_threads = n_reps, deterministic = deterministic, seed = seed)
+      model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2])),
+                               R0 = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2])),
+                               vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
+                               pop_data = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
+                               years_data = region_grouping$years_data[[n_group]],
+                               year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
+                               time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
+                               start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
+                               n_threads = n_reps, deterministic = deterministic, seed = seed)
     }
     t_pts = length(model_output$year)
 
@@ -319,7 +320,6 @@ Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_
       R0_subsets[[n_region]] = R0_values[n_region,]
       vacc_data_subsets[[n_region]] = input_data$vacc_data[n_region,,]
       pop_data_subsets[[n_region]] = input_data$pop_data[n_region,,]
-      #TODO - change years_data to ensure no miscount for 1 year
       years_data_sets[[n_region]] = c(xref$year_data_begin[n_region]:xref$year_end[n_region])
     }
     if(is.null(start_SEIRV)){start_SEIRV = rep(NA,n_regions)}
