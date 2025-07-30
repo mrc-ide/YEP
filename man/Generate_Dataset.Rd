@@ -8,8 +8,7 @@ Generate_Dataset(
   FOI_values = c(),
   R0_values = c(),
   input_data = list(),
-  sero_template = NULL,
-  case_template = NULL,
+  template = list(),
   vaccine_efficacy = 1,
   time_inc = 1,
   mode_start = 1,
@@ -37,10 +36,7 @@ Generate_Dataset(
 
 \item{input_data}{List of population and vaccination data for multiple regions in standard format [TBA]}
 
-\item{sero_template}{Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
-and number of samples}
-
-\item{case_template}{Annual reported case/death data template - data frame with region and year}
+\item{template}{TBA}
 
 \item{vaccine_efficacy}{Fractional vaccine efficacy}
 

@@ -1,8 +1,3 @@
-# TODO: Replace the contents of this file with new functions for running fitting using monty (in new file)
-# Global variable - additional parameter names
-extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
-                       "p_rep_death","m_FOI_Brazil")
-#TODO - Add provision for parameters of temperature/precipitation functional forms?
 #-------------------------------------------------------------------------------
 #' @title MCMC
 #'
@@ -374,7 +369,7 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
 
   #Get additional values, calculate associated prior values
   prior_like = 0
-  vaccine_efficacy = p_severe_inf = p_death_severe_inf = p_rep_severe = p_rep_death = m_FOI_Brazil = 1.0
+  vaccine_efficacy = p_severe_inf = p_death_severe_inf = p_rep_severe = p_rep_death = m_FOI_BRA = 1.0
   #TODO - Add provision for parameters of temperature/precipitation functional forms?
   for(var_name in extra_param_names){
     i=match(var_name,consts$params_data$name)
@@ -409,7 +404,7 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
                                consts$enviro_data_const, consts$enviro_data_var)
 
     for(n_region in 1:length(input_data$region_labels)){ #Apply Brazil FOI multiplier to relevant regions
-      if(substr(input_data$region_labels[n_region],1,3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_Brazil}
+      if(substr(input_data$region_labels[n_region],1,3) == "BRA"){FOI_values[n_region] = FOI_values[n_region]*m_FOI_BRA}
     }
     prior_like = prior_like  +
       sum(log(dtrunc(rowMeans(FOI_values), "norm", #TODO - change to use log(FOI)?

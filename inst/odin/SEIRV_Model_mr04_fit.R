@@ -9,15 +9,13 @@ region_index_sero <- parameter() #Groupings of regions for which to output sero 
 region_index_case <- parameter() #Groupings of regions for which to output case data
 sero_regions <- parameter() #0/1 flag indicating which regions need serological data output
 case_regions <- parameter() #0/1 flag indicating which regions need case data output
-n_env_vars <- parameter() #number of environmental covariates
-env_covar_values <- parameter() #Values of environmental covariates by variable, region and time point
-log_FOI_coeffs <- parameter() #Log coefficients of environmental covariates used to calculate FOI_spillover by variable
-log_R0_coeffs <- parameter() #Log coefficients of environmental covariates used to calculate R0 by variable
 n_sero_pts <- parameter() #number of serology data points at each time point
 n_case_pts <- parameter() #number of case data points at each time point
 t_incubation <- parameter() #Length in days of yellow fever incubation period in mosquito vectors
 t_latent <- parameter() #Length in days of latent period in humans exposed to yellow fever
 t_infectious <- parameter() #Length of infectious period in humans with yellow fever
+FOI_spillover <- parameter() #Spillover force of infection (per day) at each time point
+R0 <- parameter() #Basic reproduction number for human-human transmission at each time point
 N_age <- parameter() #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
 vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully protect the recipient
@@ -46,13 +44,9 @@ rate1 <- time_inc/(t_incubation+t_latent) # Rate of transfer from E to I
 rate2 <- time_inc/t_infectious # Rate of transfer from I to R
 p_rep <- p_severe_inf*((p_death_severe_inf*p_rep_death)+((1.0-p_death_severe_inf)*p_rep_severe)) #TBA
 
-FOI_components[1:n_env_vars,1:n_r]=exp(log_FOI_coeffs[i])*env_covar_values[i,j,t_pt]
-R0_components[1:n_env_vars,1:n_r]=exp(log_R0_coeffs[i])*env_covar_values[i,j,t_pt]
 t_pt <- day/time_inc #Number of time points passed
-FOI_spillover[1:n_r] <- sum(FOI_components[,i]) #Spillover force of infection (per day) at each time point
-R0[1:n_r] <- sum(R0_components[,i]) #Basic reproduction number for human-human transmission at each time point
-beta[1:n_r] <- (R0[i]*time_inc)/t_infectious #Daily exposure rate
-FOI_sum[1:n_r] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i]*time_inc)) #Total force of infection
+beta[1:n_r] <- (R0[i,t_pt]*time_inc)/t_infectious #Daily exposure rate
+FOI_sum[1:n_r] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i,t_pt]*time_inc)) #Total force of infection
 year_i <- floor(day/365)+1 #Number of years since start, as integer
 flag_year <- if(as.integer(day+time_inc) %% 365 == 0) 1 else 0
 
@@ -81,23 +75,23 @@ update(R[1:n_r,1]) <- max(Pmin, R[i,1] + R_new[i,1] - vacc_rate[i,1]*R[i,1]*inv_
 update(R[1:n_r,2:N_age]) <- max(Pmin, R[i,j] + R_new[i,j] - vacc_rate[i,j]*R[i,j]*inv_P_nV[i,j] + (dP1[i,j]*R[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*R[i,j]*inv_P[i,j]))
 update(V[1:n_r,1]) <- max(Pmin, V[i,1] + vacc_rate[i,1] - (dP2[i,1]*V[i,1]*inv_P[i,1]))
 update(V[1:n_r,2:N_age]) <- max(Pmin, V[i,j] + vacc_rate[i,j] + (dP1[i,j]*V[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*V[i,j]*inv_P[i,j]))
-update(R_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else 
+update(R_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   R_cu[i,j] + R[i,j]
-update(SEIR_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else 
+update(SEIR_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   SEIR_cu[i,j] + S[i,j]+E[i,j]+I[i,j]+R[i,j]
-update(V_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else 
+update(V_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   V_cu[i,j] + V[i,j]
-update(infs_cu[1:n_r,1:N_age]) <- if(case_regions[i]==0) 0 else if(flag_year==1) 0 else 
+update(infs_cu[1:n_r,1:N_age]) <- if(case_regions[i]==0) 0 else if(flag_year==1) 0 else
   infs_cu[i,j] + I_new[i,j]
-update(R_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else 
+update(R_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(R_cu[j,sia_min[i]:sia_max[i]]) + sum(R[j,sia_min[i]:sia_max[i]])
-update(SEIR_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else 
+update(SEIR_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(SEIR_cu[j,sia_min[i]:sia_max[i]]) + sum(S[j,sia_min[i]:sia_max[i]])+sum(E[j,sia_min[i]:sia_max[i]])+sum(I[j,sia_min[i]:sia_max[i]])+sum(R[j,sia_min[i]:sia_max[i]])
-update(V_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else 
+update(V_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(V_cu[j,sia_min[i]:sia_max[i]]) + sum(V[j,sia_min[i]:sia_max[i]])
-update(infs_an[1:n_case_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_case[i,j]==0) 0 else 
+update(infs_an[1:n_case_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_case[i,j]==0) 0 else
   sum(infs_cu[j,1:N_age]) + sum(I_new[j,1:N_age])
-update(output_sero[1:n_sero_pts]) <- if(sero_vc_factor[i]==0) sum(R_an[i,])/sum(SEIR_an[i,]) else 
+update(output_sero[1:n_sero_pts]) <- if(sero_vc_factor[i]==0) sum(R_an[i,])/sum(SEIR_an[i,]) else
   ((1.0-sero_vc_factor[i])*(sum(R_an[i,])/sum(SEIR_an[i,]))) +(sero_vc_factor[i]*((sum(R_an[i,])+sum(V_an[i,]))/(sum(SEIR_an[i,])+sum(V_an[i,]))))
 update(output_case[1:n_case_pts]) <- Binomial(as.integer(sum(infs_an[i,])),p_rep) #TODO - calculate both cases and deaths
 
@@ -139,11 +133,7 @@ dim(output_sero) <- n_sero_pts
 dim(output_case) <- n_case_pts
 
 #Calculated values
-dim(FOI_components) <- c(n_env_vars,n_r)
-dim(R0_components) <- c(n_env_vars,n_r)
 dim(beta) <- n_r
-dim(FOI_spillover) <- n_r
-dim(R0) <- n_r
 dim(FOI_sum) <- n_r
 dim(dP1) <- c(n_r, N_age)
 dim(dP2) <- c(n_r, N_age)
@@ -162,9 +152,6 @@ dim(region_index_sero) <- c(n_sero_pts,n_r)
 dim(region_index_case) <- c(n_case_pts,n_r)
 dim(sero_regions) <- n_r
 dim(case_regions) <- n_r
-dim(env_covar_values) <- c(n_env_vars,n_r, n_t_pts)
-dim(log_FOI_coeffs) <- n_env_vars
-dim(log_R0_coeffs) <- n_env_vars
 dim(S_0) <- c(n_r, N_age)
 dim(E_0) <- c(n_r, N_age)
 dim(I_0) <- c(n_r, N_age)
@@ -173,14 +160,13 @@ dim(V_0) <- c(n_r, N_age)
 dim(dP1_all) <- c(n_r, N_age, n_years)
 dim(dP2_all) <- c(n_r, N_age, n_years)
 dim(vacc_rate_daily) <- c(n_r, N_age, n_years)
+dim(FOI_spillover) <- c(n_r, n_t_pts)
+dim(R0) <- c(n_r, n_t_pts)
 dim(sero_vc_factor) <- n_sero_pts
 dim(sia_min) <- n_sero_pts
 dim(sia_max) <- n_sero_pts
 
-#Distribution-------------------------------------------------------------------
-#obs_sero_values <- data()
-#dim(obs_sero_values) <- n_sero_pts
-#obs_sero_values[] ~ Poisson(output_sero[i])
+#Likelihood distribution--------------------------------------------------------
 obs_sero_positives <- data()
 obs_sero_samples <- data()
 dim(obs_sero_positives) <- n_sero_pts
@@ -188,7 +174,5 @@ dim(obs_sero_samples) <- n_sero_pts
 obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i])
 obs_case_values <- data()
 dim(obs_case_values) <- n_case_pts
-#obs_case_values[] ~ Poisson(output_case[i])
-case_population <- data()
-dim(case_population) <- n_case_pts
-obs_case_values[] ~ NegativeBinomial(size = case_population[i], mu = output_case[i])
+obs_case_values[] ~ Poisson(output_case[i])
+

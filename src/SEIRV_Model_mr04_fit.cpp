@@ -11,15 +11,13 @@
 // [[dust2::parameter(region_index_case, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(sero_regions, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(case_regions, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(n_env_vars, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
-// [[dust2::parameter(env_covar_values, type = "real_type", rank = 3, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(log_FOI_coeffs, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(log_R0_coeffs, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(n_sero_pts, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(n_case_pts, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(t_incubation, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(t_latent, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(t_infectious, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(FOI_spillover, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(R0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(N_age, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(vacc_rate_daily, type = "real_type", rank = 3, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(vaccine_efficacy, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
@@ -70,11 +68,7 @@ public:
       dust2::array::dimensions<2> infs_an;
       dust2::array::dimensions<1> output_sero;
       dust2::array::dimensions<1> output_case;
-      dust2::array::dimensions<2> FOI_components;
-      dust2::array::dimensions<2> R0_components;
       dust2::array::dimensions<1> beta;
-      dust2::array::dimensions<1> FOI_spillover;
-      dust2::array::dimensions<1> R0;
       dust2::array::dimensions<1> FOI_sum;
       dust2::array::dimensions<2> dP1;
       dust2::array::dimensions<2> dP2;
@@ -91,9 +85,6 @@ public:
       dust2::array::dimensions<2> region_index_case;
       dust2::array::dimensions<1> sero_regions;
       dust2::array::dimensions<1> case_regions;
-      dust2::array::dimensions<3> env_covar_values;
-      dust2::array::dimensions<1> log_FOI_coeffs;
-      dust2::array::dimensions<1> log_R0_coeffs;
       dust2::array::dimensions<2> S_0;
       dust2::array::dimensions<2> E_0;
       dust2::array::dimensions<2> I_0;
@@ -102,17 +93,17 @@ public:
       dust2::array::dimensions<3> dP1_all;
       dust2::array::dimensions<3> dP2_all;
       dust2::array::dimensions<3> vacc_rate_daily;
+      dust2::array::dimensions<2> FOI_spillover;
+      dust2::array::dimensions<2> R0;
       dust2::array::dimensions<1> sero_vc_factor;
       dust2::array::dimensions<1> sia_min;
       dust2::array::dimensions<1> sia_max;
       dust2::array::dimensions<1> obs_sero_positives;
       dust2::array::dimensions<1> obs_sero_samples;
       dust2::array::dimensions<1> obs_case_values;
-      dust2::array::dimensions<1> case_population;
     } dim;
     real_type time_inc;
     int n_r;
-    int n_env_vars;
     int n_sero_pts;
     int n_case_pts;
     real_type t_incubation;
@@ -136,9 +127,8 @@ public:
     std::vector<real_type> region_index_case;
     std::vector<real_type> sero_regions;
     std::vector<real_type> case_regions;
-    std::vector<real_type> env_covar_values;
-    std::vector<real_type> log_FOI_coeffs;
-    std::vector<real_type> log_R0_coeffs;
+    std::vector<real_type> FOI_spillover;
+    std::vector<real_type> R0;
     std::vector<real_type> vacc_rate_daily;
     std::vector<real_type> sero_vc_factor;
     std::vector<real_type> sia_min;
@@ -155,18 +145,14 @@ public:
     std::vector<real_type> I_new;
     std::vector<real_type> R_new;
     std::vector<real_type> P_nV;
-    std::vector<real_type> FOI_components;
-    std::vector<real_type> R0_components;
+    std::vector<real_type> beta;
     std::vector<real_type> dP1;
     std::vector<real_type> dP2;
     std::vector<real_type> inv_P_nV;
     std::vector<real_type> P;
-    std::vector<real_type> FOI_spillover;
-    std::vector<real_type> R0;
     std::vector<real_type> P_tot;
     std::vector<real_type> inv_P;
     std::vector<real_type> vacc_rate;
-    std::vector<real_type> beta;
     std::vector<real_type> FOI_sum;
     std::vector<real_type> E_new;
   };
@@ -174,7 +160,6 @@ public:
     std::vector<real_type> obs_sero_positives;
     std::vector<real_type> obs_sero_samples;
     std::vector<real_type> obs_case_values;
-    std::vector<real_type> case_population;
   };
   static dust2::packing packing_state(const shared_state& shared) {
     return shared.odin.packing.state;
@@ -183,7 +168,6 @@ public:
     shared_state::dim_type dim;
     const real_type time_inc = dust2::r::read_real(parameters, "time_inc");
     const int n_r = dust2::r::read_int(parameters, "n_r");
-    const int n_env_vars = dust2::r::read_int(parameters, "n_env_vars");
     const int n_sero_pts = dust2::r::read_int(parameters, "n_sero_pts");
     const int n_case_pts = dust2::r::read_int(parameters, "n_case_pts");
     const real_type t_incubation = dust2::r::read_real(parameters, "t_incubation");
@@ -218,11 +202,7 @@ public:
     dim.infs_an.set({static_cast<size_t>(n_case_pts), static_cast<size_t>(n_r)});
     dim.output_sero.set({static_cast<size_t>(n_sero_pts)});
     dim.output_case.set({static_cast<size_t>(n_case_pts)});
-    dim.FOI_components.set({static_cast<size_t>(n_env_vars), static_cast<size_t>(n_r)});
-    dim.R0_components.set({static_cast<size_t>(n_env_vars), static_cast<size_t>(n_r)});
     dim.beta.set({static_cast<size_t>(n_r)});
-    dim.FOI_spillover.set({static_cast<size_t>(n_r)});
-    dim.R0.set({static_cast<size_t>(n_r)});
     dim.FOI_sum.set({static_cast<size_t>(n_r)});
     dim.dP1.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.dP2.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
@@ -239,9 +219,6 @@ public:
     dim.region_index_case.set({static_cast<size_t>(n_case_pts), static_cast<size_t>(n_r)});
     dim.sero_regions.set({static_cast<size_t>(n_r)});
     dim.case_regions.set({static_cast<size_t>(n_r)});
-    dim.env_covar_values.set({static_cast<size_t>(n_env_vars), static_cast<size_t>(n_r), static_cast<size_t>(n_t_pts)});
-    dim.log_FOI_coeffs.set({static_cast<size_t>(n_env_vars)});
-    dim.log_R0_coeffs.set({static_cast<size_t>(n_env_vars)});
     dim.S_0.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.E_0.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.I_0.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
@@ -250,13 +227,14 @@ public:
     dim.dP1_all.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age), static_cast<size_t>(n_years)});
     dim.dP2_all.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age), static_cast<size_t>(n_years)});
     dim.vacc_rate_daily.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age), static_cast<size_t>(n_years)});
+    dim.FOI_spillover.set({static_cast<size_t>(n_r), static_cast<size_t>(n_t_pts)});
+    dim.R0.set({static_cast<size_t>(n_r), static_cast<size_t>(n_t_pts)});
     dim.sero_vc_factor.set({static_cast<size_t>(n_sero_pts)});
     dim.sia_min.set({static_cast<size_t>(n_sero_pts)});
     dim.sia_max.set({static_cast<size_t>(n_sero_pts)});
     dim.obs_sero_positives.set({static_cast<size_t>(n_sero_pts)});
     dim.obs_sero_samples.set({static_cast<size_t>(n_sero_pts)});
     dim.obs_case_values.set({static_cast<size_t>(n_case_pts)});
-    dim.case_population.set({static_cast<size_t>(n_case_pts)});
     std::vector<real_type> region_index_sero(dim.region_index_sero.size);
     dust2::r::read_real_array(parameters, dim.region_index_sero, region_index_sero.data(), "region_index_sero", true);
     std::vector<real_type> region_index_case(dim.region_index_case.size);
@@ -265,12 +243,10 @@ public:
     dust2::r::read_real_array(parameters, dim.sero_regions, sero_regions.data(), "sero_regions", true);
     std::vector<real_type> case_regions(dim.case_regions.size);
     dust2::r::read_real_array(parameters, dim.case_regions, case_regions.data(), "case_regions", true);
-    std::vector<real_type> env_covar_values(dim.env_covar_values.size);
-    dust2::r::read_real_array(parameters, dim.env_covar_values, env_covar_values.data(), "env_covar_values", true);
-    std::vector<real_type> log_FOI_coeffs(dim.log_FOI_coeffs.size);
-    dust2::r::read_real_array(parameters, dim.log_FOI_coeffs, log_FOI_coeffs.data(), "log_FOI_coeffs", true);
-    std::vector<real_type> log_R0_coeffs(dim.log_R0_coeffs.size);
-    dust2::r::read_real_array(parameters, dim.log_R0_coeffs, log_R0_coeffs.data(), "log_R0_coeffs", true);
+    std::vector<real_type> FOI_spillover(dim.FOI_spillover.size);
+    dust2::r::read_real_array(parameters, dim.FOI_spillover, FOI_spillover.data(), "FOI_spillover", true);
+    std::vector<real_type> R0(dim.R0.size);
+    dust2::r::read_real_array(parameters, dim.R0, R0.data(), "R0", true);
     std::vector<real_type> vacc_rate_daily(dim.vacc_rate_daily.size);
     dust2::r::read_real_array(parameters, dim.vacc_rate_daily, vacc_rate_daily.data(), "vacc_rate_daily", true);
     std::vector<real_type> sero_vc_factor(dim.sero_vc_factor.size);
@@ -314,27 +290,23 @@ public:
       {"output_case", std::vector<size_t>(dim.output_case.dim.begin(), dim.output_case.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, time_inc, n_r, n_env_vars, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, p_rep, region_index_sero, region_index_case, sero_regions, case_regions, env_covar_values, log_FOI_coeffs, log_R0_coeffs, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
+    return shared_state{odin, dim, time_inc, n_r, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, p_rep, region_index_sero, region_index_case, sero_regions, case_regions, FOI_spillover, R0, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> I_new(shared.dim.I_new.size);
     std::vector<real_type> R_new(shared.dim.R_new.size);
     std::vector<real_type> P_nV(shared.dim.P_nV.size);
-    std::vector<real_type> FOI_components(shared.dim.FOI_components.size);
-    std::vector<real_type> R0_components(shared.dim.R0_components.size);
+    std::vector<real_type> beta(shared.dim.beta.size);
     std::vector<real_type> dP1(shared.dim.dP1.size);
     std::vector<real_type> dP2(shared.dim.dP2.size);
     std::vector<real_type> inv_P_nV(shared.dim.inv_P_nV.size);
     std::vector<real_type> P(shared.dim.P.size);
-    std::vector<real_type> FOI_spillover(shared.dim.FOI_spillover.size);
-    std::vector<real_type> R0(shared.dim.R0.size);
     std::vector<real_type> P_tot(shared.dim.P_tot.size);
     std::vector<real_type> inv_P(shared.dim.inv_P.size);
     std::vector<real_type> vacc_rate(shared.dim.vacc_rate.size);
-    std::vector<real_type> beta(shared.dim.beta.size);
     std::vector<real_type> FOI_sum(shared.dim.FOI_sum.size);
     std::vector<real_type> E_new(shared.dim.E_new.size);
-    return internal_state{I_new, R_new, P_nV, FOI_components, R0_components, dP1, dP2, inv_P_nV, P, FOI_spillover, R0, P_tot, inv_P, vacc_rate, beta, FOI_sum, E_new};
+    return internal_state{I_new, R_new, P_nV, beta, dP1, dP2, inv_P_nV, P, P_tot, inv_P, vacc_rate, FOI_sum, E_new};
   }
   static data_type build_data(cpp11::list data, const shared_state& shared) {
     auto obs_sero_positives = std::vector<real_type>(shared.dim.obs_sero_positives.size);
@@ -343,9 +315,7 @@ public:
     dust2::r::read_real_array(data, shared.dim.obs_sero_samples, obs_sero_samples.data(), "obs_sero_samples", true);
     auto obs_case_values = std::vector<real_type>(shared.dim.obs_case_values.size);
     dust2::r::read_real_array(data, shared.dim.obs_case_values, obs_case_values.data(), "obs_case_values", true);
-    auto case_population = std::vector<real_type>(shared.dim.case_population.size);
-    dust2::r::read_real_array(data, shared.dim.case_population, case_population.data(), "case_population", true);
-    return data_type{obs_sero_positives, obs_sero_samples, obs_case_values, case_population};
+    return data_type{obs_sero_positives, obs_sero_samples, obs_case_values};
   }
   static void update_shared(cpp11::list parameters, shared_state& shared) {
     shared.time_inc = dust2::r::read_real(parameters, "time_inc", shared.time_inc);
@@ -365,9 +335,8 @@ public:
     dust2::r::read_real_array(parameters, shared.dim.region_index_case, shared.region_index_case.data(), "region_index_case", false);
     dust2::r::read_real_array(parameters, shared.dim.sero_regions, shared.sero_regions.data(), "sero_regions", false);
     dust2::r::read_real_array(parameters, shared.dim.case_regions, shared.case_regions.data(), "case_regions", false);
-    dust2::r::read_real_array(parameters, shared.dim.env_covar_values, shared.env_covar_values.data(), "env_covar_values", false);
-    dust2::r::read_real_array(parameters, shared.dim.log_FOI_coeffs, shared.log_FOI_coeffs.data(), "log_FOI_coeffs", false);
-    dust2::r::read_real_array(parameters, shared.dim.log_R0_coeffs, shared.log_R0_coeffs.data(), "log_R0_coeffs", false);
+    dust2::r::read_real_array(parameters, shared.dim.FOI_spillover, shared.FOI_spillover.data(), "FOI_spillover", false);
+    dust2::r::read_real_array(parameters, shared.dim.R0, shared.R0.data(), "R0", false);
     dust2::r::read_real_array(parameters, shared.dim.vacc_rate_daily, shared.vacc_rate_daily.data(), "vacc_rate_daily", false);
     dust2::r::read_real_array(parameters, shared.dim.sero_vc_factor, shared.sero_vc_factor.data(), "sero_vc_factor", false);
     dust2::r::read_real_array(parameters, shared.dim.sia_min, shared.sia_min.data(), "sia_min", false);
@@ -490,15 +459,8 @@ public:
         internal.P_nV[i - 1 + (j - 1) * shared.dim.P_nV.mult[1]] = S[i - 1 + (j - 1) * shared.dim.S.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]];
       }
     }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.n_env_vars); ++i) {
-      for (size_t j = 1; j <= static_cast<size_t>(shared.n_r); ++j) {
-        internal.FOI_components[i - 1 + (j - 1) * shared.dim.FOI_components.mult[1]] = monty::math::exp(shared.log_FOI_coeffs[i - 1]) * shared.env_covar_values[i - 1 + (j - 1) * shared.dim.env_covar_values.mult[1] + (t_pt - 1) * shared.dim.env_covar_values.mult[2]];
-      }
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.n_env_vars); ++i) {
-      for (size_t j = 1; j <= static_cast<size_t>(shared.n_r); ++j) {
-        internal.R0_components[i - 1 + (j - 1) * shared.dim.R0_components.mult[1]] = monty::math::exp(shared.log_R0_coeffs[i - 1]) * shared.env_covar_values[i - 1 + (j - 1) * shared.dim.env_covar_values.mult[1] + (t_pt - 1) * shared.dim.env_covar_values.mult[2]];
-      }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
+      internal.beta[i - 1] = (shared.R0[i - 1 + (t_pt - 1) * shared.dim.R0.mult[1]] * shared.time_inc) / shared.t_infectious;
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
@@ -521,12 +483,6 @@ public:
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
-      internal.FOI_spillover[i - 1] = dust2::array::sum<real_type>(internal.FOI_components.data(), shared.dim.FOI_components, {0, shared.dim.FOI_components.dim[0] - 1}, {i - 1, i - 1});
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
-      internal.R0[i - 1] = dust2::array::sum<real_type>(internal.R0_components.data(), shared.dim.R0_components, {0, shared.dim.R0_components.dim[0] - 1}, {i - 1, i - 1});
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       internal.P_tot[i - 1] = dust2::array::sum<real_type>(internal.P.data(), shared.dim.P, {i - 1, i - 1}, {0, shared.dim.P.dim[1] - 1});
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
@@ -540,10 +496,7 @@ public:
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
-      internal.beta[i - 1] = (internal.R0[i - 1] * shared.time_inc) / shared.t_infectious;
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
-      internal.FOI_sum[i - 1] = monty::math::min<real_type>(shared.FOI_max, internal.beta[i - 1] * (dust2::array::sum<real_type>(I, shared.dim.I, {i - 1, i - 1}, {0, shared.dim.I.dim[1] - 1}) / internal.P_tot[i - 1]) + (internal.FOI_spillover[i - 1] * shared.time_inc));
+      internal.FOI_sum[i - 1] = monty::math::min<real_type>(shared.FOI_max, internal.beta[i - 1] * (dust2::array::sum<real_type>(I, shared.dim.I, {i - 1, i - 1}, {0, shared.dim.I.dim[1] - 1}) / internal.P_tot[i - 1]) + (shared.FOI_spillover[i - 1 + (t_pt - 1) * shared.dim.FOI_spillover.mult[1]] * shared.time_inc));
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
@@ -642,7 +595,7 @@ public:
       odin_ll += unless_nan(monty::density::binomial(data.obs_sero_positives[i - 1], data.obs_sero_samples[i - 1], output_sero[i - 1], true));
     }
     for (size_t i = 1; i <= shared.dim.obs_case_values.size; ++i) {
-      odin_ll += unless_nan(monty::density::negative_binomial_mu(data.obs_case_values[i - 1], data.case_population[i - 1], output_case[i - 1], true));
+      odin_ll += unless_nan(monty::density::poisson(data.obs_case_values[i - 1], output_case[i - 1], true));
     }
     return odin_ll;
   }

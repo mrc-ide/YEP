@@ -20,6 +20,7 @@ Imports:
     dplyr,
     dust2,
     graphics,
+    monty,
     mvtnorm,
     odin2,
     R.utils,

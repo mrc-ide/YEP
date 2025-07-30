@@ -4,6 +4,10 @@
 t_incubation <- 5 #Time for cases to incubate in mosquito
 t_latent <- 5 #Latent period before cases become infectious
 t_infectious <- 5 #Time cases remain infectious
+# Additional parameter names for MCMC
+extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
+                       "p_rep_death","m_FOI_BRA")
+#TODO - Add provision for parameters of temperature/precipitation functional forms?
 #-------------------------------------------------------------------------------
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
@@ -12,6 +16,7 @@ t_infectious <- 5 #Time cases remain infectious
 #' @importFrom dplyr between
 #' @import dust2
 #' @importFrom graphics axis matplot par
+#' @import monty
 #' @importFrom mvtnorm rmvnorm
 #' @import odin2
 #' @import parallel
@@ -330,10 +335,11 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
 #'
 parameter_setup <- function(FOI_spillover = list(), R0 = list(), vacc_data = list(), pop_data = list(),
                             years_data = c(), year0 = 1940, vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 0,
-                            start_SEIRV = list(), mode_time = 0){
+                            start_SEIRV = NULL, mode_time = 0){
 
   #TODO - additional assert_that functions?
   assert_that(mode_start %in% c(0, 1, 2), msg = "mode_start must have value 0, 1 or 2")
+  if(mode_start==2){assert_that(is.null(start_SEIRV)==FALSE)}
   assert_that(mode_time %in% c(0:5), msg = "mode_time must be an integer between 0 and 5")
   assert_that(all(FOI_spillover >= 0.0))
   assert_that(all(R0 >= 0.0))

@@ -14,7 +14,7 @@ parameter_setup(
   vaccine_efficacy = 1,
   time_inc = 1,
   mode_start = 0,
-  start_SEIRV = list(),
+  start_SEIRV = NULL,
   mode_time = 0
 )
 }
