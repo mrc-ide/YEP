@@ -6,29 +6,20 @@
 \usage{
 get_region_grouping(
   regions = c(),
-  sero_template = list(),
-  case_template = list(),
-  xref_sero = list(),
-  xref_case = list(),
-  flag_simple = TRUE
+  template = list(sero = NULL, case = NULL, xref_sero = NULL, xref_case = NULL),
+  mode_grouping = 1
 )
 }
 \arguments{
 \item{regions}{TBA}
 
-\item{sero_template}{TBA}
+\item{template}{TBA}
 
-\item{case_template}{TBA}
-
-\item{xref_sero}{TBA}
-
-\item{xref_case}{TBA}
-
-\item{flag_simple}{TBA
+\item{mode_grouping}{TBA
 '}
 }
 \description{
-Group regions from serology and case data templates
+Group regions from serology and case data template
 }
 \details{
 TBA
