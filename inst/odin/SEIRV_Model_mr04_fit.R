@@ -2,6 +2,8 @@
 # Version calculating both serological and case data and applying distribution
 # FOI and R0 calculated in odin2 from environmental covariates and coefficients
 
+# TODO - Calculate deaths separately from cases and add distribution
+
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
 n_r <- parameter() #number of regions
