@@ -4,7 +4,12 @@
 \alias{packer_setup}
 \title{packer_setup}
 \usage{
-packer_setup(pars_fixed = list(), env_covar_values = list(), mode_time = 0)
+packer_setup(
+  pars_fixed = list(),
+  env_covar_values = list(),
+  mode_time = 0,
+  vars_extra_names = c("")
+)
 }
 \arguments{
 \item{pars_fixed}{TBA}
@@ -12,6 +17,8 @@ packer_setup(pars_fixed = list(), env_covar_values = list(), mode_time = 0)
 \item{env_covar_values}{TBA}
 
 \item{mode_time}{TBA}
+
+\item{vars_extra_names}{TBA}
 }
 \description{
 TBA

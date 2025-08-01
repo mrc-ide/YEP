@@ -13,7 +13,8 @@ m_prelim_fit(
   env_covar_values = list(),
   n_values = 10,
   n_particles = 1,
-  n_threads = 1
+  n_threads = 1,
+  seed = NULL
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ m_prelim_fit(
 \item{n_particles}{TBA}
 
 \item{n_threads}{TBA}
+
+\item{seed}{TBA}
 }
 \description{
 TBA

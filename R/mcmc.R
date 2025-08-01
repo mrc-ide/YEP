@@ -18,6 +18,7 @@
 #'   positives (TBA - instructions)
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no.
 #'   cases/no. deaths (TBA - instructions)
+#' @param mode_grouping TBA
 #' @param filename_prefix Prefix of output RDS file name, e.g. "Chain.Rds"
 #' @param Niter Total number of iterations to run
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
@@ -41,13 +42,15 @@
 #'   If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
 #' @param mode_parallel TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
+#' @param seed TBA
 #' '
 #' @export
 #'
 MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=-Inf,mean=0,sd=1,estimate=TRUE),
-                 input_data = list(), obs_sero_data = NULL, obs_case_data = NULL, filename_prefix = "Chain", Niter = 1,
-                 mode_start = 1, time_inc = 1.0, n_reps = 1, enviro_data_const = list(), enviro_data_var = list(),
-                 deterministic = FALSE, mode_time = 1, mode_parallel = FALSE, cluster = NULL){
+                 input_data = list(), obs_sero_data = NULL, obs_case_data = NULL, mode_grouping = 2,
+                 filename_prefix = "Chain", Niter = 1,mode_start = 1, time_inc = 1.0, n_reps = 1,
+                 enviro_data_const = list(), enviro_data_var = list(), deterministic = FALSE, mode_time = 1,
+                 mode_parallel = FALSE, cluster = NULL, seed = NULL){
 
 
   #Section identical to equivalent section in mcmc_prelim_fit
@@ -94,7 +97,12 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
     # Cross-reference regions
     if(is.null(obs_sero_data)){xref_sero=NULL}else{xref_sero=template_region_xref(obs_sero_data,input_data$region_labels)}
     if(is.null(obs_case_data)){xref_case=NULL}else{xref_case=template_region_xref(obs_case_data,input_data$region_labels)}
-  }
+    region_grouping = get_region_grouping(regions=input_data$region_labels,
+                                          template=list(sero=obs_sero_data,case=obs_case_data,
+                                                        xref_sero=xref_sero,xref_case=xref_case),
+                                          mode_grouping=mode_grouping)
+    }
+
 
   #MCMC setup
   chain = chain_prop = posterior_current = posterior_prop = flag_accept = chain_cov_all = NULL
@@ -123,7 +131,8 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
                                                  i_FOI_const = i_FOI_const, i_FOI_var = i_FOI_var,
                                                  i_R0_const = i_R0_const, i_R0_var = i_R0_var,
                                                  i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior,
-                                                 n_env_vars = n_env_vars, xref_sero = xref_sero, xref_case = xref_case)
+                                                 n_env_vars = n_env_vars, region_grouping = region_grouping,
+                                                 mode_grouping = mode_grouping)
     gc() #Clear garbage to prevent memory creep
 
     if(is.finite(posterior_value_prop) == FALSE) {
@@ -207,6 +216,7 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
 #'   positives
 #' @param obs_case_data Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 #'   deaths
+#' @param mode_grouping TBA
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
@@ -219,13 +229,15 @@ MCMC <- function(params_data = data.frame(name="FOI_var1",initial=1,max=Inf,min=
 #' @param mode_parallel TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
 #' @param plot_graphs TRUE/FALSE - plot graphs of evolving parameter space
+#' @param seed TBA
 #' '
 #' @export
 #'
 mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, params_data = list(),
-                            input_data = list(), obs_sero_data = list(), obs_case_data = list(),
-                            mode_start = 1, time_inc = 1.0, n_reps = 1, enviro_data_const = list(), enviro_data_var = list(),
-                            deterministic = TRUE, mode_time = 0, mode_parallel = FALSE, cluster = NULL, plot_graphs = FALSE){
+                            input_data = list(), obs_sero_data = list(), obs_case_data = list(), mode_grouping = 2,
+                            mode_start = 1, time_inc = 1.0, n_reps = 1, enviro_data_const = list(),
+                            enviro_data_var = list(), deterministic = TRUE, mode_time = 0, mode_parallel = FALSE,
+                            cluster = NULL, plot_graphs = FALSE, seed = NULL){
 
   #Section identical to equivalent section in MCMC
   {
@@ -271,6 +283,10 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
     # Cross-reference regions
     if(is.null(obs_sero_data)){xref_sero=NULL}else{xref_sero=template_region_xref(obs_sero_data,input_data$region_labels)}
     if(is.null(obs_case_data)){xref_case=NULL}else{xref_case=template_region_xref(obs_case_data,input_data$region_labels)}
+    region_grouping = get_region_grouping(regions=input_data$region_labels,
+                                          template=list(sero=obs_sero_data,case=obs_case_data,
+                                                        xref_sero=xref_sero,xref_case=xref_case),
+                                          mode_grouping=mode_grouping)
   }
 
   best_fit_results = list()
@@ -307,7 +323,8 @@ mcmc_prelim_fit <- function(n_iterations = 1, n_param_sets = 1, n_bounds = 1, pa
                                               i_FOI_const = i_FOI_const, i_FOI_var = i_FOI_var,
                                               i_R0_const = i_R0_const, i_R0_var = i_R0_var,
                                               i_FOI_prior = i_FOI_prior, i_R0_prior = i_R0_prior,
-                                              n_env_vars = n_env_vars, xref_sero = xref_sero, xref_case = xref_case)
+                                              n_env_vars = n_env_vars, region_grouping = region_grouping,
+                                              mode_grouping = mode_grouping)
       gc() #Clear garbage to prevent memory creep
       results <- rbind(results, c(set, exp(log_params_prop), posterior_value))
       if(set == 1){colnames(results) = c("set", all_est_param_names, "posterior")}
@@ -419,11 +436,13 @@ single_posterior_calc <- function(log_params_prop = c(),input_data = list(),obs_
   if (is.finite(prior_like)) {
 
     #Generate modelled data over all regions
-    dataset <- Generate_Dataset(FOI_values, R0_values, input_data, obs_sero_data, obs_case_data, vaccine_efficacy,
-                                consts$time_inc,consts$mode_start, start_SEIRV = NULL, consts$mode_time, consts$n_reps,
-                                consts$deterministic, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death,
-                                consts$mode_parallel, consts$cluster, output_frame = FALSE, seed = NULL, #TBC?
-                                xref_sero = consts$xref_sero, xref_case = consts$xref_case)
+    dataset <- Generate_Dataset(FOI_values, R0_values, input_data,
+                                template = list(sero = obs_sero_data, case = obs_case_data),
+                                vaccine_efficacy, consts$time_inc,consts$mode_start, start_SEIRV = NULL,
+                                consts$mode_time, consts$n_reps, consts$deterministic, p_severe_inf,
+                                p_death_severe_inf, p_rep_severe, p_rep_death, consts$mode_parallel,
+                                consts$cluster, output_frame = FALSE, seed = NULL,
+                                region_grouping = consts$region_grouping, mode_grouping = consts$mode_grouping)
 
     #Likelihood of observing serological data
     if(is.null(obs_sero_data) == FALSE){

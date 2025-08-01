@@ -16,6 +16,7 @@ m_sample(
   n_iterations = 10,
   n_particles = 1,
   n_threads = 1,
+  seed = NULL,
   parallel = FALSE,
   output_file = ""
 )
@@ -42,6 +43,8 @@ m_sample(
 \item{n_particles}{TBA}
 
 \item{n_threads}{TBA}
+
+\item{seed}{TBA}
 
 \item{parallel}{TBA}
 

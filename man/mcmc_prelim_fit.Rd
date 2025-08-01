@@ -12,6 +12,7 @@ mcmc_prelim_fit(
   input_data = list(),
   obs_sero_data = list(),
   obs_case_data = list(),
+  mode_grouping = 2,
   mode_start = 1,
   time_inc = 1,
   n_reps = 1,
@@ -21,7 +22,8 @@ mcmc_prelim_fit(
   mode_time = 0,
   mode_parallel = FALSE,
   cluster = NULL,
-  plot_graphs = FALSE
+  plot_graphs = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -43,6 +45,8 @@ positives}
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no. cases/no.
 deaths}
 
+\item{mode_grouping}{TBA}
+
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr}
@@ -63,7 +67,9 @@ If mode_start = 1, shift some non-vaccinated individuals into recovered to give 
 
 \item{cluster}{Cluster of threads to use if mode_parallel = TRUE}
 
-\item{plot_graphs}{TRUE/FALSE - plot graphs of evolving parameter space
+\item{plot_graphs}{TRUE/FALSE - plot graphs of evolving parameter space}
+
+\item{seed}{TBA
 '}
 }
 \description{

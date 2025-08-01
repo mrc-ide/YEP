@@ -10,6 +10,7 @@ MCMC(
   input_data = list(),
   obs_sero_data = NULL,
   obs_case_data = NULL,
+  mode_grouping = 2,
   filename_prefix = "Chain",
   Niter = 1,
   mode_start = 1,
@@ -20,7 +21,8 @@ MCMC(
   deterministic = FALSE,
   mode_time = 1,
   mode_parallel = FALSE,
-  cluster = NULL
+  cluster = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -39,6 +41,8 @@ positives (TBA - instructions)}
 
 \item{obs_case_data}{Annual reported case/death data for comparison, by region and year, in format no.
 cases/no. deaths (TBA - instructions)}
+
+\item{mode_grouping}{TBA}
 
 \item{filename_prefix}{Prefix of output RDS file name, e.g. "Chain.Rds"}
 
@@ -72,7 +76,9 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 
 \item{mode_parallel}{TRUE/FALSE - indicate whether to use parallel processing on supplied cluster for speed}
 
-\item{cluster}{Cluster of threads to use if mode_parallel = TRUE
+\item{cluster}{Cluster of threads to use if mode_parallel = TRUE}
+
+\item{seed}{TBA
 '}
 }
 \description{

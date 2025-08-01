@@ -14,7 +14,8 @@ pars_fixed_setup(
   time_inc = 1,
   mode_start = 0,
   start_SEIRV = NULL,
-  ...
+  fixed_extra = list(),
+  ref_BRA = NULL
 )
 }
 \arguments{
@@ -36,7 +37,9 @@ pars_fixed_setup(
 
 \item{start_SEIRV}{TBA}
 
-\item{...}{TBA}
+\item{fixed_extra}{TBA}
+
+\item{ref_BRA}{TBA}
 }
 \description{
 TBA

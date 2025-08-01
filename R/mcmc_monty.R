@@ -428,6 +428,7 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 #' @param n_values TBA
 #' @param n_particles TBA
 #' @param n_threads TBA
+#' @param seed TBA
 #'
 #' @export
 #'
@@ -495,6 +496,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @param n_threads TBA
 #' @param parallel TBA
 #' @param output_file TBA
+#' @param seed TBA
 #'
 #' @export
 #'
