@@ -469,7 +469,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
     } else {
       explore$density[i] <- monty_model_density(posterior, parameters = param_sets[i,])
     }
-    cat("\n",signif(param_sets[i,],4),"\n\t",explore$density[i])
+    cat("\n",signif(param_sets[i,],3),"\n\t",explore$density[i])
   }
   cat("\n")
   explore = explore[order(-explore$density),]
