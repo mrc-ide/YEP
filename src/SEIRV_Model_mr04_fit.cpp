@@ -49,7 +49,7 @@ public:
         dust2::packing state;
       } packing;
       struct {
-        std::array<size_t, 17> state;
+        std::array<size_t, 18> state;
       } offset;
     } odin;
     struct dim_type {
@@ -68,6 +68,7 @@ public:
       dust2::array::dimensions<2> infs_an;
       dust2::array::dimensions<1> output_sero;
       dust2::array::dimensions<1> output_case;
+      dust2::array::dimensions<1> output_death;
       dust2::array::dimensions<1> beta;
       dust2::array::dimensions<1> FOI_sum;
       dust2::array::dimensions<2> dP1;
@@ -75,6 +76,10 @@ public:
       dust2::array::dimensions<2> E_new;
       dust2::array::dimensions<2> I_new;
       dust2::array::dimensions<2> R_new;
+      dust2::array::dimensions<1> severe_infs;
+      dust2::array::dimensions<1> fatal_infs;
+      dust2::array::dimensions<1> fatal_infs_rep;
+      dust2::array::dimensions<1> severe_infs_rep;
       dust2::array::dimensions<2> P_nV;
       dust2::array::dimensions<2> inv_P_nV;
       dust2::array::dimensions<2> P;
@@ -101,6 +106,7 @@ public:
       dust2::array::dimensions<1> obs_sero_positives;
       dust2::array::dimensions<1> obs_sero_samples;
       dust2::array::dimensions<1> obs_case_values;
+      dust2::array::dimensions<1> obs_death_values;
     } dim;
     real_type time_inc;
     int n_r;
@@ -122,7 +128,6 @@ public:
     real_type FOI_max;
     real_type rate1;
     real_type rate2;
-    real_type p_rep;
     std::vector<real_type> region_index_sero;
     std::vector<real_type> region_index_case;
     std::vector<real_type> sero_regions;
@@ -144,22 +149,27 @@ public:
   struct internal_state {
     std::vector<real_type> I_new;
     std::vector<real_type> R_new;
+    std::vector<real_type> severe_infs;
     std::vector<real_type> P_nV;
     std::vector<real_type> beta;
     std::vector<real_type> dP1;
     std::vector<real_type> dP2;
+    std::vector<real_type> fatal_infs;
     std::vector<real_type> inv_P_nV;
     std::vector<real_type> P;
+    std::vector<real_type> fatal_infs_rep;
     std::vector<real_type> P_tot;
     std::vector<real_type> inv_P;
     std::vector<real_type> vacc_rate;
     std::vector<real_type> FOI_sum;
+    std::vector<real_type> severe_infs_rep;
     std::vector<real_type> E_new;
   };
   struct data_type {
     std::vector<real_type> obs_sero_positives;
     std::vector<real_type> obs_sero_samples;
     std::vector<real_type> obs_case_values;
+    std::vector<real_type> obs_death_values;
   };
   static dust2::packing packing_state(const shared_state& shared) {
     return shared.odin.packing.state;
@@ -186,7 +196,6 @@ public:
     const real_type FOI_max = 1;
     const real_type rate1 = time_inc / (t_incubation + t_latent);
     const real_type rate2 = time_inc / t_infectious;
-    const real_type p_rep = p_severe_inf * ((p_death_severe_inf * p_rep_death) + ((1 - p_death_severe_inf) * p_rep_severe));
     dim.S.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.E.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.I.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
@@ -202,6 +211,7 @@ public:
     dim.infs_an.set({static_cast<size_t>(n_case_pts), static_cast<size_t>(n_r)});
     dim.output_sero.set({static_cast<size_t>(n_sero_pts)});
     dim.output_case.set({static_cast<size_t>(n_case_pts)});
+    dim.output_death.set({static_cast<size_t>(n_case_pts)});
     dim.beta.set({static_cast<size_t>(n_r)});
     dim.FOI_sum.set({static_cast<size_t>(n_r)});
     dim.dP1.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
@@ -209,6 +219,10 @@ public:
     dim.E_new.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.I_new.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.R_new.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
+    dim.severe_infs.set({static_cast<size_t>(n_case_pts)});
+    dim.fatal_infs.set({static_cast<size_t>(n_case_pts)});
+    dim.fatal_infs_rep.set({static_cast<size_t>(n_case_pts)});
+    dim.severe_infs_rep.set({static_cast<size_t>(n_case_pts)});
     dim.P_nV.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.inv_P_nV.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
     dim.P.set({static_cast<size_t>(n_r), static_cast<size_t>(N_age)});
@@ -235,6 +249,7 @@ public:
     dim.obs_sero_positives.set({static_cast<size_t>(n_sero_pts)});
     dim.obs_sero_samples.set({static_cast<size_t>(n_sero_pts)});
     dim.obs_case_values.set({static_cast<size_t>(n_case_pts)});
+    dim.obs_death_values.set({static_cast<size_t>(n_case_pts)});
     std::vector<real_type> region_index_sero(dim.region_index_sero.size);
     dust2::r::read_real_array(parameters, dim.region_index_sero, region_index_sero.data(), "region_index_sero", true);
     std::vector<real_type> region_index_case(dim.region_index_case.size);
@@ -287,26 +302,31 @@ public:
       {"V_an", std::vector<size_t>(dim.V_an.dim.begin(), dim.V_an.dim.end())},
       {"infs_an", std::vector<size_t>(dim.infs_an.dim.begin(), dim.infs_an.dim.end())},
       {"output_sero", std::vector<size_t>(dim.output_sero.dim.begin(), dim.output_sero.dim.end())},
-      {"output_case", std::vector<size_t>(dim.output_case.dim.begin(), dim.output_case.dim.end())}
+      {"output_case", std::vector<size_t>(dim.output_case.dim.begin(), dim.output_case.dim.end())},
+      {"output_death", std::vector<size_t>(dim.output_death.dim.begin(), dim.output_death.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, time_inc, n_r, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, p_rep, region_index_sero, region_index_case, sero_regions, case_regions, FOI_spillover, R0, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
+    return shared_state{odin, dim, time_inc, n_r, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, region_index_sero, region_index_case, sero_regions, case_regions, FOI_spillover, R0, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> I_new(shared.dim.I_new.size);
     std::vector<real_type> R_new(shared.dim.R_new.size);
+    std::vector<real_type> severe_infs(shared.dim.severe_infs.size);
     std::vector<real_type> P_nV(shared.dim.P_nV.size);
     std::vector<real_type> beta(shared.dim.beta.size);
     std::vector<real_type> dP1(shared.dim.dP1.size);
     std::vector<real_type> dP2(shared.dim.dP2.size);
+    std::vector<real_type> fatal_infs(shared.dim.fatal_infs.size);
     std::vector<real_type> inv_P_nV(shared.dim.inv_P_nV.size);
     std::vector<real_type> P(shared.dim.P.size);
+    std::vector<real_type> fatal_infs_rep(shared.dim.fatal_infs_rep.size);
     std::vector<real_type> P_tot(shared.dim.P_tot.size);
     std::vector<real_type> inv_P(shared.dim.inv_P.size);
     std::vector<real_type> vacc_rate(shared.dim.vacc_rate.size);
     std::vector<real_type> FOI_sum(shared.dim.FOI_sum.size);
+    std::vector<real_type> severe_infs_rep(shared.dim.severe_infs_rep.size);
     std::vector<real_type> E_new(shared.dim.E_new.size);
-    return internal_state{I_new, R_new, P_nV, beta, dP1, dP2, inv_P_nV, P, P_tot, inv_P, vacc_rate, FOI_sum, E_new};
+    return internal_state{I_new, R_new, severe_infs, P_nV, beta, dP1, dP2, fatal_infs, inv_P_nV, P, fatal_infs_rep, P_tot, inv_P, vacc_rate, FOI_sum, severe_infs_rep, E_new};
   }
   static data_type build_data(cpp11::list data, const shared_state& shared) {
     auto obs_sero_positives = std::vector<real_type>(shared.dim.obs_sero_positives.size);
@@ -315,7 +335,9 @@ public:
     dust2::r::read_real_array(data, shared.dim.obs_sero_samples, obs_sero_samples.data(), "obs_sero_samples", true);
     auto obs_case_values = std::vector<real_type>(shared.dim.obs_case_values.size);
     dust2::r::read_real_array(data, shared.dim.obs_case_values, obs_case_values.data(), "obs_case_values", true);
-    return data_type{obs_sero_positives, obs_sero_samples, obs_case_values};
+    auto obs_death_values = std::vector<real_type>(shared.dim.obs_death_values.size);
+    dust2::r::read_real_array(data, shared.dim.obs_death_values, obs_death_values.data(), "obs_death_values", true);
+    return data_type{obs_sero_positives, obs_sero_samples, obs_case_values, obs_death_values};
   }
   static void update_shared(cpp11::list parameters, shared_state& shared) {
     shared.time_inc = dust2::r::read_real(parameters, "time_inc", shared.time_inc);
@@ -330,7 +352,6 @@ public:
     shared.year0 = dust2::r::read_real(parameters, "year0", shared.year0);
     shared.rate1 = shared.time_inc / (shared.t_incubation + shared.t_latent);
     shared.rate2 = shared.time_inc / shared.t_infectious;
-    shared.p_rep = shared.p_severe_inf * ((shared.p_death_severe_inf * shared.p_rep_death) + ((1 - shared.p_death_severe_inf) * shared.p_rep_severe));
     dust2::r::read_real_array(parameters, shared.dim.region_index_sero, shared.region_index_sero.data(), "region_index_sero", false);
     dust2::r::read_real_array(parameters, shared.dim.region_index_case, shared.region_index_case.data(), "region_index_case", false);
     dust2::r::read_real_array(parameters, shared.dim.sero_regions, shared.sero_regions.data(), "sero_regions", false);
@@ -425,6 +446,9 @@ public:
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
       state[i - 1 + shared.odin.offset.state[16]] = 0;
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      state[i - 1 + shared.odin.offset.state[17]] = 0;
+    }
   }
   static void update(real_type time, real_type dt, const real_type* state, const shared_state& shared, internal_state& internal, rng_state_type& rng_state, real_type* state_next) {
     const auto day = state[0];
@@ -454,6 +478,9 @@ public:
         internal.R_new[i - 1 + (j - 1) * shared.dim.R_new.mult[1]] = I[i - 1 + (j - 1) * shared.dim.I.mult[1]] * shared.rate2;
       }
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      internal.severe_infs[i - 1] = monty::random::binomial<real_type>(rng_state, static_cast<int>(dust2::array::sum<real_type>(infs_an, shared.dim.infs_an, {i - 1, i - 1}, {0, shared.dim.infs_an.dim[1] - 1})), shared.p_severe_inf);
+    }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
         internal.P_nV[i - 1 + (j - 1) * shared.dim.P_nV.mult[1]] = S[i - 1 + (j - 1) * shared.dim.S.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]];
@@ -472,6 +499,9 @@ public:
         internal.dP2[i - 1 + (j - 1) * shared.dim.dP2.mult[1]] = shared.dP2_all[i - 1 + (j - 1) * shared.dim.dP2_all.mult[1] + (year_i - 1) * shared.dim.dP2_all.mult[2]] * shared.time_inc;
       }
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      internal.fatal_infs[i - 1] = monty::random::binomial<real_type>(rng_state, static_cast<int>(internal.severe_infs[i - 1]), shared.p_death_severe_inf);
+    }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
         internal.inv_P_nV[i - 1 + (j - 1) * shared.dim.inv_P_nV.mult[1]] = 1 / internal.P_nV[i - 1 + (j - 1) * shared.dim.P_nV.mult[1]];
@@ -481,6 +511,9 @@ public:
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
         internal.P[i - 1 + (j - 1) * shared.dim.P.mult[1]] = internal.P_nV[i - 1 + (j - 1) * shared.dim.P_nV.mult[1]] + V[i - 1 + (j - 1) * shared.dim.V.mult[1]];
       }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      internal.fatal_infs_rep[i - 1] = monty::random::binomial<real_type>(rng_state, static_cast<int>(internal.fatal_infs[i - 1]), shared.p_rep_death);
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       internal.P_tot[i - 1] = dust2::array::sum<real_type>(internal.P.data(), shared.dim.P, {i - 1, i - 1}, {0, shared.dim.P.dim[1] - 1});
@@ -497,6 +530,9 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       internal.FOI_sum[i - 1] = monty::math::min<real_type>(shared.FOI_max, internal.beta[i - 1] * (dust2::array::sum<real_type>(I, shared.dim.I, {i - 1, i - 1}, {0, shared.dim.I.dim[1] - 1}) / internal.P_tot[i - 1]) + (shared.FOI_spillover[i - 1 + (t_pt - 1) * shared.dim.FOI_spillover.mult[1]] * shared.time_inc));
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      internal.severe_infs_rep[i - 1] = internal.fatal_infs_rep[i - 1] + monty::random::binomial<real_type>(rng_state, static_cast<int>(internal.severe_infs[i - 1] - internal.fatal_infs[i - 1]), shared.p_rep_severe);
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_r); ++i) {
       for (size_t j = 1; j <= static_cast<size_t>(shared.N_age); ++j) {
@@ -583,19 +619,26 @@ public:
       state_next[i - 1 + shared.odin.offset.state[15]] = (shared.sero_vc_factor[i - 1] == 0 ? dust2::array::sum<real_type>(R_an, shared.dim.R_an, {i - 1, i - 1}, {0, shared.dim.R_an.dim[1] - 1}) / dust2::array::sum<real_type>(SEIR_an, shared.dim.SEIR_an, {i - 1, i - 1}, {0, shared.dim.SEIR_an.dim[1] - 1}) : ((1 - shared.sero_vc_factor[i - 1]) * (dust2::array::sum<real_type>(R_an, shared.dim.R_an, {i - 1, i - 1}, {0, shared.dim.R_an.dim[1] - 1}) / dust2::array::sum<real_type>(SEIR_an, shared.dim.SEIR_an, {i - 1, i - 1}, {0, shared.dim.SEIR_an.dim[1] - 1}))) + (shared.sero_vc_factor[i - 1] * ((dust2::array::sum<real_type>(R_an, shared.dim.R_an, {i - 1, i - 1}, {0, shared.dim.R_an.dim[1] - 1}) + dust2::array::sum<real_type>(V_an, shared.dim.V_an, {i - 1, i - 1}, {0, shared.dim.V_an.dim[1] - 1})) / (dust2::array::sum<real_type>(SEIR_an, shared.dim.SEIR_an, {i - 1, i - 1}, {0, shared.dim.SEIR_an.dim[1] - 1}) + dust2::array::sum<real_type>(V_an, shared.dim.V_an, {i - 1, i - 1}, {0, shared.dim.V_an.dim[1] - 1})))));
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
-      state_next[i - 1 + shared.odin.offset.state[16]] = monty::random::binomial<real_type>(rng_state, static_cast<int>(dust2::array::sum<real_type>(infs_an, shared.dim.infs_an, {i - 1, i - 1}, {0, shared.dim.infs_an.dim[1] - 1})), shared.p_rep);
+      state_next[i - 1 + shared.odin.offset.state[16]] = internal.severe_infs_rep[i - 1];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.n_case_pts); ++i) {
+      state_next[i - 1 + shared.odin.offset.state[17]] = internal.fatal_infs_rep[i - 1];
     }
   }
   static real_type compare_data(real_type time, const real_type* state, const data_type& data, const shared_state& shared, internal_state& internal, rng_state_type& rng_state) {
     auto unless_nan = [](real_type x) { return std::isnan(x) ? 0 : x; };
     const auto * output_sero = state + shared.odin.offset.state[15];
     const auto * output_case = state + shared.odin.offset.state[16];
+    const auto * output_death = state + shared.odin.offset.state[17];
     real_type odin_ll = 0;
     for (size_t i = 1; i <= shared.dim.obs_sero_positives.size; ++i) {
       odin_ll += unless_nan(monty::density::binomial(data.obs_sero_positives[i - 1], data.obs_sero_samples[i - 1], output_sero[i - 1], true));
     }
     for (size_t i = 1; i <= shared.dim.obs_case_values.size; ++i) {
       odin_ll += unless_nan(monty::density::poisson(data.obs_case_values[i - 1], output_case[i - 1], true));
+    }
+    for (size_t i = 1; i <= shared.dim.obs_death_values.size; ++i) {
+      odin_ll += unless_nan(monty::density::poisson(data.obs_death_values[i - 1], output_death[i - 1], true));
     }
     return odin_ll;
   }

@@ -2,7 +2,7 @@
 # Version calculating both serological and case data and applying distribution
 # FOI and R0 calculated in odin2 from environmental covariates and coefficients
 
-# TODO - Calculate deaths separately from cases and add distribution
+# Version with deaths calculated separately from cases
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
@@ -44,7 +44,7 @@ Pmin <- 1.0e-99 #Minimum population setting to avoid negative numbers
 FOI_max <- 1.0 #Upper threshold for total force of infection to avoid more infections than people in a group
 rate1 <- time_inc/(t_incubation+t_latent) # Rate of transfer from E to I
 rate2 <- time_inc/t_infectious # Rate of transfer from I to R
-p_rep <- p_severe_inf*((p_death_severe_inf*p_rep_death)+((1.0-p_death_severe_inf)*p_rep_severe)) #TBA
+#p_rep <- p_severe_inf*((p_death_severe_inf*p_rep_death)+((1.0-p_death_severe_inf)*p_rep_severe)) #TBA
 
 t_pt <- day/time_inc #Number of time points passed
 beta[1:n_r] <- (R0[i,t_pt]*time_inc)/t_infectious #Daily exposure rate
@@ -57,6 +57,10 @@ dP2[1:n_r,1:N_age] <- dP2_all[i,j,year_i]*time_inc #Decrease in population by ag
 E_new[1:n_r,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New exposed individuals by age group
 I_new[1:n_r,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
 R_new[1:n_r,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
+severe_infs[1:n_case_pts] <- Binomial(as.integer(sum(infs_an[i,])),p_severe_inf)
+fatal_infs[1:n_case_pts] <- Binomial(as.integer(severe_infs[i]),p_death_severe_inf)
+fatal_infs_rep[1:n_case_pts] <- Binomial(as.integer(fatal_infs[i]),p_rep_death)
+severe_infs_rep[1:n_case_pts] <- fatal_infs_rep[i] + Binomial(as.integer(severe_infs[i]-fatal_infs[i]),p_rep_severe)
 
 P_nV[1:n_r,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
 inv_P_nV[1:n_r,1:N_age] <- 1.0/P_nV[i,j]
@@ -95,7 +99,8 @@ update(infs_an[1:n_case_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_c
   sum(infs_cu[j,1:N_age]) + sum(I_new[j,1:N_age])
 update(output_sero[1:n_sero_pts]) <- if(sero_vc_factor[i]==0) sum(R_an[i,])/sum(SEIR_an[i,]) else
   ((1.0-sero_vc_factor[i])*(sum(R_an[i,])/sum(SEIR_an[i,]))) +(sero_vc_factor[i]*((sum(R_an[i,])+sum(V_an[i,]))/(sum(SEIR_an[i,])+sum(V_an[i,]))))
-update(output_case[1:n_case_pts]) <- Binomial(as.integer(sum(infs_an[i,])),p_rep) #TODO - calculate both cases and deaths
+update(output_case[1:n_case_pts]) <- severe_infs_rep[i]
+update(output_death[1:n_case_pts]) <- fatal_infs_rep[i]
 
 #Initial values of updated variables--------------------------------------------
 initial(day) <- time_inc
@@ -115,6 +120,7 @@ initial(V_an[1:n_sero_pts,1:n_r]) <- 0
 initial(infs_an[1:n_case_pts,1:n_r]) <- 0
 initial(output_sero[1:n_sero_pts]) <- 0
 initial(output_case[1:n_case_pts]) <- 0
+initial(output_death[1:n_case_pts]) <- 0
 
 #Dimensions---------------------------------------------------------------------
 #Updated values
@@ -133,6 +139,7 @@ dim(V_an) <- c(n_sero_pts,n_r)
 dim(infs_an) <- c(n_case_pts,n_r)
 dim(output_sero) <- n_sero_pts
 dim(output_case) <- n_case_pts
+dim(output_death) <- n_case_pts
 
 #Calculated values
 dim(beta) <- n_r
@@ -142,6 +149,10 @@ dim(dP2) <- c(n_r, N_age)
 dim(E_new) <- c(n_r, N_age)
 dim(I_new) <- c(n_r, N_age)
 dim(R_new) <- c(n_r, N_age)
+dim(severe_infs) <- n_case_pts
+dim(fatal_infs) <- n_case_pts
+dim(fatal_infs_rep) <- n_case_pts
+dim(severe_infs_rep) <- n_case_pts
 dim(P_nV) <- c(n_r, N_age)
 dim(inv_P_nV) <- c(n_r, N_age)
 dim(P) <- c(n_r, N_age)
@@ -177,4 +188,6 @@ obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i
 obs_case_values <- data()
 dim(obs_case_values) <- n_case_pts
 obs_case_values[] ~ Poisson(output_case[i])
-
+obs_death_values <- data()
+dim(obs_death_values) <- n_case_pts
+obs_death_values[] ~ Poisson(output_death[i])

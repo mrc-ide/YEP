@@ -374,7 +374,7 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 
   prior_function <- function(log_FOI_coeffs = rep(-15,5),log_R0_coeffs = rep(-5,5),
                              p_rep_severe = 0,p_rep_death = 0,p_severe_inf = 0.12,p_death_severe_inf = 0.39,
-                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0,...){
+                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0,...){ #TBC
 
     #Prior applied to coefficients of environmental covariates
     prior_lfc = prior_lrc = rep(0,n_env_vars)
