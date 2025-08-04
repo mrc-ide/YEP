@@ -217,10 +217,10 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
   n_case_pts = dim(region_index_case)[1]
 
   n_t_pts = length(time_pts)
-  sero_data_list1 = sero_data_list2 = case_data_list1 = list()
+  sero_data_list1 = sero_data_list2 = case_data_list1 = case_data_list2 = list()
   for(i in 1:n_t_pts){
     sero_data_list1[[i]] = sero_data_list2[[i]] = as.numeric(rep(NA,n_sero_pts))
-    case_data_list1[[i]] = as.numeric(rep(NA,n_case_pts))
+    case_data_list1[[i]] = case_data_list2[[i]] = as.numeric(rep(NA,n_case_pts))
     year_pt = years_data[i]
     sero_subset = subset(sero_template,year == year_pt)
     if(nrow(sero_subset)>0){
@@ -240,11 +240,12 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
         regions = regions_all[which(region_index_case[j,] == 1)]
         region_group = paste(regions,collapse = ",")
         case_data_list1[[i]][j] = case_subset$cases[case_subset$region == region_group]
+        case_data_list2[[i]][j] = case_subset$deaths[case_subset$region == region_group]
       }
     }
   }
   fit_data = data.frame(time = time_pts,obs_sero_positives = I(sero_data_list1), obs_sero_samples = I(sero_data_list2),
-                        obs_case_values = I(case_data_list1))
+                        obs_case_values = I(case_data_list1), obs_death_values = I(case_data_list2))
 
   return(fit_data)
 }
