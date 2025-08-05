@@ -24,6 +24,7 @@ Imports:
     mvtnorm,
     odin2,
     R.utils,
+    rje,
     stats,
     tgp,
     truncdist,

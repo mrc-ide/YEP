@@ -21,6 +21,7 @@ extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p
 #' @import odin2
 #' @import parallel
 #' @importFrom R.utils fileAccess
+#' @importFrom rje rowMaxs rowMins
 #' @importFrom stats cov dexp dnbinom dnorm nlm rbinom runif
 #' @importFrom tgp lhs
 #' @importFrom truncdist dtrunc

@@ -468,40 +468,41 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
   pts2 = which(grepl("log_R0_coeffs",pars_var$name))
 
   explore = list()
-  for(j in 1:n_steps){
-    if(j==1){
+  for(step in 1:n_steps){
+    if(step==1){
       pars_min = pars_var$min
       pars_max = pars_var$max
     } else{
-      pars_min = min(explore[[j-1]][1:n_bounds, c(1:n_params)])
-      pars_max = max(explore[[j-1]][1:n_bounds, c(1:n_params)])
+      pars_min = rowMins(t(explore[[step-1]][1:n_bounds, c(1:n_params)]))
+      pars_max = rowMaxs(t(explore[[step-1]][1:n_bounds, c(1:n_params)]))
     }
     cat("\n")
     set.seed(seed)
     param_sets = lhs(n_iterations,rect = matrix(c(pars_min,pars_max),ncol = 2))
-    explore[[j]] = data.frame(array(NA,dim = c(n_iterations,n_params+1)))
-    explore[[j]][,c(1:n_params)] = param_sets
-    colnames(explore[[j]]) = c(paste0("param",c(1:n_params)),"density")
-    for(i in 1:n_iterations){
-      cat("\n",i,":\n",signif(param_sets[i,],3))
+    explore[[step]] = data.frame(array(NA,dim = c(n_iterations,n_params+1)))
+    explore[[step]][,c(1:n_params)] = param_sets
+    colnames(explore[[step]]) = c(paste0("param",c(1:n_params)),"density")
+    for(iter in 1:n_iterations){
+      cat("\n",step,"-",iter,":\n",sep="")
+      cat(signif(param_sets[iter,],3))
       FOI_mean = R0_mean = rep(NA,n_regions)
-      for(j in 1:n_regions){
-        env_covars_mean = rowMeans(array(env_covar_values[,j,],dim = c(n_env_vars,n_req)))
-        FOI_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts1]))
-        R0_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts2]))
+      for(n_region in 1:n_regions){
+        env_covars_mean = rowMeans(array(env_covar_values[,n_region,],dim = c(n_env_vars,n_req)))
+        FOI_mean[n_region] = sum(env_covars_mean*exp(param_sets[iter,pts1]))
+        R0_mean[n_region] = sum(env_covars_mean*exp(param_sets[iter,pts2]))
       }
       test1 = any(FOI_mean>FOI_R0_prior_data$max[1])
       test2 = any(R0_mean>FOI_R0_prior_data$max[2])
       if(any(test1,test2)){
-        explore[[j]]$density[i] <- -Inf
+        explore[[step]]$density[iter] <- -Inf
         cat("\nRejected (outwith FOI/R0 range)")
       } else {
-        explore[[j]]$density[i] <- monty_model_density(posterior, parameters = param_sets[i,])
-        cat("\nDensity: ",format(signif(explore[[j]]$density[i], 3), scientific=TRUE))
+        explore[[step]]$density[iter] <- monty_model_density(posterior, parameters = param_sets[iter,])
+        cat("\nDensity: ",format(signif(explore[[step]]$density[iter], 3), scientific=TRUE))
       }
     }
     cat("\n")
-    explore[[j]] = explore[[j]][order(-explore[[j]]$density),]
+    explore[[step]] = explore[[step]][order(-explore[[step]]$density),]
   }
 
   return(explore)
