@@ -12,16 +12,22 @@ packer_setup(
 )
 }
 \arguments{
-\item{pars_fixed}{TBA}
+\item{pars_fixed}{Fixed parameters list created using pars_fixed_setup()}
 
-\item{env_covar_values}{TBA}
+\item{env_covar_values}{Environmental covariate values (TBC)}
 
-\item{mode_time}{TBA}
+\item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
+If mode_time = 0, no time variation (constant values)\cr
+If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/time_inc) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/time_inc)*number of years to consider)}
 
-\item{vars_extra_names}{TBA}
+\item{vars_extra_names}{Names of additional varied parameters}
 }
 \description{
-TBA
+Create packer for fitting
 }
 \details{
 TBA

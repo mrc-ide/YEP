@@ -5,12 +5,12 @@
 #-------------------------------------------------------------------------------
 #' @title pars_var_setup
 #'
-#' @description TBA
+#' @description Set up variable parameters for fitting
 #'
 #' @details TBA
 #'
-#' @param n_env_vars TBA
-#' @param vars_extra_names TBA
+#' @param n_env_vars Number of environmental covariates
+#' @param vars_extra_names Names of additional parameters
 #'
 #' @export
 #'
@@ -32,21 +32,26 @@ pars_var_setup <- function(n_env_vars = 5,vars_extra_names = c("p_rep_severe","p
 #-------------------------------------------------------------------------------
 #' @title pars_fixed_setup
 #'
-#' @description TBA
+#' @description Set up fixed parameters for fitting
 #'
 #' @details TBA
 #'
-#' @param sero_template TBA
-#' @param case_template TBA
-#' @param vacc_data TBA
-#' @param pop_data TBA
-#' @param years_data TBA
-#' @param year0 TBA
-#' @param time_inc TBA
-#' @param mode_start TBA
-#' @param start_SEIRV TBA
-#' @param fixed_extra TBA
-#' @param ref_BRA TBA
+#' @param sero_template Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+#'   positives
+#' @param case_template Annual reported case/death data for comparison, by region and year, in format no.
+#'   cases/no. deaths
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region. age group and year
+#' @param pop_data Population by region, age group and year
+#' @param years_data Vector of years denoting years for which data needed (TBC?)
+#' @param year0 First year in population/vaccination data
+#' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
+#' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
+#'  If mode_start = 0, only vaccinated individuals \cr
+#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr
+#' @param start_SEIRV SEIRV data from end of a previous run to use as input (if mode_start = 2)
+#' @param fixed_extra List containing additional fixed parameters
+#' @param ref_BRA List of region numbers for which Brazil FOI multiplier to be applied
 #'
 #' @export
 #'
@@ -186,14 +191,16 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
 #-------------------------------------------------------------------------------
 #' @title fit_data_setup
 #'
-#' @description TBA
+#' @description Create fitting dataset from serological and case datasets
 #'
 #' @details TBA
 #'
-#' @param sero_template TBA
-#' @param case_template TBA
-#' @param year0 TBA
-#' @param time_inc TBA
+#' @param sero_template Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+#'   positives
+#' @param case_template Annual reported case/death data for comparison, by region and year, in format no.
+#'   cases/no. deaths
+#' @param year0 First year in population/vaccination data
+#' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param region_index_sero TBA
 #' @param region_index_case TBA
 #'
@@ -252,14 +259,20 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
 #-------------------------------------------------------------------------------
 #' @title packer_setup
 #'
-#' @description TBA
+#' @description Create packer for fitting
 #'
 #' @details TBA
 #'
-#' @param pars_fixed TBA
-#' @param env_covar_values TBA
-#' @param mode_time TBA
-#' @param vars_extra_names TBA
+#' @param pars_fixed Fixed parameters list created using pars_fixed_setup()
+#' @param env_covar_values Environmental covariate values (TBC)
+#' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
+#'  If mode_time = 0, no time variation (constant values)\cr
+#'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
+#'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter - annual variation (number of values = 12) \cr
+#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter - annual variation (number of values = 365/time_inc) \cr
+#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/time_inc)*number of years to consider)
+#' @param vars_extra_names Names of additional varied parameters
 #'
 #' @export
 #'
@@ -345,14 +358,14 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_ti
 #-------------------------------------------------------------------------------
 #' @title prior_setup
 #'
-#' @description TBA
+#' @description Set up prior function for fitting
 #'
 #' @details TBA
 #'
-#' @param packer TBA
-#' @param env_covar_values TBA
-#' @param pars_var TBA
-#' @param FOI_R0_prior_data TBA
+#' @param packer Packer created using packer_setup()
+#' @param env_covar_values Environmental covariate values (TBC)
+#' @param pars_var Data frame of information on varied parameters, created using pars_var_setup()
+#' @param FOI_R0_prior_data Data frame of prior data for FOI/R0
 #'
 #' @export
 #'
@@ -416,26 +429,31 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 #-------------------------------------------------------------------------------
 #' @title m_prelim_fit
 #'
-#' @description TBA
+#' @description Function for preliminary estimation of parameter values
 #'
 #' @details TBA
 #'
-#' @param fit_data TBA
-#' @param packer TBA
-#' @param prior TBA
-#' @param FOI_R0_prior_data TBA
-#' @param pars_var TBA
-#' @param env_covar_values TBA
-#' @param n_values TBA
-#' @param n_particles TBA
-#' @param n_threads TBA
-#' @param seed TBA
+#' @param fit_data Fitting data created using fit_data_setup()
+#' @param packer Packer created using packer_setup()
+#' @param prior Prior function created using prior_setup()
+#' @param FOI_R0_prior_data Data frame of prior data for FOI/R0
+#' @param pars_var Data frame of information on varied parameters, created using pars_var_setup()
+#' @param env_covar_values Environmental covariate values (TBC)
+#' @param n_steps Number of times to run estimation cycle
+#' @param n_iterations Number of iterations to run per cycle
+#' @param n_bounds Number of iterations (ones giving highest posterior likelihood) to use to establish bounds
+#'  for next cycle
+#' @param n_particles Number of particles
+#' @param n_threads Number of threads
+#' @param seed Random seed (set to NULL if unused)
 #'
 #' @export
 #'
 m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prior_data = list(),
-                         pars_var = list(), env_covar_values = list(), n_values = 10, n_particles = 1,
-                         n_threads = 1, seed = NULL){
+                         pars_var = list(), env_covar_values = list(), n_steps = 1, n_iterations = 10,
+                         n_bounds = 10, n_particles = 1, n_threads = 1, seed = NULL){
+
+  #TODO - Add assert_that checks?
 
   filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
                                n_particles = n_particles, n_threads = n_threads, seed = seed)
@@ -445,35 +463,46 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
   n_env_vars = dim(env_covar_values)[1]
   n_regions = dim(env_covar_values)[2]
   n_req = dim(env_covar_values)[3]
+  n_params = nrow(pars_var)
   pts1 = which(grepl("log_FOI_coeffs",pars_var$name))
   pts2 = which(grepl("log_R0_coeffs",pars_var$name))
 
-  set.seed(seed)
-  param_sets = lhs(n_values,rect = matrix(c(pars_var$min,pars_var$max),ncol = 2))
-  explore = data.frame(array(NA,dim = c(n_values,dim(param_sets)[2]+1)))
-  explore[,c(1:dim(param_sets)[2])] = param_sets
-  colnames(explore) = c(paste0("param",c(1:dim(param_sets)[2])),"density")
-  cat("\n")
-  for(i in 1:n_values){
-    cat("\n",i,":\n",signif(param_sets[i,],3))
-    FOI_mean = R0_mean = rep(NA,n_regions)
-    for(j in 1:n_regions){
-      env_covars_mean = rowMeans(array(env_covar_values[,j,],dim = c(n_env_vars,n_req)))
-      FOI_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts1]))
-      R0_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts2]))
+  explore = list()
+  for(j in 1:n_steps){
+    if(j==1){
+      pars_min = pars_var$min
+      pars_max = pars_var$max
+    } else{
+      pars_min = min(explore[[j-1]][1:n_bounds, c(1:n_params)])
+      pars_max = max(explore[[j-1]][1:n_bounds, c(1:n_params)])
     }
-    test1 = any(FOI_mean>FOI_R0_prior_data$max[1])
-    test2 = any(R0_mean>FOI_R0_prior_data$max[2])
-    if(any(test1,test2)){
-      explore$density[i] <- -Inf
-      cat("\nRejected (outwith FOI/R0 range)")
-    } else {
-      explore$density[i] <- monty_model_density(posterior, parameters = param_sets[i,])
-      cat("\nDensity:\t",explore$density[i])
+    cat("\n")
+    set.seed(seed)
+    param_sets = lhs(n_iterations,rect = matrix(c(pars_min,pars_max),ncol = 2))
+    explore[[j]] = data.frame(array(NA,dim = c(n_iterations,n_params+1)))
+    explore[[j]][,c(1:n_params)] = param_sets
+    colnames(explore[[j]]) = c(paste0("param",c(1:n_params)),"density")
+    for(i in 1:n_iterations){
+      cat("\n",i,":\n",signif(param_sets[i,],3))
+      FOI_mean = R0_mean = rep(NA,n_regions)
+      for(j in 1:n_regions){
+        env_covars_mean = rowMeans(array(env_covar_values[,j,],dim = c(n_env_vars,n_req)))
+        FOI_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts1]))
+        R0_mean[j] = sum(env_covars_mean*exp(param_sets[i,pts2]))
+      }
+      test1 = any(FOI_mean>FOI_R0_prior_data$max[1])
+      test2 = any(R0_mean>FOI_R0_prior_data$max[2])
+      if(any(test1,test2)){
+        explore[[j]]$density[i] <- -Inf
+        cat("\nRejected (outwith FOI/R0 range)")
+      } else {
+        explore[[j]]$density[i] <- monty_model_density(posterior, parameters = param_sets[i,])
+        cat("\nDensity: ",format(signif(explore[[j]]$density[i], 3), scientific=TRUE))
+      }
     }
+    cat("\n")
+    explore[[j]] = explore[[j]][order(-explore[[j]]$density),]
   }
-  cat("\n")
-  explore = explore[order(-explore$density),]
 
   return(explore)
 }
@@ -484,20 +513,20 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #'
 #' @details TBA
 #'
-#' @param fit_data TBA
-#' @param packer TBA
-#' @param prior TBA
-#' @param FOI_R0_prior_data TBA
-#' @param pars_var TBA
+#' @param fit_data Fitting data created using fit_data_setup()
+#' @param packer Packer created using packer_setup()
+#' @param prior Prior function created using prior_setup()
+#' @param FOI_R0_prior_data Data frame of prior data for FOI/R0
+#' @param pars_var Data frame of information on varied parameters, created using pars_var_setup()
 #' @param initial TBA
 #' @param v TBA
-#' @param n_chains TBA
-#' @param n_iterations TBA
-#' @param n_particles TBA
-#' @param n_threads TBA
+#' @param n_chains Number of chains
+#' @param n_iterations Number of iterations for which to run each chain
+#' @param n_particles Number of particles
+#' @param n_threads Number of threads
 #' @param parallel TBA
-#' @param output_file TBA
-#' @param seed TBA
+#' @param output_file Name of file location to save results
+#' @param seed Random seed (set to NULL if unused)
 #'
 #' @export
 #'

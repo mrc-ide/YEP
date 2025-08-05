@@ -19,30 +19,35 @@ pars_fixed_setup(
 )
 }
 \arguments{
-\item{sero_template}{TBA}
+\item{sero_template}{Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+positives}
 
-\item{case_template}{TBA}
+\item{case_template}{Annual reported case/death data for comparison, by region and year, in format no.
+cases/no. deaths}
 
-\item{vacc_data}{TBA}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region. age group and year}
 
-\item{pop_data}{TBA}
+\item{pop_data}{Population by region, age group and year}
 
-\item{years_data}{TBA}
+\item{years_data}{Vector of years denoting years for which data needed (TBC?)}
 
-\item{year0}{TBA}
+\item{year0}{First year in population/vaccination data}
 
-\item{time_inc}{TBA}
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
-\item{mode_start}{TBA}
+\item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
+If mode_start = 0, only vaccinated individuals \cr
+If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
+If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 
-\item{start_SEIRV}{TBA}
+\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 
-\item{fixed_extra}{TBA}
+\item{fixed_extra}{List containing additional fixed parameters}
 
-\item{ref_BRA}{TBA}
+\item{ref_BRA}{List of region numbers for which Brazil FOI multiplier to be applied}
 }
 \description{
-TBA
+Set up fixed parameters for fitting
 }
 \details{
 TBA

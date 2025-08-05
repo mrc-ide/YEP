@@ -12,16 +12,16 @@ prior_setup(
 )
 }
 \arguments{
-\item{packer}{TBA}
+\item{packer}{Packer created using packer_setup()}
 
-\item{env_covar_values}{TBA}
+\item{env_covar_values}{Environmental covariate values (TBC)}
 
-\item{pars_var}{TBA}
+\item{pars_var}{Data frame of information on varied parameters, created using pars_var_setup()}
 
-\item{FOI_R0_prior_data}{TBA}
+\item{FOI_R0_prior_data}{Data frame of prior data for FOI/R0}
 }
 \description{
-TBA
+Set up prior function for fitting
 }
 \details{
 TBA

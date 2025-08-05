@@ -11,35 +11,42 @@ m_prelim_fit(
   FOI_R0_prior_data = list(),
   pars_var = list(),
   env_covar_values = list(),
-  n_values = 10,
+  n_steps = 1,
+  n_iterations = 10,
+  n_bounds = 10,
   n_particles = 1,
   n_threads = 1,
   seed = NULL
 )
 }
 \arguments{
-\item{fit_data}{TBA}
+\item{fit_data}{Fitting data created using fit_data_setup()}
 
-\item{packer}{TBA}
+\item{packer}{Packer created using packer_setup()}
 
-\item{prior}{TBA}
+\item{prior}{Prior function created using prior_setup()}
 
-\item{FOI_R0_prior_data}{TBA}
+\item{FOI_R0_prior_data}{Data frame of prior data for FOI/R0}
 
-\item{pars_var}{TBA}
+\item{pars_var}{Data frame of information on varied parameters, created using pars_var_setup()}
 
-\item{env_covar_values}{TBA}
+\item{env_covar_values}{Environmental covariate values (TBC)}
 
-\item{n_values}{TBA}
+\item{n_steps}{Number of times to run estimation cycle}
 
-\item{n_particles}{TBA}
+\item{n_iterations}{Number of iterations to run per cycle}
 
-\item{n_threads}{TBA}
+\item{n_bounds}{Number of iterations (ones giving highest posterior likelihood) to use to establish bounds
+for next cycle}
 
-\item{seed}{TBA}
+\item{n_particles}{Number of particles}
+
+\item{n_threads}{Number of threads}
+
+\item{seed}{Random seed (set to NULL if unused)}
 }
 \description{
-TBA
+Function for preliminary estimation of parameter values
 }
 \details{
 TBA

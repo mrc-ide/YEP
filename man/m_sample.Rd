@@ -22,33 +22,33 @@ m_sample(
 )
 }
 \arguments{
-\item{fit_data}{TBA}
+\item{fit_data}{Fitting data created using fit_data_setup()}
 
-\item{packer}{TBA}
+\item{packer}{Packer created using packer_setup()}
 
-\item{prior}{TBA}
+\item{prior}{Prior function created using prior_setup()}
 
-\item{FOI_R0_prior_data}{TBA}
+\item{FOI_R0_prior_data}{Data frame of prior data for FOI/R0}
 
-\item{pars_var}{TBA}
+\item{pars_var}{Data frame of information on varied parameters, created using pars_var_setup()}
 
 \item{initial}{TBA}
 
 \item{v}{TBA}
 
-\item{n_chains}{TBA}
+\item{n_chains}{Number of chains}
 
-\item{n_iterations}{TBA}
+\item{n_iterations}{Number of iterations for which to run each chain}
 
-\item{n_particles}{TBA}
+\item{n_particles}{Number of particles}
 
-\item{n_threads}{TBA}
+\item{n_threads}{Number of threads}
 
-\item{seed}{TBA}
+\item{seed}{Random seed (set to NULL if unused)}
 
 \item{parallel}{TBA}
 
-\item{output_file}{TBA}
+\item{output_file}{Name of file location to save results}
 }
 \description{
 TBA

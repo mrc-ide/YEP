@@ -10,12 +10,12 @@ pars_var_setup(
 )
 }
 \arguments{
-\item{n_env_vars}{TBA}
+\item{n_env_vars}{Number of environmental covariates}
 
-\item{vars_extra_names}{TBA}
+\item{vars_extra_names}{Names of additional parameters}
 }
 \description{
-TBA
+Set up variable parameters for fitting
 }
 \details{
 TBA

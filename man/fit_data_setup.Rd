@@ -14,20 +14,22 @@ fit_data_setup(
 )
 }
 \arguments{
-\item{sero_template}{TBA}
+\item{sero_template}{Seroprevalence data for comparison, by region, year & age group, in format no. samples/no.
+positives}
 
-\item{case_template}{TBA}
+\item{case_template}{Annual reported case/death data for comparison, by region and year, in format no.
+cases/no. deaths}
 
-\item{year0}{TBA}
+\item{year0}{First year in population/vaccination data}
 
-\item{time_inc}{TBA}
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{region_index_sero}{TBA}
 
 \item{region_index_case}{TBA}
 }
 \description{
-TBA
+Create fitting dataset from serological and case datasets
 }
 \details{
 TBA
