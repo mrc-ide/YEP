@@ -44,7 +44,6 @@ Pmin <- 1.0e-99 #Minimum population setting to avoid negative numbers
 FOI_max <- 1.0 #Upper threshold for total force of infection to avoid more infections than people in a group
 rate1 <- time_inc/(t_incubation+t_latent) # Rate of transfer from E to I
 rate2 <- time_inc/t_infectious # Rate of transfer from I to R
-#p_rep <- p_severe_inf*((p_death_severe_inf*p_rep_death)+((1.0-p_death_severe_inf)*p_rep_severe)) #TBA
 
 t_pt <- day/time_inc #Number of time points passed
 beta[1:n_r] <- (R0[i,t_pt]*time_inc)/t_infectious #Daily exposure rate
