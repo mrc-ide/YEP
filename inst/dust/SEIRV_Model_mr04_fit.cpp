@@ -630,13 +630,13 @@ public:
     const auto * output_death = state + shared.odin.offset.state[17];
     real_type odin_ll = 0;
     for (size_t i = 1; i <= shared.dim.obs_sero_positives.size; ++i) {
-      odin_ll += unless_nan(monty::density::binomial(data.obs_sero_positives[i - 1], data.obs_sero_samples[i - 1], output_sero[i - 1], true));
+      odin_ll += unless_nan(monty::density::binomial(data.obs_sero_positives[i - 1], data.obs_sero_samples[i - 1], output_sero[i - 1] + static_cast<real_type>(1.0000000000000001e-09), true));
     }
     for (size_t i = 1; i <= shared.dim.obs_case_values.size; ++i) {
-      odin_ll += unless_nan(monty::density::poisson(data.obs_case_values[i - 1], output_case[i - 1], true));
+      odin_ll += unless_nan(monty::density::poisson(data.obs_case_values[i - 1], output_case[i - 1] + static_cast<real_type>(0.001), true));
     }
     for (size_t i = 1; i <= shared.dim.obs_death_values.size; ++i) {
-      odin_ll += unless_nan(monty::density::poisson(data.obs_death_values[i - 1], output_death[i - 1], true));
+      odin_ll += unless_nan(monty::density::poisson(data.obs_death_values[i - 1], output_death[i - 1] + static_cast<real_type>(0.001), true));
     }
     return odin_ll;
   }

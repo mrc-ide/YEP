@@ -454,7 +454,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
   colnames(explore) = c(paste0("param",c(1:dim(param_sets)[2])),"density")
   cat("\n")
   for(i in 1:n_values){
-    cat("\n",i)
+    cat("\n",i,":\n",signif(param_sets[i,],3))
     FOI_mean = R0_mean = rep(NA,n_regions)
     for(j in 1:n_regions){
       env_covars_mean = rowMeans(array(env_covar_values[,j,],dim = c(n_env_vars,n_req)))
@@ -465,11 +465,11 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
     test2 = any(R0_mean>FOI_R0_prior_data$max[2])
     if(any(test1,test2)){
       explore$density[i] <- -Inf
-      cat("\n\t!!!")
+      cat("\nRejected (outwith FOI/R0 range)")
     } else {
       explore$density[i] <- monty_model_density(posterior, parameters = param_sets[i,])
+      cat("\nDensity:\t",explore$density[i])
     }
-    cat("\n",signif(param_sets[i,],3),"\n\t",explore$density[i])
   }
   cat("\n")
   explore = explore[order(-explore$density),]

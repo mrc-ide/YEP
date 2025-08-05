@@ -99,7 +99,7 @@ update(infs_an[1:n_case_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_c
   sum(infs_cu[j,1:N_age]) + sum(I_new[j,1:N_age])
 update(output_sero[1:n_sero_pts]) <- if(sero_vc_factor[i]==0) sum(R_an[i,])/sum(SEIR_an[i,]) else
   ((1.0-sero_vc_factor[i])*(sum(R_an[i,])/sum(SEIR_an[i,]))) +(sero_vc_factor[i]*((sum(R_an[i,])+sum(V_an[i,]))/(sum(SEIR_an[i,])+sum(V_an[i,]))))
-update(output_case[1:n_case_pts]) <- severe_infs_rep[i]
+update(output_case[1:n_case_pts]) <- severe_infs_rep[i] #Addition to give non-zero means for likelihood calc
 update(output_death[1:n_case_pts]) <- fatal_infs_rep[i]
 
 #Initial values of updated variables--------------------------------------------
@@ -184,10 +184,10 @@ obs_sero_positives <- data()
 obs_sero_samples <- data()
 dim(obs_sero_positives) <- n_sero_pts
 dim(obs_sero_samples) <- n_sero_pts
-obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i])
+obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i]+1e-9)
 obs_case_values <- data()
 dim(obs_case_values) <- n_case_pts
-obs_case_values[] ~ Poisson(output_case[i])
+obs_case_values[] ~ Poisson(output_case[i]+1e-3)
 obs_death_values <- data()
 dim(obs_death_values) <- n_case_pts
-obs_death_values[] ~ Poisson(output_death[i])
+obs_death_values[] ~ Poisson(output_death[i]+1e-3)
