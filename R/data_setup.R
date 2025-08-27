@@ -434,6 +434,7 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
         region=regions[i]
         region_grouping$region_groups[[i]]=i
         #TODO - fix for region in both templates
+        #TODO - fix for template regions which are combinations
         if(region %in% regions_sero){
           region_grouping$mode_out[[i]]=2
           index=c(1:nrow(template$sero))[template$sero$region==region]

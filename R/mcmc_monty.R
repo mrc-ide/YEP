@@ -520,7 +520,8 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @param FOI_R0_prior_data Data frame of prior data for FOI/R0
 #' @param pars_var Data frame of information on varied parameters, created using pars_var_setup()
 #' @param initial TBA
-#' @param v TBA
+#' @param v Vector of diagonal (variance) elements of variance-covariance matrix (TODO: supply whole matrix)
+#' @param rerun_every TBA
 #' @param n_chains Number of chains
 #' @param n_iterations Number of iterations for which to run each chain
 #' @param n_particles Number of particles
@@ -532,8 +533,9 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @export
 #'
 m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prior_data = list(),
-                     pars_var = list(), initial = list(), v = c(), n_chains = 1, n_iterations = 10,
-                     n_particles = 1, n_threads = 1, seed = NULL,  parallel = FALSE, output_file = ""){
+                     pars_var = list(), initial = list(), v = c(), rerun_every = 50, n_chains = 1,
+                     n_iterations = 10, n_particles = 1, n_threads = 1, seed = NULL, parallel = FALSE,
+                     output_file = ""){
 
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
@@ -550,14 +552,15 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   vcv <- matrix(c(rep(0,n_params^2)),n_params,n_params)
   for(i in 1:n_params){ vcv[i,i] = v[i] }
   sampler <- monty_sampler_random_walk(vcv = vcv, boundaries = "reject",
-                                       rerun_every = 50, rerun_random = FALSE)
-  #TODO - make rerun_every variable
+                                       rerun_every = rerun_every, rerun_random = FALSE)
 
   if(parallel){
     prior0 = prior$density(initial[,1])#Seems to be necessary for some reason
     runner = monty_runner_callr(n_workers = n_chains)
-  }else{runner = monty_runner_serial()}
-  samples <- monty_sample(model = posterior,sampler = sampler,n_steps = n_iterations,
+  }else{
+    runner = monty_runner_serial()}
+
+  samples <- monty_sample(model = posterior,sampler = sampler, n_steps = n_iterations,
                           initial = initial, n_chains = n_chains, runner = runner)
 
   saveRDS(list(samples = samples,

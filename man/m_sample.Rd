@@ -11,6 +11,7 @@ m_sample(
   FOI_R0_prior_data = list(),
   pars_var = list(),
   initial = list(),
+  sampler_type = "random",
   v = c(),
   n_chains = 1,
   n_iterations = 10,
@@ -33,6 +34,8 @@ m_sample(
 \item{pars_var}{Data frame of information on varied parameters, created using pars_var_setup()}
 
 \item{initial}{TBA}
+
+\item{sampler_type}{TBA}
 
 \item{v}{TBA}
 
