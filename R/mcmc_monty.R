@@ -540,6 +540,7 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
 
+  #TODO - add option for deterministic version?
   filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
                                n_particles = n_particles, n_threads = n_threads, seed = seed)
 
