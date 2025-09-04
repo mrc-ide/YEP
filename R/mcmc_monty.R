@@ -443,6 +443,7 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 #' @param n_iterations Number of iterations to run per cycle
 #' @param n_bounds Number of iterations (ones giving highest posterior likelihood) to use to establish bounds
 #'  for next cycle
+#' @param deterministic TBA
 #' @param n_particles Number of particles
 #' @param n_threads Number of threads
 #' @param seed Random seed (set to NULL if unused)
@@ -451,12 +452,20 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 #'
 m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prior_data = list(),
                          pars_var = list(), env_covar_values = list(), n_steps = 1, n_iterations = 10,
-                         n_bounds = 10, n_particles = 1, n_threads = 1, seed = NULL){
+                         n_bounds = 10, deterministic = FALSE, n_particles = 1, n_threads = 1, seed = NULL){
 
   #TODO - Add assert_that checks?
 
-  filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
-                               n_particles = n_particles, n_threads = n_threads, seed = seed)
+  if(deterministic){
+    assert_that(n_particles==1)
+    assert_that(n_threads==1)
+    assert_that(is.null(seed))
+    filter <- dust_unfilter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
+                                   n_particles = n_particles, n_threads = n_threads)
+  } else {
+    filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
+                                 n_particles = n_particles, n_threads = n_threads, seed = seed)
+  }
   likelihood <- dust_likelihood_monty(obj = filter, packer = packer)
   if(is.null(prior)){posterior <- likelihood}else{posterior<-likelihood+prior}
 
@@ -524,6 +533,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @param rerun_every TBA
 #' @param n_chains Number of chains
 #' @param n_iterations Number of iterations for which to run each chain
+#' @param deterministic TBA
 #' @param n_particles Number of particles
 #' @param n_threads Number of threads
 #' @param parallel TBA
@@ -534,15 +544,22 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #'
 m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prior_data = list(),
                      pars_var = list(), initial = list(), v = c(), rerun_every = 50, n_chains = 1,
-                     n_iterations = 10, n_particles = 1, n_threads = 1, seed = NULL, parallel = FALSE,
-                     output_file = ""){
+                     n_iterations = 10, deterministic = FALSE, n_particles = 1, n_threads = 1,
+                     seed = NULL, parallel = FALSE, output_file = ""){
 
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
 
-  #TODO - add option for deterministic version?
-  filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
-                               n_particles = n_particles, n_threads = n_threads, seed = seed)
+  if(deterministic){
+    assert_that(n_particles==1)
+    assert_that(n_threads==1)
+    assert_that(is.null(seed))
+    filter <- dust_unfilter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
+                                 n_particles = n_particles, n_threads = n_threads)
+  } else {
+    filter <- dust_filter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
+                                 n_particles = n_particles, n_threads = n_threads, seed = seed)
+  }
 
   likelihood <- dust_likelihood_monty(obj = filter, packer = packer)
   if(is.null(prior)){posterior <- likelihood}else{posterior <- likelihood + prior}

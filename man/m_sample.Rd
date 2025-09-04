@@ -11,10 +11,11 @@ m_sample(
   FOI_R0_prior_data = list(),
   pars_var = list(),
   initial = list(),
-  sampler_type = "random",
   v = c(),
+  rerun_every = 50,
   n_chains = 1,
   n_iterations = 10,
+  deterministic = FALSE,
   n_particles = 1,
   n_threads = 1,
   seed = NULL,
@@ -35,13 +36,15 @@ m_sample(
 
 \item{initial}{TBA}
 
-\item{sampler_type}{TBA}
+\item{v}{Vector of diagonal (variance) elements of variance-covariance matrix (TODO: supply whole matrix)}
 
-\item{v}{TBA}
+\item{rerun_every}{TBA}
 
 \item{n_chains}{Number of chains}
 
 \item{n_iterations}{Number of iterations for which to run each chain}
+
+\item{deterministic}{TBA}
 
 \item{n_particles}{Number of particles}
 

@@ -14,6 +14,7 @@ m_prelim_fit(
   n_steps = 1,
   n_iterations = 10,
   n_bounds = 10,
+  deterministic = FALSE,
   n_particles = 1,
   n_threads = 1,
   seed = NULL
@@ -38,6 +39,8 @@ m_prelim_fit(
 
 \item{n_bounds}{Number of iterations (ones giving highest posterior likelihood) to use to establish bounds
 for next cycle}
+
+\item{deterministic}{TBA}
 
 \item{n_particles}{Number of particles}
 
