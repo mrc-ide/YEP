@@ -552,6 +552,7 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   if(deterministic){
     assert_that(n_particles==1)
     assert_that(n_threads==1)
+    assert_that(rerun_every==Inf,msg="rerun_every must be Inf when in deterministic mode")
     filter <- dust_unfilter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
                                  n_particles = n_particles, n_threads = n_threads)
   } else {
