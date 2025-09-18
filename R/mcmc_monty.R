@@ -548,7 +548,7 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
 
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
-  assert_that(dim(vcv)==c(n_params,n_params))
+  assert_that(all(dim(vcv)==c(n_params,n_params)))
 
   if(deterministic){
     assert_that(n_particles==1)
