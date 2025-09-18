@@ -11,16 +11,16 @@ m_sample(
   FOI_R0_prior_data = list(),
   pars_var = list(),
   initial = list(),
-  v = c(),
+  vcv = list(),
   rerun_every = 50,
   n_chains = 1,
   n_iterations = 10,
   deterministic = FALSE,
   n_particles = 1,
   n_threads = 1,
-  seed = NULL,
   parallel = FALSE,
-  output_file = ""
+  output_file = NULL,
+  seed = NULL
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ m_sample(
 
 \item{initial}{TBA}
 
-\item{v}{Vector of diagonal (variance) elements of variance-covariance matrix (TODO: supply whole matrix)}
+\item{vcv}{Variance-covariance matrix}
 
 \item{rerun_every}{TBA}
 
@@ -50,11 +50,11 @@ m_sample(
 
 \item{n_threads}{Number of threads}
 
-\item{seed}{Random seed (set to NULL if unused)}
-
 \item{parallel}{TBA}
 
-\item{output_file}{Name of file location to save results}
+\item{output_file}{Name of file location to save results (set to NULL if unused)}
+
+\item{seed}{Random seed (set to NULL if unused)}
 }
 \description{
 TBA

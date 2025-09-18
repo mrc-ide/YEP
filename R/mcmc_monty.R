@@ -528,7 +528,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @param FOI_R0_prior_data Data frame of prior data for FOI/R0
 #' @param pars_var Data frame of information on varied parameters, created using pars_var_setup()
 #' @param initial TBA
-#' @param v Vector of diagonal (variance) elements of variance-covariance matrix (TODO: supply whole matrix)
+#' @param vcv Variance-covariance matrix
 #' @param rerun_every TBA
 #' @param n_chains Number of chains
 #' @param n_iterations Number of iterations for which to run each chain
@@ -536,18 +536,19 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
 #' @param n_particles Number of particles
 #' @param n_threads Number of threads
 #' @param parallel TBA
-#' @param output_file Name of file location to save results
+#' @param output_file Name of file location to save results (set to NULL if unused)
 #' @param seed Random seed (set to NULL if unused)
 #'
 #' @export
 #'
 m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prior_data = list(),
-                     pars_var = list(), initial = list(), v = c(), rerun_every = 50, n_chains = 1,
+                     pars_var = list(), initial = list(), vcv = list(), rerun_every = 50, n_chains = 1,
                      n_iterations = 10, deterministic = FALSE, n_particles = 1, n_threads = 1,
-                     seed = NULL, parallel = FALSE, output_file = ""){
+                     parallel = FALSE, output_file = NULL, seed = NULL){
 
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
+  assert_that(dim(vcv)==c(n_params,n_params))
 
   if(deterministic){
     assert_that(n_particles==1)
@@ -566,8 +567,6 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   posterior$domain[,2] = pars_var$max
   assert_that(all(initial>= posterior$domain[,1]))
   assert_that(all(initial<= posterior$domain[,2]))
-  vcv <- matrix(c(rep(0,n_params^2)),n_params,n_params)
-  for(i in 1:n_params){ vcv[i,i] = v[i] }
   sampler <- monty_sampler_random_walk(vcv = vcv, boundaries = "reject",
                                        rerun_every = rerun_every, rerun_random = FALSE)
 
@@ -580,11 +579,13 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   samples <- monty_sample(model = posterior,sampler = sampler, n_steps = n_iterations,
                           initial = initial, n_chains = n_chains, runner = runner)
 
-  saveRDS(list(samples = samples,
-               params = list(pars_var = pars_var, n_chains = n_chains,
-                             n_iterations = n_iterations,
-                             n_particles = n_particles, n_threads = n_threads)),
-          file = output_file)
+  if(is.null(output_file)==FALSE){
+    saveRDS(list(samples = samples,
+                 params = list(pars_var = pars_var, n_chains = n_chains,
+                               n_iterations = n_iterations,
+                               n_particles = n_particles, n_threads = n_threads)),
+            file = output_file)
+  }
 
   return(samples)
 }
