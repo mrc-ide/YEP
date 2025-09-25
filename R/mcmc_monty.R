@@ -379,7 +379,7 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
   pts2 = which(grepl("log_R0_coeffs",pars_var$name))
   pts_add = which(c(1:nrow(pars_var)) %in% c(pts1,pts2) ==  FALSE)
   vars_extra_names = pars_var$name[pts_add]
-  assert_that(all())
+  assert_that(all(vars_extra_names %in% extra_param_names))
   n_add = length(pts_add)
   env_covars_mean = array(NA,dim = c(n_env_vars,n_regions))
   for(i in 1:n_regions){
