@@ -15,7 +15,9 @@ pars_fixed_setup(
   mode_start = 0,
   start_SEIRV = NULL,
   fixed_extra = list(),
-  ref_BRA = NULL
+  ref_BRA = NULL,
+  i_ttf = NULL,
+  i_ptf = NULL
 )
 }
 \arguments{
@@ -45,6 +47,10 @@ If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 \item{fixed_extra}{List containing additional fixed parameters}
 
 \item{ref_BRA}{List of region numbers for which Brazil FOI multiplier to be applied}
+
+\item{i_ttf}{TBA}
+
+\item{i_ptf}{TBA}
 }
 \description{
 Set up fixed parameters for fitting

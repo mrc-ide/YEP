@@ -52,12 +52,15 @@ pars_var_setup <- function(n_env_vars = 5,vars_extra_names = c("p_rep_severe","p
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (if mode_start = 2)
 #' @param fixed_extra List containing additional fixed parameters
 #' @param ref_BRA List of region numbers for which Brazil FOI multiplier to be applied
+#' @param i_ttf TBA
+#' @param i_ptf TBA
 #'
 #' @export
 #'
 pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc_data = list(),
                              pop_data = list(), years_data = c(), year0 = 1940,  time_inc = 1.0,
-                             mode_start = 0, start_SEIRV = NULL, fixed_extra = list(), ref_BRA = NULL){
+                             mode_start = 0, start_SEIRV = NULL, fixed_extra = list(), ref_BRA = NULL,
+                             i_ttf = NULL, i_ptf = NULL){
 
   assert_that(length(pop_data[1, , 1]) > 1, msg = "Need population data for multiple years")
   assert_that(length(pop_data[1, 1, ]) > 1, msg = "Need population data for multiple age groups")
@@ -175,7 +178,8 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
                 n_sero_pts = n_sero_pts,n_case_pts = n_case_pts, sero_vc_factor = sero_vc_factor,
                 sia_min = sero_i_age_min, sia_max = sero_i_age_max,
                 region_index_sero = region_index_sero, region_index_case = region_index_case,
-                sero_regions = i_sero_regions,case_regions = i_case_regions, ref_BRA = ref_BRA)
+                sero_regions = i_sero_regions,case_regions = i_case_regions, ref_BRA = ref_BRA,
+                i_ttf = i_ttf, i_ptf = i_ptf)
   if(mode_start %in% c(0,2)){
     output$S_0 = S_0
     output$R_0 = R_0
@@ -298,6 +302,19 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_ti
   inv_365 = 1.0/365.0
   n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years*12, n_t_pts)
   assert_that(dim(env_covar_values)[3] == n_req)
+  for(name in extra_param_names_req){
+    if(is.null(pars_fixed[[name]])){assert_that(name %in% vars_extra_names)}
+  }
+  if(is.null(pars_fixed$i_ttf)==FALSE){
+    for(name in extra_param_names_ttf){
+      if(is.null(pars_fixed[[name]])){assert_that(name %in% vars_extra_names)}
+    }
+  }
+  if(is.null(pars_fixed$ref_BRA)==FALSE && is.null(pars_fixed$m_FOI_BRA)){
+    assert_that("m_FOI_BRA" %in% vars_extra_names)}
+  if(is.null(pars_fixed$i_ptf)==FALSE && is.null(pars_fixed$log_a_ptf)){
+    assert_that("log_a_ptf" %in% vars_extra_names)}
+
   date_values = switch(mode_time + 1,
                        rep(1, n_t_pts),
                        sort(rep(c(1:n_years), pts_year)),
@@ -312,6 +329,25 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_ti
                                       "log_R0_coeffs" = n_env_vars),
                          fixed = pars_fixed,
                          process = function(p){
+
+                           #NEW - transform designated environmental covariate values
+                           #Temperature; TODO - set up to accept i_ttf as a vector (for multiple temperature covariates)
+                           a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
+                           if(is.null(pars_fixed$i_ttf)==FALSE){
+                             for(name in extra_param_names_ttf){
+                               if(is.null(pars_fixed[[name]])){assign(name,p[[name]])}else{assign(name,pars_fixed[[name]])}
+                             }
+                             env_covar_values[pars_fixed$i_ttf,,]=temp_tf(temp_values=array(env_covar_values[pars_fixed$i_ttf,,],
+                                                                                            dim=c(n_regions,n_req)),
+                                                                          a_T0, a_Tm, a_c,mu_T0, mu_Tm, mu_c, PDR_T0, PDR_Tm,PDR_c)
+                           }
+                           #Precipitation; TODO - ditto
+                           if(is.null(pars_fixed$i_pts)==FALSE){
+                             if(is.null(pars_fixed$log_a_ptf)){log_a_ptf=p$log_a_ptf}else{log_a_ptf=pars_fixed$log_a_ptf}
+                             env_covar_values[pars_fixed$i_ptf,,] = precip_tf(precip_values=array(env_covar_values[pars_fixed$i_ptf,,],
+                                                                                                  dim=c(n_regions,n_req)), a_ptf = exp(log_a_ptf))
+                           }
+
                            FOI_spillover = colSums(exp(p$log_FOI_coeffs)*env_covar_values)
                            if(flag_BRA>0){
                              if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=p$m_FOI_BRA}
@@ -388,7 +424,10 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 
   prior_function <- function(log_FOI_coeffs = rep(-15,5),log_R0_coeffs = rep(-5,5),
                              p_rep_severe = 0,p_rep_death = 0,p_severe_inf = 0.12,p_death_severe_inf = 0.39,
-                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0,...){ #TBC
+                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0,log_a_ptf=1.0,
+                             a_T0 = 2.248952, a_Tm = 40.13383, a_c = 0.000271964,
+                             mu_T0 = 12.71508, mu_Tm = 38.04809469, mu_c = -0.757869,
+                             PDR_T0 = 17.33263, PDR_Tm = 42.19592, PDR_c = 0.000135891,...){
 
     #Prior applied to coefficients of environmental covariates
     prior_lfc = prior_lrc = rep(0,n_env_vars)

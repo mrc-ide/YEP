@@ -5,9 +5,15 @@ t_incubation <- 5 #Time for cases to incubate in mosquito
 t_latent <- 5 #Latent period before cases become infectious
 t_infectious <- 5 #Time cases remain infectious
 # Additional parameter names for MCMC
-extra_param_names <- c("vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",
-                       "p_rep_death","m_FOI_BRA")
-#TODO - Add provision for parameters of temperature/precipitation functional forms?
+extra_param_names = c("vaccine_efficacy","p_severe_inf","p_death_severe_inf",
+                      "p_rep_severe","p_rep_death","m_FOI_BRA",
+                      "a_T0", "a_Tm", "a_c", "mu_T0", "mu_Tm", "mu_c",
+                      "PDR_T0", "PDR_Tm","PDR_c",
+                      "log_a_ptf")
+extra_param_names_req = c("vaccine_efficacy","p_severe_inf","p_death_severe_inf",
+                          "p_rep_severe","p_rep_death")
+extra_param_names_ttf = c("a_T0", "a_Tm", "a_c","mu_T0", "mu_Tm", "mu_c",
+                          "PDR_T0", "PDR_Tm","PDR_c")
 #-------------------------------------------------------------------------------
 # The following commands ensure that package dependencies are listed in the NAMESPACE file.
 #' @useDynLib YEP, .registration = TRUE
