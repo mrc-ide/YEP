@@ -283,6 +283,7 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
 packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_time = 0, vars_extra_names = c("")){
 
   #TODO - add assert_that functions?
+  #TODO - remove checks/calcs to be moved to FOI/R0 calculation function
   assert_that(all(vars_extra_names %in% extra_param_names))
   if("m_FOI_BRA" %in% vars_extra_names){flag_BRA = 2} else {
     if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
