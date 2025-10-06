@@ -331,32 +331,11 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_ti
                          fixed = pars_fixed,
                          process = function(p){
 
-                           #NEW - transform designated environmental covariate values
-                           #Temperature; TODO - set up to accept i_ttf as a vector (for multiple temperature covariates)
-                           a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
-                           if(is.null(pars_fixed$i_ttf)==FALSE){
-                             for(name in extra_param_names_ttf){
-                               if(is.null(pars_fixed[[name]])){assign(name,p[[name]])}else{assign(name,pars_fixed[[name]])}
-                             }
-                             env_covar_values[pars_fixed$i_ttf,,]=temp_tf(temp_values=array(env_covar_values[pars_fixed$i_ttf,,],
-                                                                                            dim=c(n_regions,n_req)),
-                                                                          a_T0, a_Tm, a_c,mu_T0, mu_Tm, mu_c, PDR_T0, PDR_Tm,PDR_c)
-                           }
-                           #Precipitation; TODO - ditto
-                           if(is.null(pars_fixed$i_pts)==FALSE){
-                             if(is.null(pars_fixed$log_a_ptf)){log_a_ptf=p$log_a_ptf}else{log_a_ptf=pars_fixed$log_a_ptf}
-                             env_covar_values[pars_fixed$i_ptf,,] = precip_tf(precip_values=array(env_covar_values[pars_fixed$i_ptf,,],
-                                                                                                  dim=c(n_regions,n_req)), a_ptf = exp(log_a_ptf))
-                           }
+                           epi_params = epi_param_calc2(pars_fixed, env_covar_values, p$log_FOI_coeffs,
+                                                        p$log_R0_coeffs,p)
+                           FOI_spillover_t = epi_params$FOI_spillover[,date_values]
+                           R0_t = epi_params$R0[,date_values]
 
-                           FOI_spillover = colSums(exp(p$log_FOI_coeffs)*env_covar_values)
-                           if(flag_BRA>0){
-                             if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=p$m_FOI_BRA}
-                             FOI_spillover[pars_fixed$ref_BRA,]=FOI_spillover[pars_fixed$ref_BRA,]*m
-                             }
-                           R0 = colSums(exp(p$log_R0_coeffs)*env_covar_values)
-                           FOI_spillover_t = FOI_spillover[,date_values]
-                           R0_t = R0[,date_values]
                            params_list = list(FOI_spillover = FOI_spillover_t,R0 = R0_t)
                            if(pars_fixed$mode_start == 1){
                              vacc_initial = pars_fixed$V_0

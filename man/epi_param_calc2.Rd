@@ -4,15 +4,24 @@
 \alias{epi_param_calc2}
 \title{epi_param_calc2}
 \usage{
-epi_param_calc2(pars_fixed = list(), env_covar_values = list(), p = list())
+epi_param_calc2(
+  pars_fixed = list(),
+  env_covar_values = list(),
+  log_FOI_coeffs = c(),
+  log_R0_coeffs = c(),
+  vars_extra = list()
+)
 }
 \arguments{
 \item{pars_fixed}{TBA}
 
 \item{env_covar_values}{TBA}
 
-\item{p}{TBA
-'}
+\item{log_FOI_coeffs}{TBA}
+
+\item{log_R0_coeffs}{TBA}
+
+\item{vars_extra}{TBA}
 }
 \description{
 TBA

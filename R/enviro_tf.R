@@ -106,51 +106,50 @@ precip_tf <- function(precip_values = c(0), a_ptf = 0){
 #'
 #' @param pars_fixed TBA
 #' @param env_covar_values TBA
-#' @param p TBA
-#' @param mode_time TBA
-#' '
+#' @param log_FOI_coeffs TBA
+#' @param log_R0_coeffs TBA
+#' @param vars_extra TBA
+#'
 #' @export
 #'
-epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(),
-                            p = list(), mode_time = 0){
+epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_FOI_coeffs = c(),
+                            log_R0_coeffs = c(), vars_extra = list()){
 
-  #TODO - adapt for p having more than one set of values
+  #TODO - adapt for multiple parameter sets?
 
-  if("m_FOI_BRA" %in% names(p)){flag_BRA = 2} else {
+  if("m_FOI_BRA" %in% names(vars_extra)){flag_BRA = 2} else {
     if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
   }
   n_regions = pars_fixed$n_r
+  assert_that(n_regions==dim(env_covar_values)[2])
+  dim_t = dim(env_covar_values)[3]
   time_inc = pars_fixed$time_inc
   pts_year = 365.0/time_inc
   n_years = pars_fixed$n_years
   n_t_pts = n_years*pts_year
   inv_365 = 1.0/365.0
-  n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years*12, n_t_pts)
-  assert_that(dim(env_covar_values)[3] == n_req)
-
-  log_FOI_coeffs = as.numeric(p[substr(names(p),1,14)=="log_FOI_coeffs"])
-  log_R0_coeffs = as.numeric(p[substr(names(p),1,13)=="log_R0_coeffs"])
 
   a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
   #Temperature; TODO - add functionality for vector i_ttf (multiple temperature covariates)
   if(is.null(pars_fixed$i_ttf)==FALSE){
     for(name in extra_param_names_ttf){
-      if(is.null(pars_fixed[[name]])){assign(name,p[[name]])}else{assign(name,pars_fixed[[name]])}
+      if(is.null(pars_fixed[[name]])){assign(name,vars_extra[[name]])}else{assign(name,pars_fixed[[name]])}
     }
     env_covar_values[pars_fixed$i_ttf,,]=temp_tf(temp_values=array(env_covar_values[pars_fixed$i_ttf,,],
-                                                                   dim=c(n_regions,n_req)),
+                                                                   dim=c(n_regions,dim_t)),
                                                  a_T0, a_Tm, a_c,mu_T0, mu_Tm, mu_c, PDR_T0, PDR_Tm,PDR_c)
   }
   #Precipitation; TODO - ditto
-  if(is.null(pars_fixed$i_pts)==FALSE){
-    if(is.null(pars_fixed$log_a_ptf)){log_a_ptf=p$log_a_ptf}else{log_a_ptf=pars_fixed$log_a_ptf}
+  if(is.null(pars_fixed$i_ptf)==FALSE){
+    if(is.null(pars_fixed$log_a_ptf)){log_a_ptf=vars_extra[["log_a_ptf"]]}else{log_a_ptf=pars_fixed$log_a_ptf}
     env_covar_values[pars_fixed$i_ptf,,] = precip_tf(precip_values=array(env_covar_values[pars_fixed$i_ptf,,],
-                                                                         dim=c(n_regions,n_req)), a_ptf = exp(log_a_ptf))
+                                                                         dim=c(n_regions,dim_t)),
+                                                     a_ptf = exp(log_a_ptf))
   }
 
   FOI_spillover = colSums(exp(log_FOI_coeffs)*env_covar_values)
   if(flag_BRA>0){
-    if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=p$m_FOI_BRA}
+    if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=vars_extra$m_FOI_BRA}
     FOI_spillover[pars_fixed$ref_BRA,]=FOI_spillover[pars_fixed$ref_BRA,]*m
   }
   R0 = colSums(exp(log_R0_coeffs)*env_covar_values)
