@@ -107,12 +107,14 @@ precip_tf <- function(precip_values = c(0), a_ptf = 0){
 #' @param pars_fixed TBA
 #' @param env_covar_values TBA
 #' @param p TBA
+#' @param mode_time TBA
 #' '
 #' @export
 #'
 epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(),
-                            p = list()){
+                            p = list(), mode_time = 0){
 
+  #TODO - adapt for p having more than one set of values
 
   if("m_FOI_BRA" %in% names(p)){flag_BRA = 2} else {
     if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
@@ -125,16 +127,12 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(),
   inv_365 = 1.0/365.0
   n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years*12, n_t_pts)
   assert_that(dim(env_covar_values)[3] == n_req)
-  date_values = switch(mode_time + 1,
-                       rep(1, n_t_pts),
-                       sort(rep(c(1:n_years), pts_year)),
-                       1 + (floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12),
-                       1 + (floor(time_inc*c(0:(n_t_pts - 1))) %% pts_year),
-                       1 + (floor(12*time_inc*inv_365*c(0:(n_t_pts - 1))) %% 12) +
-                         (12*sort(rep(c(1:n_years) - 1,pts_year))),
-                       c(1:n_t_pts))
+
+  log_FOI_coeffs = as.numeric(p[substr(names(p),1,14)=="log_FOI_coeffs"])
+  log_R0_coeffs = as.numeric(p[substr(names(p),1,13)=="log_R0_coeffs"])
 
   a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
+  #Temperature; TODO - add functionality for vector i_ttf (multiple temperature covariates)
   if(is.null(pars_fixed$i_ttf)==FALSE){
     for(name in extra_param_names_ttf){
       if(is.null(pars_fixed[[name]])){assign(name,p[[name]])}else{assign(name,pars_fixed[[name]])}
@@ -150,14 +148,12 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(),
                                                                          dim=c(n_regions,n_req)), a_ptf = exp(log_a_ptf))
   }
 
-  FOI_spillover = colSums(exp(p$log_FOI_coeffs)*env_covar_values)
+  FOI_spillover = colSums(exp(log_FOI_coeffs)*env_covar_values)
   if(flag_BRA>0){
     if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=p$m_FOI_BRA}
     FOI_spillover[pars_fixed$ref_BRA,]=FOI_spillover[pars_fixed$ref_BRA,]*m
   }
-  R0 = colSums(exp(p$log_R0_coeffs)*env_covar_values)
-  FOI_spillover_t = FOI_spillover[,date_values]
-  R0_t = R0[,date_values]
-  params_list = list(FOI_spillover = FOI_spillover_t,R0 = R0_t)
+  R0 = colSums(exp(log_R0_coeffs)*env_covar_values)
 
+  return(list(FOI_spillover = FOI_spillover,R0 = R0))
 }
