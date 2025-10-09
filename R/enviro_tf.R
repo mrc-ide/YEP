@@ -147,12 +147,12 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
                                                      a_ptf = exp(log_a_ptf))
   }
 
-  FOI_spillover = colSums(exp(log_FOI_coeffs)*env_covar_values)
+  FOI_spillover = array(colSums(as.numeric(exp(log_FOI_coeffs))*env_covar_values),dim=c(n_regions,dim_t))
+  R0 = array(colSums(as.numeric(exp(log_R0_coeffs))*env_covar_values),dim=c(n_regions,dim_t))
   if(flag_BRA>0){
     if(flag_BRA==1){m=pars_fixed$m_FOI_BRA}else{m=vars_extra$m_FOI_BRA}
     FOI_spillover[pars_fixed$ref_BRA,]=FOI_spillover[pars_fixed$ref_BRA,]*m
   }
-  R0 = colSums(exp(log_R0_coeffs)*env_covar_values)
 
   return(list(FOI_spillover = FOI_spillover,R0 = R0))
 }
