@@ -1,8 +1,7 @@
 # Alternate version with cumulative annual calculation and run over multiple regions
 # Version calculating both serological and case data and applying distribution
-# FOI and R0 calculated in odin2 from environmental covariates and coefficients
 
-# Version with deaths calculated separately from cases
+# TODO - Incorporate population values from case data as "size" in nbinomial calculations
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
@@ -184,11 +183,15 @@ obs_sero_samples <- data()
 dim(obs_sero_positives) <- n_sero_pts
 dim(obs_sero_samples) <- n_sero_pts
 obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i]+1e-9)
+#pop_values <- data()
+#dim(pop_values) <- n_case_pts
 obs_case_values <- data()
 dim(obs_case_values) <- n_case_pts
-#obs_case_values[] ~ Poisson(output_case[i]+1e-3)
-obs_case_values[] ~ NegativeBinomial(size = Inf, mu = output_case[i]+1e-3)
+obs_case_values[] ~ Poisson(output_case[i]+1e-3)
+#obs_case_values[] ~ NegativeBinomial(size = pop_values[i], mu = output_case[i]+1e-3)
+#obs_case_values[] ~ NegativeBinomial(size = Inf, mu = output_case[i]+1e-3)
 obs_death_values <- data()
 dim(obs_death_values) <- n_case_pts
-#obs_death_values[] ~ Poisson(output_death[i]+1e-3)
-obs_death_values[] ~ NegativeBinomial(size = Inf, mu = output_death[i]+1e-3)
+obs_death_values[] ~ Poisson(output_death[i]+1e-3)
+#obs_death_values[] ~ NegativeBinomial(size = pop_values[i], mu = output_death[i]+1e-3)
+#obs_death_values[] ~ NegativeBinomial(size = Inf, mu = output_death[i]+1e-3)

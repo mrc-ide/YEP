@@ -213,6 +213,9 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
 fit_data_setup <- function(sero_template = list(),case_template = list(), year0 = 1940, time_inc = 5.0,
                            region_index_sero = list(), region_index_case = list()){
 
+  #TODO - add assert_that checks
+  #TODO - add population values as part of case template
+
   year = region = age_min = age_max = 0
   years_data <- sort(unique(c(sero_template$year,case_template$year)))
   i_year_begin = years_data[1] - year0 + 1
@@ -595,6 +598,7 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   }else{
     runner = monty_runner_serial()}
 
+  set.seed(seed)
   samples <- monty_sample(model = posterior,sampler = sampler, n_steps = n_iterations,
                           initial = initial, n_chains = n_chains, runner = runner)
 
