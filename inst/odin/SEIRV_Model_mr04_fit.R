@@ -4,7 +4,7 @@
 # TODO - Incorporate population values from case data as "size" in nbinomial calculations
 
 #Parameters---------------------------------------------------------------------
-time_inc <- parameter() #Time increment in days
+time_inc <- parameter(1.0) #Time increment in days
 n_r <- parameter() #number of regions
 region_index_sero <- parameter() #Groupings of regions for which to output sero data
 region_index_case <- parameter() #Groupings of regions for which to output case data
@@ -12,21 +12,22 @@ sero_regions <- parameter() #0/1 flag indicating which regions need serological 
 case_regions <- parameter() #0/1 flag indicating which regions need case data output
 n_sero_pts <- parameter() #number of serology data points at each time point
 n_case_pts <- parameter() #number of case data points at each time point
-t_incubation <- parameter() #Length in days of yellow fever incubation period in mosquito vectors
-t_latent <- parameter() #Length in days of latent period in humans exposed to yellow fever
-t_infectious <- parameter() #Length of infectious period in humans with yellow fever
-FOI_spillover <- parameter() #Spillover force of infection (per day) at each time point
-R0 <- parameter() #Basic reproduction number for human-human transmission at each time point
-N_age <- parameter() #Number of age categories
+t_incubation <- parameter(5.0) #Length in days of yellow fever incubation period in mosquito vectors
+t_latent <- parameter(5.0) #Length in days of latent period in humans exposed to yellow fever
+t_infectious <- parameter(5.0) #Length of infectious period in humans with yellow fever
+FOI_spillover <- parameter() #Spillover force of infection (per day) by region and time point
+R0 <- parameter() #Basic reproduction number for human-human transmission by region and time point
+N_age <- parameter(101) #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
-vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully protect the recipient
-sero_vc_factor <- parameter() #TBA
-sia_min <- parameter() #TBA
-sia_max <- parameter() #TBA
-p_severe_inf <- parameter() #TBA
-p_death_severe_inf <- parameter() #TBA
-p_rep_severe <- parameter() #TBA
-p_rep_death <- parameter() #TBA
+vaccine_efficacy <- parameter(1.0) #Proportion of vaccinations which successfully protect the recipient
+sero_vc_factor <- parameter() #VC factor (TBA) for seroprevalence calculation by point
+sia_min <- parameter() #Minimum age for seroprevalence calculation by point
+sia_max <- parameter() #Maximum age for seroprevalence calculation by point
+p_severe_inf <- parameter(0.12) #Probability of severe symptoms
+p_death_severe_inf <- parameter(0.39) #Probability of death given severe symptoms
+p_rep_severe <- parameter(1.0) #Probability of reporting of severe nonfatal case
+p_rep_death <- parameter(1.0) #Probability of reporting of fatal case
+overdisp <- parameter(1.0) #Overdispersion of negative binomial distribution
 
 #Initial conditions-------------------------------------------------------------
 year0 <- parameter()  #Starting year
@@ -183,15 +184,9 @@ obs_sero_samples <- data()
 dim(obs_sero_positives) <- n_sero_pts
 dim(obs_sero_samples) <- n_sero_pts
 obs_sero_positives[] ~ Binomial(size = obs_sero_samples[i], prob = output_sero[i]+1e-9)
-#pop_values <- data()
-#dim(pop_values) <- n_case_pts
 obs_case_values <- data()
 dim(obs_case_values) <- n_case_pts
-obs_case_values[] ~ Poisson(output_case[i]+1e-3)
-#obs_case_values[] ~ NegativeBinomial(size = pop_values[i], mu = output_case[i]+1e-3)
-#obs_case_values[] ~ NegativeBinomial(size = Inf, mu = output_case[i]+1e-3)
+obs_case_values[] ~ NegativeBinomial(size = overdisp, mu = output_case[i]+1e-3)
 obs_death_values <- data()
 dim(obs_death_values) <- n_case_pts
-obs_death_values[] ~ Poisson(output_death[i]+1e-3)
-#obs_death_values[] ~ NegativeBinomial(size = pop_values[i], mu = output_death[i]+1e-3)
-#obs_death_values[] ~ NegativeBinomial(size = Inf, mu = output_death[i]+1e-3)
+obs_death_values[] ~ NegativeBinomial(size = overdisp, mu = output_death[i]+1e-3)

@@ -9,7 +9,7 @@ extra_param_names = c("vaccine_efficacy","p_severe_inf","p_death_severe_inf",
                       "p_rep_severe","p_rep_death","m_FOI_BRA",
                       "a_T0", "a_Tm", "a_c", "mu_T0", "mu_Tm", "mu_c",
                       "PDR_T0", "PDR_Tm","PDR_c",
-                      "log_a_ptf")
+                      "log_a_ptf", "overdisp")
 extra_param_names_req = c("vaccine_efficacy","p_severe_inf","p_death_severe_inf",
                           "p_rep_severe","p_rep_death")
 extra_param_names_ttf = c("a_T0", "a_Tm", "a_c","mu_T0", "mu_Tm", "mu_c",

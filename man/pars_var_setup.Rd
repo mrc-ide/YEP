@@ -12,11 +12,17 @@ pars_var_setup(
 \arguments{
 \item{n_env_vars}{Number of environmental covariates}
 
-\item{vars_extra_names}{Names of additional parameters}
+\item{vars_extra_names}{Names of additional parameters, out of:\cr
+"vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",\cr
+"p_rep_death","m_FOI_BRA", "a_T0", "a_Tm", "a_c", "mu_T0", "mu_Tm", \cr
+"mu_c","PDR_T0", "PDR_Tm","PDR_c","log_a_ptf", "overdisp"\cr
+(Definitions TBA)}
 }
 \description{
 Set up variable parameters for fitting
 }
 \details{
-TBA
+Construct data frame of parameters to be estimated via MCMC, containing
+ names, maximum and minimum permitted values, and mean and standard deviation
+ for prior calculations
 }

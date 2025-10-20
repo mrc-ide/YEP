@@ -5,8 +5,8 @@
 \title{fit_data_setup}
 \usage{
 fit_data_setup(
-  sero_template = list(),
-  case_template = list(),
+  sero_template = data.frame(),
+  case_template = data.frame(),
   year0 = 1940,
   time_inc = 5,
   region_index_sero = list(),

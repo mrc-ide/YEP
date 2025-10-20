@@ -5,7 +5,7 @@
 // [[dust2::class(SEIRV_Model_mr04_fit)]]
 // [[dust2::time_type(discrete)]]
 // [[dust2::has_compare()]]
-// [[dust2::parameter(time_inc, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(time_inc, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
 // [[dust2::parameter(n_r, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(region_index_sero, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(region_index_case, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
@@ -13,21 +13,22 @@
 // [[dust2::parameter(case_regions, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(n_sero_pts, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(n_case_pts, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
-// [[dust2::parameter(t_incubation, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(t_latent, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(t_infectious, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(t_incubation, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(t_latent, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(t_infectious, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
 // [[dust2::parameter(FOI_spillover, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(R0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(N_age, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
+// [[dust2::parameter(N_age, type = "int", rank = 0, required = FALSE, constant = TRUE)]]
 // [[dust2::parameter(vacc_rate_daily, type = "real_type", rank = 3, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(vaccine_efficacy, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(vaccine_efficacy, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
 // [[dust2::parameter(sero_vc_factor, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(sia_min, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(sia_max, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(p_severe_inf, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(p_death_severe_inf, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(p_rep_severe, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(p_rep_death, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(p_severe_inf, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(p_death_severe_inf, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(p_rep_severe, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(p_rep_death, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
+// [[dust2::parameter(overdisp, type = "real_type", rank = 0, required = FALSE, constant = FALSE)]]
 // [[dust2::parameter(year0, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(S_0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(E_0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
@@ -121,6 +122,7 @@ public:
     real_type p_death_severe_inf;
     real_type p_rep_severe;
     real_type p_rep_death;
+    real_type overdisp;
     real_type year0;
     int n_years;
     int n_t_pts;
@@ -176,19 +178,20 @@ public:
   }
   static shared_state build_shared(cpp11::list parameters) {
     shared_state::dim_type dim;
-    const real_type time_inc = dust2::r::read_real(parameters, "time_inc");
+    const real_type time_inc = dust2::r::read_real(parameters, "time_inc", 1);
     const int n_r = dust2::r::read_int(parameters, "n_r");
     const int n_sero_pts = dust2::r::read_int(parameters, "n_sero_pts");
     const int n_case_pts = dust2::r::read_int(parameters, "n_case_pts");
-    const real_type t_incubation = dust2::r::read_real(parameters, "t_incubation");
-    const real_type t_latent = dust2::r::read_real(parameters, "t_latent");
-    const real_type t_infectious = dust2::r::read_real(parameters, "t_infectious");
-    const int N_age = dust2::r::read_int(parameters, "N_age");
-    const real_type vaccine_efficacy = dust2::r::read_real(parameters, "vaccine_efficacy");
-    const real_type p_severe_inf = dust2::r::read_real(parameters, "p_severe_inf");
-    const real_type p_death_severe_inf = dust2::r::read_real(parameters, "p_death_severe_inf");
-    const real_type p_rep_severe = dust2::r::read_real(parameters, "p_rep_severe");
-    const real_type p_rep_death = dust2::r::read_real(parameters, "p_rep_death");
+    const real_type t_incubation = dust2::r::read_real(parameters, "t_incubation", 5);
+    const real_type t_latent = dust2::r::read_real(parameters, "t_latent", 5);
+    const real_type t_infectious = dust2::r::read_real(parameters, "t_infectious", 5);
+    const int N_age = dust2::r::read_int(parameters, "N_age", 101);
+    const real_type vaccine_efficacy = dust2::r::read_real(parameters, "vaccine_efficacy", 1);
+    const real_type p_severe_inf = dust2::r::read_real(parameters, "p_severe_inf", static_cast<real_type>(0.12));
+    const real_type p_death_severe_inf = dust2::r::read_real(parameters, "p_death_severe_inf", static_cast<real_type>(0.39000000000000001));
+    const real_type p_rep_severe = dust2::r::read_real(parameters, "p_rep_severe", 1);
+    const real_type p_rep_death = dust2::r::read_real(parameters, "p_rep_death", 1);
+    const real_type overdisp = dust2::r::read_real(parameters, "overdisp", 1);
     const real_type year0 = dust2::r::read_real(parameters, "year0");
     const int n_years = dust2::r::read_int(parameters, "n_years");
     const int n_t_pts = dust2::r::read_int(parameters, "n_t_pts");
@@ -306,7 +309,7 @@ public:
       {"output_death", std::vector<size_t>(dim.output_death.dim.begin(), dim.output_death.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, time_inc, n_r, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, region_index_sero, region_index_case, sero_regions, case_regions, FOI_spillover, R0, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
+    return shared_state{odin, dim, time_inc, n_r, n_sero_pts, n_case_pts, t_incubation, t_latent, t_infectious, N_age, vaccine_efficacy, p_severe_inf, p_death_severe_inf, p_rep_severe, p_rep_death, overdisp, year0, n_years, n_t_pts, Pmin, FOI_max, rate1, rate2, region_index_sero, region_index_case, sero_regions, case_regions, FOI_spillover, R0, vacc_rate_daily, sero_vc_factor, sia_min, sia_max, S_0, E_0, I_0, R_0, V_0, dP1_all, dP2_all};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> I_new(shared.dim.I_new.size);
@@ -349,6 +352,7 @@ public:
     shared.p_death_severe_inf = dust2::r::read_real(parameters, "p_death_severe_inf", shared.p_death_severe_inf);
     shared.p_rep_severe = dust2::r::read_real(parameters, "p_rep_severe", shared.p_rep_severe);
     shared.p_rep_death = dust2::r::read_real(parameters, "p_rep_death", shared.p_rep_death);
+    shared.overdisp = dust2::r::read_real(parameters, "overdisp", shared.overdisp);
     shared.year0 = dust2::r::read_real(parameters, "year0", shared.year0);
     shared.rate1 = shared.time_inc / (shared.t_incubation + shared.t_latent);
     shared.rate2 = shared.time_inc / shared.t_infectious;
@@ -635,10 +639,10 @@ public:
       odin_ll += unless_nan(monty::density::binomial(data.obs_sero_positives[i - 1], data.obs_sero_samples[i - 1], output_sero[i - 1] + static_cast<real_type>(1.0000000000000001e-09), true));
     }
     for (size_t i = 1; i <= shared.dim.obs_case_values.size; ++i) {
-      odin_ll += unless_nan(monty::density::poisson(data.obs_case_values[i - 1], output_case[i - 1] + static_cast<real_type>(0.001), true));
+      odin_ll += unless_nan(monty::density::negative_binomial_mu(data.obs_case_values[i - 1], shared.overdisp, output_case[i - 1] + static_cast<real_type>(0.001), true));
     }
     for (size_t i = 1; i <= shared.dim.obs_death_values.size; ++i) {
-      odin_ll += unless_nan(monty::density::poisson(data.obs_death_values[i - 1], output_death[i - 1] + static_cast<real_type>(0.001), true));
+      odin_ll += unless_nan(monty::density::negative_binomial_mu(data.obs_death_values[i - 1], shared.overdisp, output_death[i - 1] + static_cast<real_type>(0.001), true));
     }
     return odin_ll;
   }

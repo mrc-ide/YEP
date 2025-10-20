@@ -44,13 +44,14 @@ If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 
-\item{fixed_extra}{List containing additional fixed parameters}
+\item{fixed_extra}{List containing additional fixed parameters (from list available\cr
+as variable parameters)}
 
 \item{ref_BRA}{List of region numbers for which Brazil FOI multiplier to be applied}
 
-\item{i_ttf}{TBA}
+\item{i_ttf}{Number of environmental covariate for which temperature transformation to be applied}
 
-\item{i_ptf}{TBA}
+\item{i_ptf}{Number of environmental covariate for which precipitation transformation to be applied}
 }
 \description{
 Set up fixed parameters for fitting

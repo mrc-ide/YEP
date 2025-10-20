@@ -7,10 +7,16 @@
 #'
 #' @description Set up variable parameters for fitting
 #'
-#' @details TBA
+#' @details Construct data frame of parameters to be estimated via MCMC, containing
+#'  names, maximum and minimum permitted values, and mean and standard deviation
+#'  for prior calculations
 #'
 #' @param n_env_vars Number of environmental covariates
-#' @param vars_extra_names Names of additional parameters
+#' @param vars_extra_names Names of additional parameters, out of:\cr
+#'  "vaccine_efficacy","p_severe_inf","p_death_severe_inf","p_rep_severe",\cr
+#'  "p_rep_death","m_FOI_BRA", "a_T0", "a_Tm", "a_c", "mu_T0", "mu_Tm", \cr
+#'  "mu_c","PDR_T0", "PDR_Tm","PDR_c","log_a_ptf", "overdisp"\cr
+#'  (Definitions TBA)
 #'
 #' @export
 #'
@@ -21,7 +27,6 @@ pars_var_setup <- function(n_env_vars = 5,vars_extra_names = c("p_rep_severe","p
   n_rows = n_extra + (2*n_env_vars)
   pars_var = data.frame(name = c(vars_extra_names,paste0("log_FOI_coeffs[",c(1:n_env_vars),"]"),
                                  paste0("log_R0_coeffs[",c(1:n_env_vars),"]")),
-                        #initial = c(rep(1,n_extra),rep(-15,n_env_vars),rep(-3,n_env_vars)),
                         max = c(rep(1,n_extra),rep(-10,n_env_vars),rep(1,n_env_vars)),
                         min = c(rep(0.05,n_extra),rep(-20,n_env_vars),rep(-10,n_env_vars)),
                         mean = c(rep(1,n_extra),rep(-15,n_env_vars),rep(-3,n_env_vars)),
@@ -50,10 +55,11 @@ pars_var_setup <- function(n_env_vars = 5,vars_extra_names = c("p_rep_severe","p
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
 #'  If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (if mode_start = 2)
-#' @param fixed_extra List containing additional fixed parameters
+#' @param fixed_extra List containing additional fixed parameters (from list available\cr
+#'    as variable parameters)
 #' @param ref_BRA List of region numbers for which Brazil FOI multiplier to be applied
-#' @param i_ttf TBA
-#' @param i_ptf TBA
+#' @param i_ttf Number of environmental covariate for which temperature transformation to be applied
+#' @param i_ptf Number of environmental covariate for which precipitation transformation to be applied
 #'
 #' @export
 #'
@@ -210,11 +216,13 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
 #'
 #' @export
 #'
-fit_data_setup <- function(sero_template = list(),case_template = list(), year0 = 1940, time_inc = 5.0,
+fit_data_setup <- function(sero_template = data.frame(),case_template = data.frame(), year0 = 1940, time_inc = 5.0,
                            region_index_sero = list(), region_index_case = list()){
 
-  #TODO - add assert_that checks
-  #TODO - add population values as part of case template
+  assert_that(is.data.frame(sero_template))
+  assert_that(is.data.frame(case_template))
+  assert_that(all(c("region","year","age_min","age_max","positives","samples","vc_factor") %in% colnames(sero_template)))
+  assert_that(all(c("region","year","cases","deaths") %in% colnames(case_template)))
 
   year = region = age_min = age_max = 0
   years_data <- sort(unique(c(sero_template$year,case_template$year)))
@@ -253,8 +261,9 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
       for(j in 1:n_case_pts){
         regions = regions_all[which(region_index_case[j,] == 1)]
         region_group = paste(regions,collapse = ",")
-        case_data_list1[[i]][j] = case_subset$cases[case_subset$region == region_group]
-        case_data_list2[[i]][j] = case_subset$deaths[case_subset$region == region_group]
+        k = which(case_subset$region == region_group)
+        case_data_list1[[i]][j] = case_subset$cases[k]
+        case_data_list2[[i]][j] = case_subset$deaths[k]
       }
     }
   }
@@ -283,7 +292,8 @@ fit_data_setup <- function(sero_template = list(),case_template = list(), year0 
 #'
 #' @export
 #'
-packer_setup <- function(pars_fixed = list(), env_covar_values = list(), mode_time = 0, vars_extra_names = c("")){
+packer_setup <- function(pars_fixed = list(), env_covar_values = list(),
+                         mode_time = 0, vars_extra_names = c("")){
 
   #TODO - add assert_that functions?
   #TODO - remove checks/calcs to be moved to FOI/R0 calculation function
@@ -476,11 +486,16 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
                          pars_var = list(), env_covar_values = list(), n_steps = 1, n_iterations = 10,
                          n_bounds = 10, deterministic = FALSE, n_particles = 1, n_threads = 1, seed = NULL){
 
-  #TODO - Add assert_that checks?
+  #TODO - Add assert_that checks
+  #check fit_data
+  #check packer
+  #check priors
+  #check pars_var
+  #check env_covar_values
+  assert_that(is.logical(deterministic))
 
   if(deterministic){
-    assert_that(n_particles==1)
-    assert_that(n_threads==1)
+    assert_that(n_particles==1 && n_threads==1)
     filter <- dust_unfilter_create(generator = SEIRV_Model_mr04_fit, data = fit_data, time_start = 0,
                                    n_particles = n_particles, n_threads = n_threads)
   } else {

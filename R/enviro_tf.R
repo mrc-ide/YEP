@@ -120,14 +120,13 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
   if("m_FOI_BRA" %in% names(vars_extra)){flag_BRA = 2} else {
     if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
   }
-  n_regions = pars_fixed$n_r
-  assert_that(n_regions==dim(env_covar_values)[2])
+  if(is.null(pars_fixed$n_r)){
+    n_regions=dim(env_covar_values)[2]
+  }else{
+    n_regions = pars_fixed$n_r
+    assert_that(n_regions==dim(env_covar_values)[2])
+  }
   dim_t = dim(env_covar_values)[3]
-  time_inc = pars_fixed$time_inc
-  pts_year = 365.0/time_inc
-  n_years = pars_fixed$n_years
-  n_t_pts = n_years*pts_year
-  inv_365 = 1.0/365.0
 
   a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
   #Temperature; TODO - add functionality for vector i_ttf (multiple temperature covariates)
