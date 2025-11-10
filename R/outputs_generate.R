@@ -2,6 +2,7 @@
 # R file for functions used to generate sets of annual serological data, annual case/death data
 # and annual burden (VIMC format) data
 #-------------------------------------------------------------------------------
+#TODO - add adaptiveness to number of time points?
 #' @title Generate_Dataset
 #'
 #' @description Generate dataset [TBA]
