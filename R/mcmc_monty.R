@@ -526,6 +526,7 @@ m_prelim_fit <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_
     param_sets = lhs(n_iterations,rect = matrix(c(pars_min,pars_max),ncol = 2))
     explore[[step]] = data.frame(array(NA,dim = c(n_iterations,n_params+1)))
     explore[[step]][,c(1:n_params)] = param_sets
+    #TODO - put correct parameter names as headings
     colnames(explore[[step]]) = c(paste0("param",c(1:n_params)),"density")
     for(iter in 1:n_iterations){
       cat("\n",step,"-",iter,":\n",sep="")
