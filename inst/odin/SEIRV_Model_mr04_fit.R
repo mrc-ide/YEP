@@ -1,17 +1,10 @@
-# Alternate version with cumulative annual calculation and run over multiple regions
-# Version calculating both serological and case data and applying distribution
+#Version calculating annual seroprevalence and reported case data and applying distribution for parameter fitting
 
-# TODO - Incorporate population values from case data as "size" in nbinomial calculations
+#TODO - Rearrange for easier comparison with other versions
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter(1.0) #Time increment in days
-n_r <- parameter() #number of regions
-region_index_sero <- parameter() #Groupings of regions for which to output sero data
-region_index_case <- parameter() #Groupings of regions for which to output case data
-sero_regions <- parameter() #0/1 flag indicating which regions need serological data output
-case_regions <- parameter() #0/1 flag indicating which regions need case data output
-n_sero_pts <- parameter() #number of serology data points at each time point
-n_case_pts <- parameter() #number of case data points at each time point
+n_regions <- parameter() #number of regions
 t_incubation <- parameter(5.0) #Length in days of yellow fever incubation period in mosquito vectors
 t_latent <- parameter(5.0) #Length in days of latent period in humans exposed to yellow fever
 t_infectious <- parameter(5.0) #Length of infectious period in humans with yellow fever
@@ -20,6 +13,12 @@ R0 <- parameter() #Basic reproduction number for human-human transmission by reg
 N_age <- parameter(101) #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
 vaccine_efficacy <- parameter(1.0) #Proportion of vaccinations which successfully protect the recipient
+region_index_sero <- parameter() #Groupings of regions for which to output sero data
+region_index_case <- parameter() #Groupings of regions for which to output case data
+sero_regions <- parameter() #0/1 flag indicating which regions need serological data output
+case_regions <- parameter() #0/1 flag indicating which regions need case data output
+n_sero_pts <- parameter() #number of serology data points at each time point
+n_case_pts <- parameter() #number of case data points at each time point
 sero_vc_factor <- parameter() #VC factor (TBA) for seroprevalence calculation by point
 sia_min <- parameter() #Minimum age for seroprevalence calculation by point
 sia_max <- parameter() #Maximum age for seroprevalence calculation by point
@@ -46,55 +45,57 @@ rate1 <- time_inc/(t_incubation+t_latent) # Rate of transfer from E to I
 rate2 <- time_inc/t_infectious # Rate of transfer from I to R
 
 t_pt <- day/time_inc #Number of time points passed
-beta[1:n_r] <- (R0[i,t_pt]*time_inc)/t_infectious #Daily exposure rate
-FOI_sum[1:n_r] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i,t_pt]*time_inc)) #Total force of infection
+beta[1:n_regions] <- (R0[i,t_pt]*time_inc)/t_infectious #Daily exposure rate
+FOI_sum[1:n_regions] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i,t_pt]*time_inc)) #Total force of infection
 year_i <- floor(day/365)+1 #Number of years since start, as integer
 flag_year <- if(as.integer(day+time_inc) %% 365 == 0) 1 else 0
 
-dP1[1:n_r,1:N_age] <- dP1_all[i,j,year_i]*time_inc #Increase in population by age group over 1 time increment
-dP2[1:n_r,1:N_age] <- dP2_all[i,j,year_i]*time_inc #Decrease in population by age group over 1 time increment
-E_new[1:n_r,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New exposed individuals by age group
-I_new[1:n_r,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
-R_new[1:n_r,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
+dP1[1:n_regions,1:N_age] <- dP1_all[i,j,year_i]*time_inc #Increase in population by age group over 1 time increment
+dP2[1:n_regions,1:N_age] <- dP2_all[i,j,year_i]*time_inc #Decrease in population by age group over 1 time increment
+E_new[1:n_regions,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New exposed individuals by age group
+I_new[1:n_regions,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
+R_new[1:n_regions,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
 severe_infs[1:n_case_pts] <- Binomial(as.integer(sum(infs_an[i,])),p_severe_inf)
 fatal_infs[1:n_case_pts] <- Binomial(as.integer(severe_infs[i]),p_death_severe_inf)
 fatal_infs_rep[1:n_case_pts] <- Binomial(as.integer(fatal_infs[i]),p_rep_death)
 severe_infs_rep[1:n_case_pts] <- fatal_infs_rep[i] + Binomial(as.integer(severe_infs[i]-fatal_infs[i]),p_rep_severe)
 
-P_nV[1:n_r,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
-inv_P_nV[1:n_r,1:N_age] <- 1.0/P_nV[i,j]
-P[1:n_r,1:N_age] <- P_nV[i,j] + V[i,j] #Total population by age group (excluding E+I)
-P_tot[1:n_r] <- sum(P[i, ]) #Total overall population (excluding E+I)
-inv_P[1:n_r,1:N_age] <- 1.0/P[i,j]
+P_nV[1:n_regions,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
+inv_P_nV[1:n_regions,1:N_age] <- 1.0/P_nV[i,j]
+P[1:n_regions,1:N_age] <- P_nV[i,j] + V[i,j] #Total population by age group (excluding E+I)
+P_tot[1:n_regions] <- sum(P[i, ]) #Total overall population (excluding E+I)
+inv_P[1:n_regions,1:N_age] <- 1.0/P[i,j]
 
-vacc_rate[1:n_r,1:N_age] <- vacc_rate_daily[i,j,year_i]*vaccine_efficacy*time_inc*P[i,j] #Total no. vaccinations by age
+vacc_rate[1:n_regions,1:N_age] <- vacc_rate_daily[i,j,year_i]*vaccine_efficacy*time_inc*P[i,j] #Total no. vaccinations by age
 
 #Updates to output values at each time increment--------------------------------
 update(day) <- day + time_inc
 update(year) <- year_i + year0 - 1
-update(S[1:n_r,1]) <- max(Pmin, S[i,1] - E_new[i,1] - vacc_rate[i,1]*S[i,1]*inv_P_nV[i,1] + dP1[i,1] - (dP2[i,1]*S[i,1]*inv_P[i,1]))
-update(S[1:n_r,2:N_age]) <- max(Pmin, S[i,j] - E_new[i,j] - vacc_rate[i,j]*S[i,j]*inv_P_nV[i,j] + (dP1[i,j]*S[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*S[i,j]*inv_P[i,j]))
-update(E[1:n_r,1:N_age]) <- max(Pmin, E[i,j] + E_new[i,j] - I_new[i,j])
-update(I[1:n_r,1:N_age]) <- max(Pmin, I[i,j] + I_new[i,j] - R_new[i,j])
-update(R[1:n_r,1]) <- max(Pmin, R[i,1] + R_new[i,1] - vacc_rate[i,1]*R[i,1]*inv_P_nV[i,1] - (dP2[i,1]*R[i,1]*inv_P[i,1]))
-update(R[1:n_r,2:N_age]) <- max(Pmin, R[i,j] + R_new[i,j] - vacc_rate[i,j]*R[i,j]*inv_P_nV[i,j] + (dP1[i,j]*R[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*R[i,j]*inv_P[i,j]))
-update(V[1:n_r,1]) <- max(Pmin, V[i,1] + vacc_rate[i,1] - (dP2[i,1]*V[i,1]*inv_P[i,1]))
-update(V[1:n_r,2:N_age]) <- max(Pmin, V[i,j] + vacc_rate[i,j] + (dP1[i,j]*V[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*V[i,j]*inv_P[i,j]))
-update(R_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
+
+
+update(S[1:n_regions,1]) <- max(Pmin, S[i,1] - E_new[i,1] - vacc_rate[i,1]*S[i,1]*inv_P_nV[i,1] + dP1[i,1] - (dP2[i,1]*S[i,1]*inv_P[i,1]))
+update(S[1:n_regions,2:N_age]) <- max(Pmin, S[i,j] - E_new[i,j] - vacc_rate[i,j]*S[i,j]*inv_P_nV[i,j] + (dP1[i,j]*S[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*S[i,j]*inv_P[i,j]))
+update(E[1:n_regions,1:N_age]) <- max(Pmin, E[i,j] + E_new[i,j] - I_new[i,j])
+update(I[1:n_regions,1:N_age]) <- max(Pmin, I[i,j] + I_new[i,j] - R_new[i,j])
+update(R[1:n_regions,1]) <- max(Pmin, R[i,1] + R_new[i,1] - vacc_rate[i,1]*R[i,1]*inv_P_nV[i,1] - (dP2[i,1]*R[i,1]*inv_P[i,1]))
+update(R[1:n_regions,2:N_age]) <- max(Pmin, R[i,j] + R_new[i,j] - vacc_rate[i,j]*R[i,j]*inv_P_nV[i,j] + (dP1[i,j]*R[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*R[i,j]*inv_P[i,j]))
+update(V[1:n_regions,1]) <- max(Pmin, V[i,1] + vacc_rate[i,1] - (dP2[i,1]*V[i,1]*inv_P[i,1]))
+update(V[1:n_regions,2:N_age]) <- max(Pmin, V[i,j] + vacc_rate[i,j] + (dP1[i,j]*V[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*V[i,j]*inv_P[i,j]))
+update(R_cu[1:n_regions,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   R_cu[i,j] + R[i,j]
-update(SEIR_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
+update(SEIR_cu[1:n_regions,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   SEIR_cu[i,j] + S[i,j]+E[i,j]+I[i,j]+R[i,j]
-update(V_cu[1:n_r,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
+update(V_cu[1:n_regions,1:N_age]) <- if(sero_regions[i]==0) 0 else if(flag_year==1) 0 else
   V_cu[i,j] + V[i,j]
-update(infs_cu[1:n_r,1:N_age]) <- if(case_regions[i]==0) 0 else if(flag_year==1) 0 else
+update(infs_cu[1:n_regions,1:N_age]) <- if(case_regions[i]==0) 0 else if(flag_year==1) 0 else
   infs_cu[i,j] + I_new[i,j]
-update(R_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
+update(R_an[1:n_sero_pts,1:n_regions]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(R_cu[j,sia_min[i]:sia_max[i]]) + sum(R[j,sia_min[i]:sia_max[i]])
-update(SEIR_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
+update(SEIR_an[1:n_sero_pts,1:n_regions]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(SEIR_cu[j,sia_min[i]:sia_max[i]]) + sum(S[j,sia_min[i]:sia_max[i]])+sum(E[j,sia_min[i]:sia_max[i]])+sum(I[j,sia_min[i]:sia_max[i]])+sum(R[j,sia_min[i]:sia_max[i]])
-update(V_an[1:n_sero_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
+update(V_an[1:n_sero_pts,1:n_regions]) <- if(flag_year==0) 0 else if(region_index_sero[i,j]==0) 0 else
   sum(V_cu[j,sia_min[i]:sia_max[i]]) + sum(V[j,sia_min[i]:sia_max[i]])
-update(infs_an[1:n_case_pts,1:n_r]) <- if(flag_year==0) 0 else if(region_index_case[i,j]==0) 0 else
+update(infs_an[1:n_case_pts,1:n_regions]) <- if(flag_year==0) 0 else if(region_index_case[i,j]==0) 0 else
   sum(infs_cu[j,1:N_age]) + sum(I_new[j,1:N_age])
 update(output_sero[1:n_sero_pts]) <- if(sero_vc_factor[i]==0) sum(R_an[i,])/sum(SEIR_an[i,]) else
   ((1.0-sero_vc_factor[i])*(sum(R_an[i,])/sum(SEIR_an[i,]))) +(sero_vc_factor[i]*((sum(R_an[i,])+sum(V_an[i,]))/(sum(SEIR_an[i,])+sum(V_an[i,]))))
@@ -104,76 +105,77 @@ update(output_death[1:n_case_pts]) <- fatal_infs_rep[i]
 #Initial values of updated variables--------------------------------------------
 initial(day) <- time_inc
 initial(year) <- year0
-initial(S[1:n_r,1:N_age]) <- S_0[i,j]
-initial(E[1:n_r,1:N_age]) <- E_0[i,j]
-initial(I[1:n_r,1:N_age]) <- I_0[i,j]
-initial(R[1:n_r,1:N_age]) <- R_0[i,j]
-initial(V[1:n_r,1:N_age]) <- V_0[i,j]
-initial(R_cu[1:n_r,1:N_age]) <- 0
-initial(SEIR_cu[1:n_r,1:N_age]) <- 0
-initial(V_cu[1:n_r,1:N_age]) <- 0
-initial(infs_cu[1:n_r,1:N_age]) <- 0
-initial(R_an[1:n_sero_pts,1:n_r]) <- 0
-initial(SEIR_an[1:n_sero_pts,1:n_r]) <- 0
-initial(V_an[1:n_sero_pts,1:n_r]) <- 0
-initial(infs_an[1:n_case_pts,1:n_r]) <- 0
+
+initial(S[1:n_regions,1:N_age]) <- S_0[i,j]
+initial(E[1:n_regions,1:N_age]) <- E_0[i,j]
+initial(I[1:n_regions,1:N_age]) <- I_0[i,j]
+initial(R[1:n_regions,1:N_age]) <- R_0[i,j]
+initial(V[1:n_regions,1:N_age]) <- V_0[i,j]
+initial(R_cu[1:n_regions,1:N_age]) <- 0
+initial(SEIR_cu[1:n_regions,1:N_age]) <- 0
+initial(V_cu[1:n_regions,1:N_age]) <- 0
+initial(infs_cu[1:n_regions,1:N_age]) <- 0
+initial(R_an[1:n_sero_pts,1:n_regions]) <- 0
+initial(SEIR_an[1:n_sero_pts,1:n_regions]) <- 0
+initial(V_an[1:n_sero_pts,1:n_regions]) <- 0
+initial(infs_an[1:n_case_pts,1:n_regions]) <- 0
 initial(output_sero[1:n_sero_pts]) <- 0
 initial(output_case[1:n_case_pts]) <- 0
 initial(output_death[1:n_case_pts]) <- 0
 
 #Dimensions---------------------------------------------------------------------
 #Updated values
-dim(S) <- c(n_r, N_age)
-dim(E) <- c(n_r, N_age)
-dim(I) <- c(n_r, N_age)
-dim(R) <- c(n_r, N_age)
-dim(V) <- c(n_r, N_age)
-dim(R_cu) <- c(n_r, N_age)
-dim(SEIR_cu) <- c(n_r, N_age)
-dim(V_cu) <- c(n_r, N_age)
-dim(infs_cu) <- c(n_r, N_age)
-dim(R_an) <- c(n_sero_pts,n_r)
-dim(SEIR_an) <- c(n_sero_pts,n_r)
-dim(V_an) <- c(n_sero_pts,n_r)
-dim(infs_an) <- c(n_case_pts,n_r)
+dim(S) <- c(n_regions, N_age)
+dim(E) <- c(n_regions, N_age)
+dim(I) <- c(n_regions, N_age)
+dim(R) <- c(n_regions, N_age)
+dim(V) <- c(n_regions, N_age)
+dim(R_cu) <- c(n_regions, N_age)
+dim(SEIR_cu) <- c(n_regions, N_age)
+dim(V_cu) <- c(n_regions, N_age)
+dim(infs_cu) <- c(n_regions, N_age)
+dim(R_an) <- c(n_sero_pts,n_regions)
+dim(SEIR_an) <- c(n_sero_pts,n_regions)
+dim(V_an) <- c(n_sero_pts,n_regions)
+dim(infs_an) <- c(n_case_pts,n_regions)
 dim(output_sero) <- n_sero_pts
 dim(output_case) <- n_case_pts
 dim(output_death) <- n_case_pts
 
 #Calculated values
-dim(beta) <- n_r
-dim(FOI_sum) <- n_r
-dim(dP1) <- c(n_r, N_age)
-dim(dP2) <- c(n_r, N_age)
-dim(E_new) <- c(n_r, N_age)
-dim(I_new) <- c(n_r, N_age)
-dim(R_new) <- c(n_r, N_age)
+dim(beta) <- n_regions
+dim(FOI_sum) <- n_regions
+dim(dP1) <- c(n_regions, N_age)
+dim(dP2) <- c(n_regions, N_age)
+dim(E_new) <- c(n_regions, N_age)
+dim(I_new) <- c(n_regions, N_age)
+dim(R_new) <- c(n_regions, N_age)
 dim(severe_infs) <- n_case_pts
 dim(fatal_infs) <- n_case_pts
 dim(fatal_infs_rep) <- n_case_pts
 dim(severe_infs_rep) <- n_case_pts
-dim(P_nV) <- c(n_r, N_age)
-dim(inv_P_nV) <- c(n_r, N_age)
-dim(P) <- c(n_r, N_age)
-dim(P_tot) <- n_r
-dim(inv_P) <- c(n_r, N_age)
-dim(vacc_rate) <- c(n_r, N_age)
+dim(P_nV) <- c(n_regions, N_age)
+dim(inv_P_nV) <- c(n_regions, N_age)
+dim(P) <- c(n_regions, N_age)
+dim(P_tot) <- n_regions
+dim(inv_P) <- c(n_regions, N_age)
+dim(vacc_rate) <- c(n_regions, N_age)
 
 #Inputs
-dim(region_index_sero) <- c(n_sero_pts,n_r)
-dim(region_index_case) <- c(n_case_pts,n_r)
-dim(sero_regions) <- n_r
-dim(case_regions) <- n_r
-dim(S_0) <- c(n_r, N_age)
-dim(E_0) <- c(n_r, N_age)
-dim(I_0) <- c(n_r, N_age)
-dim(R_0) <- c(n_r, N_age)
-dim(V_0) <- c(n_r, N_age)
-dim(dP1_all) <- c(n_r, N_age, n_years)
-dim(dP2_all) <- c(n_r, N_age, n_years)
-dim(vacc_rate_daily) <- c(n_r, N_age, n_years)
-dim(FOI_spillover) <- c(n_r, n_t_pts)
-dim(R0) <- c(n_r, n_t_pts)
+dim(region_index_sero) <- c(n_sero_pts,n_regions)
+dim(region_index_case) <- c(n_case_pts,n_regions)
+dim(sero_regions) <- n_regions
+dim(case_regions) <- n_regions
+dim(S_0) <- c(n_regions, N_age)
+dim(E_0) <- c(n_regions, N_age)
+dim(I_0) <- c(n_regions, N_age)
+dim(R_0) <- c(n_regions, N_age)
+dim(V_0) <- c(n_regions, N_age)
+dim(dP1_all) <- c(n_regions, N_age, n_years)
+dim(dP2_all) <- c(n_regions, N_age, n_years)
+dim(vacc_rate_daily) <- c(n_regions, N_age, n_years)
+dim(FOI_spillover) <- c(n_regions, n_t_pts)
+dim(R0) <- c(n_regions, n_t_pts)
 dim(sero_vc_factor) <- n_sero_pts
 dim(sia_min) <- n_sero_pts
 dim(sia_max) <- n_sero_pts

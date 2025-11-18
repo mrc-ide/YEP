@@ -1,4 +1,6 @@
-# Alternate version run over multiple regions
+#Basic version for SEIRV data with no annual outputs calculated
+
+
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
@@ -11,6 +13,20 @@ R0 <- parameter() #Basic reproduction number for human-human transmission at eac
 N_age <- parameter() #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
 vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully protect the recipient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Initial conditions-------------------------------------------------------------
 year0 <- parameter()  #Starting year
@@ -33,11 +49,16 @@ beta[1:n_regions] <- (R0[i, t_pt]*time_inc)/t_infectious #Daily exposure rate
 FOI_sum[1:n_regions] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i, t_pt]*time_inc)) #Total force of infection
 year_i <- floor(day/365)+1 #Number of years since start, as integer
 
+
 dP1[1:n_regions,1:N_age] <- dP1_all[i,j,year_i]*time_inc #Increase in population by age group over 1 time increment
 dP2[1:n_regions,1:N_age] <- dP2_all[i,j,year_i]*time_inc #Decrease in population by age group over 1 time increment
 E_new[1:n_regions,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New exposed individuals by age group
 I_new[1:n_regions,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
 R_new[1:n_regions,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
+
+
+
+
 
 P_nV[1:n_regions,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
 inv_P_nV[1:n_regions,1:N_age] <- 1.0/P_nV[i,j]
@@ -62,6 +83,25 @@ update(V[1:n_regions,1]) <- max(Pmin, V[i,1] + vacc_rate[i,1] - (dP2[i,1]*V[i,1]
 update(V[1:n_regions,2:N_age]) <- max(Pmin, V[i,j] + vacc_rate[i,j] + (dP1[i,j]*V[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*V[i,j]*inv_P[i,j]))
 update(C[1:n_regions,1:N_age]) <- I_new[i,j]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Initial values-----------------------------------------------------------------
 initial(day) <- time_inc
 initial(year) <- year0
@@ -73,7 +113,18 @@ initial(R[1:n_regions,1:N_age]) <- R_0[i,j]
 initial(V[1:n_regions,1:N_age]) <- V_0[i,j]
 initial(C[1:n_regions,1:N_age]) <- 0
 
+
+
+
+
+
+
+
+
+
+
 #Dimensions---------------------------------------------------------------------
+#Updated values
 dim(FOI_total) <- n_regions
 dim(S) <- c(n_regions, N_age)
 dim(E) <- c(n_regions, N_age)

@@ -1,4 +1,6 @@
-# Alternate version with cumulative annual calculation and run over multiple regions
+#Version with annual seroprevalence calculated
+
+
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
@@ -11,6 +13,20 @@ R0 <- parameter() #Basic reproduction number for human-human transmission at eac
 N_age <- parameter() #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
 vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully protect the recipient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Initial conditions-------------------------------------------------------------
 year0 <- parameter()  #Starting year
@@ -39,6 +55,10 @@ dP2[1:n_regions,1:N_age] <- dP2_all[i,j,year_i]*time_inc #Decrease in population
 E_new[1:n_regions,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New exposed individuals by age group
 I_new[1:n_regions,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
 R_new[1:n_regions,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
+
+
+
+
 
 P_nV[1:n_regions,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
 inv_P_nV[1:n_regions,1:N_age] <- 1.0/P_nV[i,j]
@@ -69,6 +89,19 @@ update(SEIR_annual[1:n_regions,1:N_age]) <- if(flag_year==1) SEIR_cu[i,j] + S[i,
 update(V_cu[1:n_regions,1:N_age]) <- if(flag_year==1) 0 else V_cu[i,j] + V[i,j]
 update(V_annual[1:n_regions,1:N_age]) <- if(flag_year==1) V_cu[i,j] + V[i,j] else 0
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Initial values-----------------------------------------------------------------
 initial(day) <- time_inc
 initial(year) <- year0
@@ -86,7 +119,12 @@ initial(SEIR_annual[1:n_regions,1:N_age]) <- 0
 initial(V_cu[1:n_regions,1:N_age]) <- 0
 initial(V_annual[1:n_regions,1:N_age]) <- 0
 
+
+
+
+
 #Dimensions---------------------------------------------------------------------
+#Updated values
 dim(FOI_total) <- n_regions
 dim(S) <- c(n_regions, N_age)
 dim(E) <- c(n_regions, N_age)

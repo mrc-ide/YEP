@@ -1,4 +1,6 @@
-# Alternate version with cumulative annual calculation and run over multiple regions
+# Version with annual new infection data calculated
+
+
 
 #Parameters---------------------------------------------------------------------
 time_inc <- parameter() #Time increment in days
@@ -11,6 +13,20 @@ R0 <- parameter() #Basic reproduction number for human-human transmission at eac
 N_age <- parameter() #Number of age categories
 vacc_rate_daily <- parameter() #Daily rate of vaccination by age and year
 vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully protect the recipient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Initial conditions-------------------------------------------------------------
 year0 <- parameter()  #Starting year
@@ -40,6 +56,10 @@ E_new[1:n_regions,1:N_age] <- Binomial(as.integer(S[i,j]), FOI_sum[i]) #New expo
 I_new[1:n_regions,1:N_age] <- E[i,j]*rate1     #New infectious individuals by age group
 R_new[1:n_regions,1:N_age] <- I[i,j]*rate2     #New recovered individuals by age group
 
+
+
+
+
 P_nV[1:n_regions,1:N_age] <- S[i,j] + R[i,j] #Total vaccine-targetable population by age group
 inv_P_nV[1:n_regions,1:N_age] <- 1.0/P_nV[i,j]
 P[1:n_regions,1:N_age] <- P_nV[i,j] + V[i,j] #Total population by age group (excluding E+I)
@@ -65,6 +85,23 @@ update(C[1:n_regions,1:N_age]) <- I_new[i,j]
 update(C_cu[1:n_regions,1:N_age]) <- if(flag_year==1) 0 else C_cu[i,j] + I_new[i,j]
 update(C_annual[1:n_regions,1:N_age]) <- if(flag_year==1) C_cu[i,j] + I_new[i,j] else 0
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Initial values-----------------------------------------------------------------
 initial(day) <- time_inc
 initial(year) <- year0
@@ -78,7 +115,16 @@ initial(C[1:n_regions,1:N_age]) <- 0
 initial(C_cu[1:n_regions,1:N_age]) <- 0
 initial(C_annual[1:n_regions,1:N_age]) <- 0
 
+
+
+
+
+
+
+
+
 #Dimensions---------------------------------------------------------------------
+#Updated values
 dim(FOI_total) <- n_regions
 dim(S) <- c(n_regions, N_age)
 dim(E) <- c(n_regions, N_age)

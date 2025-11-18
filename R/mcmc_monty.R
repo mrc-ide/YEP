@@ -176,7 +176,7 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
       if(regions_all[j] %in% regions_case_pt){region_index_case[i,j] = 1}
     }
   }
-  output = list(n_r = n_regions, N_age = N_age, mode_start = mode_start,
+  output = list(n_regions = n_regions, N_age = N_age, mode_start = mode_start,
                 n_years = n_years, n_t_pts = n_t_pts, year0 = year0, time_inc = time_inc,
                 t_incubation = t_incubation, t_latent = t_latent, t_infectious = t_infectious,
                 E_0 = E_0, I_0 = I_0, V_0 = V_0, dP1_all = dP1_all, dP2_all = dP2_all,
