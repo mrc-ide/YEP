@@ -57,11 +57,11 @@ SEIRV_Model_mr04_fit <- structure(
   package = "YEP",
   path = NULL,
   parameters = data.frame(
-    name = c("time_inc", "n_r", "region_index_sero", "region_index_case", "sero_regions", "case_regions", "n_sero_pts", "n_case_pts", "t_incubation", "t_latent", "t_infectious", "FOI_spillover", "R0", "N_age", "vacc_rate_daily", "vaccine_efficacy", "sero_vc_factor", "sia_min", "sia_max", "p_severe_inf", "p_death_severe_inf", "p_rep_severe", "p_rep_death", "overdisp", "year0", "S_0", "E_0", "I_0", "R_0", "V_0", "dP1_all", "dP2_all", "n_years", "n_t_pts"),
-    type = c("real_type", "int", "real_type", "real_type", "real_type", "real_type", "int", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "int"),
-    constant = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE),
-    required = c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
-    rank = c(0L, 0L, 2L, 2L, 1L, 1L, 0L, 0L, 0L, 0L, 0L, 2L, 2L, 0L, 3L, 0L, 1L, 1L, 1L, 0L, 0L, 0L, 0L, 0L, 0L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 0L, 0L)),
+    name = c("time_inc", "n_regions", "t_incubation", "t_latent", "t_infectious", "FOI_spillover", "R0", "N_age", "vacc_rate_daily", "vaccine_efficacy", "region_index_sero", "region_index_case", "sero_regions", "case_regions", "n_sero_pts", "n_case_pts", "sero_vc_factor", "sia_min", "sia_max", "p_severe_inf", "p_death_severe_inf", "p_rep_severe", "p_rep_death", "overdisp", "year0", "S_0", "E_0", "I_0", "R_0", "V_0", "dP1_all", "dP2_all", "n_years", "n_t_pts"),
+    type = c("real_type", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "int", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "int", "int"),
+    constant = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE),
+    required = c(FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
+    rank = c(0L, 0L, 0L, 0L, 0L, 2L, 2L, 0L, 3L, 0L, 2L, 2L, 1L, 1L, 0L, 0L, 1L, 1L, 1L, 0L, 0L, 0L, 0L, 0L, 0L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 0L, 0L)),
   properties = list(
     time_type = "discrete",
     has_compare = TRUE,
