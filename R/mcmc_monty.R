@@ -307,7 +307,7 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(),
   assert_that(dim(env_covar_values)[1] == n_env_vars)
   assert_that(mode_time %in% c(0:5), msg = "mode_time must be an integer between 0 and 5")
   assert_that(all(env_covar_values >=  0.0))
-  n_regions = pars_fixed$n_r
+  n_regions = pars_fixed$n_regions
   assert_that(dim(env_covar_values)[2] == n_regions)
   time_inc = pars_fixed$time_inc
   pts_year = 365.0/time_inc
