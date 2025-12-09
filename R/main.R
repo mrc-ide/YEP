@@ -368,8 +368,8 @@ parameter_setup <- function(FOI_spillover = list(), R0 = list(), vacc_data = lis
   pts_year = 365.0/time_inc
   n_t_pts = n_years*pts_year
   n_req = switch(mode_time + 1, 1, n_years, 12, pts_year, n_years*12, n_t_pts)
-  assert_that(dim(FOI_spillover)[2] == n_req && dim(R0)[2] == n_req,
-              msg = "Spillover FOI and R0 must be correct length for mode_time")
+  assert_that(dim(FOI_spillover)[2] >= n_req && dim(R0)[2] >= n_req,
+              msg = "Spillover FOI and R0 must have enough time points for mode_time setting")
   inv_365 = 1.0/365.0
 
   date_values = switch(mode_time + 1,
