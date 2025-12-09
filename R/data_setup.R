@@ -455,14 +455,16 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
       region_grouping$mode_out[[2]]=3
       n_groups=2
       for(n_group in 1:n_groups){
-        if(n_group==1){
-          year_data_begin=min(template$sero$year)
-          year_end=max(template$sero$year)
-        } else{
-          year_data_begin=min(template$case$year)
-          year_end=max(template$case$year)
+        if(length(region_grouping$region_groups[[n_group]])>0){
+          if(n_group==1){
+            year_data_begin=min(template$sero$year)
+            year_end=max(template$sero$year)
+          } else{
+            year_data_begin=min(template$case$year)
+            year_end=max(template$case$year)
+          }
+          region_grouping$years_data[[n_group]] = c(year_data_begin:year_end)
         }
-        region_grouping$years_data[[n_group]] = c(year_data_begin:year_end)
       }
     }
   } else { #More complex split based on dates/years
