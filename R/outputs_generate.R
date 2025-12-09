@@ -134,60 +134,62 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
   for(n_group in 1:n_groups){
     i_regions=region_grouping$region_groups[[n_group]]
     n_regions2=length(i_regions)
-    if(mode_parallel){
-      model_output = model_output_all[[n_group]]
-    } else {
-      model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2])),
-                               R0 = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2])),
-                               vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
-                               pop_data = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
-                               years_data = region_grouping$years_data[[n_group]],
-                               year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
-                               time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
-                               start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
-                               n_threads = n_reps, deterministic = deterministic, seed = seed)
-    }
-
-    for(n_region in i_regions){
-      n_region2=match(regions[n_region],regions[region_grouping$region_groups[[n_group]]])
-
-      #Compile case data if needed
-      if(is.na(case_line_list[[n_region]][1]) == FALSE){
-        case_line_list_region = case_line_list[[n_region]]
-        years_case = template$case$year[case_line_list_region]
-        n_lines = length(case_line_list_region)
-
-        for(n_rep in 1:n_reps){
-          rep_cases = rep_deaths = rep(0,n_lines)
-          for(n_line in 1:n_lines){
-            #pts = c(1:t_pts)[model_output$year == years_case[n_line]]
-            pts = which(model_output$year==years_case[n_line])
-            infs = model_output$C_annual[n_region2,n_rep,pts]
-            if(deterministic){
-              severe_infs = floor(infs)*p_severe_inf
-              deaths = severe_infs*p_death_severe_inf
-              rep_deaths[n_line] = round(deaths*p_rep_death)
-              rep_cases[n_line] = rep_deaths[n_line]+round((severe_infs-deaths)*p_rep_severe)
-            } else {
-              severe_infs = rbinom(1,floor(infs),p_severe_inf)
-              deaths = rbinom(1,severe_infs,p_death_severe_inf)
-              rep_deaths[n_line] = rbinom(1,deaths,p_rep_death)
-              rep_cases[n_line] = rep_deaths[n_line]+rbinom(1,floor(severe_infs-deaths),p_rep_severe)
-            }
-          }
-          model_case_values[case_line_list_region] = model_case_values[case_line_list_region]+rep_cases
-          model_death_values[case_line_list_region] = model_death_values[case_line_list_region]+rep_deaths
-        }
+    if(n_regions2>0){
+      if(mode_parallel){
+        model_output = model_output_all[[n_group]]
+      } else {
+        model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2])),
+                                 R0 = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2])),
+                                 vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
+                                 pop_data = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
+                                 years_data = region_grouping$years_data[[n_group]],
+                                 year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
+                                 time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
+                                 start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
+                                 n_threads = n_reps, deterministic = deterministic, seed = seed)
       }
 
-      #Compile seroprevalence data if necessary
-      if(is.na(sero_line_list[[n_region]][1]) == FALSE){
-        sero_line_list_region = sero_line_list[[n_region]]
-        for(n_rep in 1:n_reps){
-          sero_results = sero_calculate2_alt(template$sero[sero_line_list_region,],
-                                             model_output, n_region2, n_rep)
-          model_sero_data$samples[sero_line_list_region] = model_sero_data$samples[sero_line_list_region]+sero_results$samples
-          model_sero_data$positives[sero_line_list_region] = model_sero_data$positives[sero_line_list_region] + sero_results$positives
+      for(n_region in i_regions){
+        n_region2=match(regions[n_region],regions[region_grouping$region_groups[[n_group]]])
+
+        #Compile case data if needed
+        if(is.na(case_line_list[[n_region]][1]) == FALSE){
+          case_line_list_region = case_line_list[[n_region]]
+          years_case = template$case$year[case_line_list_region]
+          n_lines = length(case_line_list_region)
+
+          for(n_rep in 1:n_reps){
+            rep_cases = rep_deaths = rep(0,n_lines)
+            for(n_line in 1:n_lines){
+              #pts = c(1:t_pts)[model_output$year == years_case[n_line]]
+              pts = which(model_output$year==years_case[n_line])
+              infs = model_output$C_annual[n_region2,n_rep,pts]
+              if(deterministic){
+                severe_infs = floor(infs)*p_severe_inf
+                deaths = severe_infs*p_death_severe_inf
+                rep_deaths[n_line] = round(deaths*p_rep_death)
+                rep_cases[n_line] = rep_deaths[n_line]+round((severe_infs-deaths)*p_rep_severe)
+              } else {
+                severe_infs = rbinom(1,floor(infs),p_severe_inf)
+                deaths = rbinom(1,severe_infs,p_death_severe_inf)
+                rep_deaths[n_line] = rbinom(1,deaths,p_rep_death)
+                rep_cases[n_line] = rep_deaths[n_line]+rbinom(1,floor(severe_infs-deaths),p_rep_severe)
+              }
+            }
+            model_case_values[case_line_list_region] = model_case_values[case_line_list_region]+rep_cases
+            model_death_values[case_line_list_region] = model_death_values[case_line_list_region]+rep_deaths
+          }
+        }
+
+        #Compile seroprevalence data if necessary
+        if(is.na(sero_line_list[[n_region]][1]) == FALSE){
+          sero_line_list_region = sero_line_list[[n_region]]
+          for(n_rep in 1:n_reps){
+            sero_results = sero_calculate2_alt(template$sero[sero_line_list_region,],
+                                               model_output, n_region2, n_rep)
+            model_sero_data$samples[sero_line_list_region] = model_sero_data$samples[sero_line_list_region]+sero_results$samples
+            model_sero_data$positives[sero_line_list_region] = model_sero_data$positives[sero_line_list_region] + sero_results$positives
+          }
         }
       }
     }
