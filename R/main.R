@@ -131,7 +131,9 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
     } else {
       C_all = array(x_res[index$C_annual, , ], dim1)
       output_data$C_annual = array(0, dim = c(n_regions,n_particles,t_pts_out))
-      for(i in 1:n_regions){output_data$C_annual[i,,]=colSums(C_all[i,,,])}
+      for(i in 1:n_regions){
+        output_data$C_annual[i,,]=colSums(array(C_all[i,,,],dim=c(N_age, n_particles, t_pts_out)))
+      }
     }
   } else {
     if(mode_out == 1){
