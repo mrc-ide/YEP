@@ -417,7 +417,7 @@ prior_setup <- function(packer = NULL, env_covar_values = list(), pars_var = lis
 
   prior_function <- function(log_FOI_coeffs = rep(-15,5),log_R0_coeffs = rep(-5,5),
                              p_rep_severe = 0,p_rep_death = 0,p_severe_inf = 0.12,p_death_severe_inf = 0.39,
-                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0,log_a_ptf=1.0,
+                             vaccine_efficacy = 1.0,m_FOI_BRA = 1.0, log_a_ptf = 1.0, overdisp = 1.0,
                              a_T0 = 2.248952, a_Tm = 40.13383, a_c = 0.000271964,
                              mu_T0 = 12.71508, mu_Tm = 38.04809469, mu_c = -0.757869,
                              PDR_T0 = 17.33263, PDR_Tm = 42.19592, PDR_c = 0.000135891,...){
