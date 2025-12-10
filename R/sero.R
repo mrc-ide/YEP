@@ -1,6 +1,7 @@
 # R file for functions relating to serological data in YEP package
 #-------------------------------------------------------------------------------
 #TODO - Update for new model versions
+#TODO - Consider ways to incorporate non-100% reported vaccination efficacy
 #' @title sero_calculate
 #'
 #' @description Calculate seroprevalence in unvaccinated people from modelled data for one or more years and one age
