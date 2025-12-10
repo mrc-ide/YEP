@@ -35,4 +35,5 @@ Suggests:
     rmarkdown
 SystemRequirements: C++
 VignetteBuilder: knitr
+Additional_repositories: https://mrc-ide.r-universe.dev
 URL: https://mrc-ide.github.io/YEP/
