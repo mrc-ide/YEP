@@ -58,6 +58,7 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
   return(sero_values)
 }
 #-------------------------------------------------------------------------------
+#TODO - Consider ways to incorporate non-100% reported vaccination efficacy
 #' @title sero_calculate2_alt
 #'
 #' @description Calculate number of "samples" and number of "positives" from modelled data for specified age range(s)
@@ -69,7 +70,7 @@ sero_calculate <- function(age_min=0,age_max=101,years=NULL,vc_factor=0,data=lis
 #'
 #' @param sero_data Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 #' people for whom vaccination status unknown)
-#' @param model_data Annual cumulative SEIRV output of Model_Run2
+#' @param model_data Annual cumulative SEIRV output of Model_Run
 #' @param n_region Region number to select from model_data
 #' @param n_p Particle to select from model_data
 #' '

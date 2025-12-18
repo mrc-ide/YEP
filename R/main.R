@@ -352,6 +352,8 @@ parameter_setup <- function(FOI_spillover = list(), R0 = list(), vacc_data = lis
   assert_that(mode_time %in% c(0:5), msg = "mode_time must be an integer between 0 and 5")
   assert_that(all(FOI_spillover >= 0.0))
   assert_that(all(R0 >= 0.0))
+  assert_that(length(dim(FOI_spillover))==2 && length(dim(R0))==2,
+              msg = "FOI_spillover and R0 must be 2-D arrays with dimensions (regions, time points")
   assert_that(length(pop_data[1, , 1]) > 1, msg = "Need population data for multiple years")
   assert_that(length(pop_data[1, 1, ]) > 1, msg = "Need population data for multiple age groups")
   n_regions = length(pop_data[, 1, 1])
