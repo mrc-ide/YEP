@@ -120,6 +120,7 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
   if("m_FOI_BRA" %in% names(vars_extra)){flag_BRA = 2} else {
     if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
   }
+  #TODO - switch n_r to n_regions
   if(is.null(pars_fixed$n_r)){
     n_regions=dim(env_covar_values)[2]
   }else{
