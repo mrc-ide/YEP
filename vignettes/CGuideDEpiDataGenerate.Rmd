@@ -7,6 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<!-- TODO - Overhaul to take into account that sero/case data can be calculated directly from odin models -->
+<!-- TODO - Overhaul for calculation from multiregion data -->
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
