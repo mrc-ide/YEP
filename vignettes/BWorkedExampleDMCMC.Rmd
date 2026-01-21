@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!-- NB This is the old MCMC approach -->
+
 This worked example demonstrates how to use the package to estimate parameters of the yellow fever model from observed epidemiological data within a Bayesian framework using Markov chain Monte Carlo sampling.
 
 We load input data, environmental data and the observed data to be used for comparison in the formats used in previous worked examples (see [Guide 1 - Inputs](https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html) for details of the input format, [Guide 2 - Calculating Parameters From Environmental Data](https://mrc-ide.github.io/YEP/articles/CGuideBParametersEnvironment.html) for details of how environmental data is formatted and used to generate parameter values, and [Worked Example 3 - Generating Epidemiological Data Sets](https://mrc-ide.github.io/YEP/articles/BWorkedExampleCDataGenerate.html) for details of observed data formats):
@@ -86,6 +88,8 @@ mode_parallel=FALSE
 ```
 
 We then run the MCMC() function. Output data recorded at each iteration is saved to an output file every 10 iterations. Likelihood is calculated as described in Guide 4 [Link TBA].
+
+<!-- TBC - fix for updates -->
 
 ```{r,eval=FALSE}
 mcmc_out <- MCMC(params_data, input_data, obs_sero_data, obs_case_data, filename_prefix, 

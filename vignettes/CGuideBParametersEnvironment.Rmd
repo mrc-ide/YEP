@@ -52,6 +52,8 @@ R0_values=epi_param_calc(coeffs_const = as.numeric(enviro_coeffs[c(6:10)]), coef
 
 Spillover FOI and R0 data obtained in this way can be plotted on a map of the regions under consideration using the create_map function() from the YEPaux package, as can other regional data such as the values of the environmental covariates. Regional boundary data is loaded from one or more shapefiles of the format used by [GADM](https://gadm.org/download_country_v3.html) using the map_shapes_load() function
 
+<!-- TBC - adjust for changes to YEPaux -->
+
 ```{r,eval=FALSE}
 regions=enviro_data$region
 shape_data <- YEPaux::map_shapes_load(regions, shapefiles=c(paste(path.package("YEP"),
@@ -78,6 +80,8 @@ enviro_coeffs2 <- read.csv(file = paste(path.package("YEP"),
                                         sep = ""), header = TRUE)
 head(enviro_coeffs2, 5)
 ```
+
+<!-- TBC -->
 
 ```{r,eval=FALSE}
 n_values=nrow(enviro_coeffs2)

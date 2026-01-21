@@ -26,6 +26,8 @@ A set of epidemiological data for multiple regions can be constructed using addi
 
 Data is generated as described in [Worked Example 1](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html):
 
+<!-- TBC -->
+
 ```{r,eval=FALSE}
 library(YEP)
 input_data <- readRDS(file=paste(path.package("YEP"),

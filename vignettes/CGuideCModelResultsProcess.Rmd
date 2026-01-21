@@ -18,6 +18,8 @@ This vignette demonstrates how the output of the dynamic yellow fever model func
 
 Data is generated as described in [Worked Example 1](https://mrc-ide.github.io/YEP/articles/BWorkedExampleAModelRun.html):
 
+<!-- TBC -->
+
 ```{r,eval=FALSE}
 library(YEP)
 input_data <- readRDS(file=paste(path.package("YEP"),
