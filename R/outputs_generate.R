@@ -146,7 +146,8 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
                                  years_data = region_grouping$years_data[[n_group]],
                                  year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
                                  time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
-                                 start_SEIRV = NULL,mode_time = mode_time,n_particles = n_reps,
+                                 start_SEIRV = NULL, #TBC
+                                 mode_time = mode_time,n_particles = n_reps,
                                  n_threads = n_reps, deterministic = deterministic, seed = seed)
       }
 
