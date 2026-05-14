@@ -32,7 +32,9 @@ vaccine_efficacy <- parameter() #Proportion of vaccinations which successfully p
 year0 <- parameter()  #Starting year
 S_0 <- parameter() #Susceptible population by age group at start
 E_0 <- parameter() #Exposed population by age group at start
+
 I_0 <- parameter() #Infectious population by age group at start
+
 R_0 <- parameter() #Recovered population by age group at start
 V_0 <- parameter() #Vaccinated population by age group at start
 dP1_all <- parameter() #Daily increase in number of people by age group (people arriving in group due to age etc.)
