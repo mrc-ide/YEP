@@ -46,6 +46,11 @@ FOI_max <- 1.0 #Upper threshold for total force of infection to avoid more infec
 rate1 <- time_inc/(t_incubation+t_latent) # Rate of transfer from E to I
 rate2 <- time_inc/t_infectious # Rate of transfer from I to R
 
+
+
+
+
+
 t_pt <- day/time_inc #Number of time points passed
 beta[1:n_regions] <- (R0[i, t_pt]*time_inc)/t_infectious #Daily exposure rate
 FOI_sum[1:n_regions] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i, t_pt]*time_inc)) #Total force of infection
@@ -70,15 +75,29 @@ inv_P[1:n_regions,1:N_age] <- 1.0/P[i,j]
 
 vacc_rate[1:n_regions,1:N_age] <- vacc_rate_daily[i,j,year_i]*vaccine_efficacy*time_inc*P[i,j] #Total no. vaccinations by age
 
+
+
+
+
+
 #Updates to output values at each time increment--------------------------------
 update(day) <- day + time_inc
 update(year) <- year_i + year0 - 1
 update(FOI_total[1:n_regions]) <- FOI_sum[i]
 
+
+
+
+
+
 update(S[1:n_regions,1]) <- max(Pmin, S[i,1] - E_new[i,1] - vacc_rate[i,1]*S[i,1]*inv_P_nV[i,1] + dP1[i,1] - (dP2[i,1]*S[i,1]*inv_P[i,1]))
 update(S[1:n_regions,2:N_age]) <- max(Pmin, S[i,j] - E_new[i,j] - vacc_rate[i,j]*S[i,j]*inv_P_nV[i,j] + (dP1[i,j]*S[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*S[i,j]*inv_P[i,j]))
 update(E[1:n_regions,1:N_age]) <- max(Pmin, E[i,j] + E_new[i,j] - I_new[i,j])
+
+
 update(I[1:n_regions,1:N_age]) <- max(Pmin, I[i,j] + I_new[i,j] - R_new[i,j])
+
+
 update(R[1:n_regions,1]) <- max(Pmin, R[i,1] + R_new[i,1] - vacc_rate[i,1]*R[i,1]*inv_P_nV[i,1] - (dP2[i,1]*R[i,1]*inv_P[i,1]))
 update(R[1:n_regions,2:N_age]) <- max(Pmin, R[i,j] + R_new[i,j] - vacc_rate[i,j]*R[i,j]*inv_P_nV[i,j] + (dP1[i,j]*R[i,j-1]*inv_P[i,j-1]) - (dP2[i,j]*R[i,j]*inv_P[i,j]))
 update(V[1:n_regions,1]) <- max(Pmin, V[i,1] + vacc_rate[i,1] - (dP2[i,1]*V[i,1]*inv_P[i,1]))
@@ -108,9 +127,17 @@ update(C[1:n_regions,1:N_age]) <- I_new[i,j]
 initial(day) <- time_inc
 initial(year) <- year0
 initial(FOI_total[1:n_regions]) <- FOI_spillover[i,1]
+
+
+
+
+
+
 initial(S[1:n_regions,1:N_age]) <- S_0[i,j]
 initial(E[1:n_regions,1:N_age]) <- E_0[i,j]
+
 initial(I[1:n_regions,1:N_age]) <- I_0[i,j]
+
 initial(R[1:n_regions,1:N_age]) <- R_0[i,j]
 initial(V[1:n_regions,1:N_age]) <- V_0[i,j]
 initial(C[1:n_regions,1:N_age]) <- 0
@@ -128,9 +155,17 @@ initial(C[1:n_regions,1:N_age]) <- 0
 #Dimensions---------------------------------------------------------------------
 #Updated values
 dim(FOI_total) <- n_regions
+
+
+
+
+
+
 dim(S) <- c(n_regions, N_age)
 dim(E) <- c(n_regions, N_age)
+
 dim(I) <- c(n_regions, N_age)
+
 dim(R) <- c(n_regions, N_age)
 dim(V) <- c(n_regions, N_age)
 dim(C) <- c(n_regions, N_age)
@@ -148,11 +183,20 @@ dim(inv_P_nV) <- c(n_regions, N_age)
 dim(P) <- c(n_regions, N_age)
 dim(P_tot) <- n_regions
 dim(inv_P) <- c(n_regions, N_age)
+
 dim(vacc_rate) <- c(n_regions, N_age)
+
+
+
+
+
+
 
 dim(S_0) <- c(n_regions, N_age)
 dim(E_0) <- c(n_regions, N_age)
+
 dim(I_0) <- c(n_regions, N_age)
+
 dim(R_0) <- c(n_regions, N_age)
 dim(V_0) <- c(n_regions, N_age)
 dim(dP1_all) <- c(n_regions, N_age, n_years)
@@ -160,3 +204,5 @@ dim(dP2_all) <- c(n_regions, N_age, n_years)
 dim(vacc_rate_daily) <- c(n_regions, N_age, n_years)
 dim(FOI_spillover) <- c(n_regions, n_t_pts)
 dim(R0) <- c(n_regions, n_t_pts)
+
+
