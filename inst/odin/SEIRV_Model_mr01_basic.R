@@ -169,6 +169,12 @@ dim(R) <- c(n_regions, N_age)
 dim(V) <- c(n_regions, N_age)
 dim(C) <- c(n_regions, N_age)
 
+
+
+
+
+
+
 dim(beta) <- n_regions
 dim(FOI_sum) <- n_regions
 dim(dP1) <- c(n_regions, N_age)
@@ -182,7 +188,14 @@ dim(inv_P_nV) <- c(n_regions, N_age)
 dim(P) <- c(n_regions, N_age)
 dim(P_tot) <- n_regions
 dim(inv_P) <- c(n_regions, N_age)
+
 dim(vacc_rate) <- c(n_regions, N_age)
+
+
+
+
+
+
 
 dim(S_0) <- c(n_regions, N_age)
 dim(E_0) <- c(n_regions, N_age)
@@ -196,6 +209,5 @@ dim(dP2_all) <- c(n_regions, N_age, n_years)
 dim(vacc_rate_daily) <- c(n_regions, N_age, n_years)
 dim(FOI_spillover) <- c(n_regions, n_t_pts)
 dim(R0) <- c(n_regions, n_t_pts)
-
 
 
