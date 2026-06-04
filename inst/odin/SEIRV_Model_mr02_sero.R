@@ -176,6 +176,11 @@ dim(SEIR_annual) <- c(n_regions, N_age)
 dim(V_cu) <- c(n_regions, N_age)
 dim(V_annual) <- c(n_regions, N_age)
 
+
+
+
+
+#Calculated values
 dim(beta) <- n_regions
 dim(FOI_sum) <- n_regions
 dim(dP1) <- c(n_regions, N_age)
@@ -183,6 +188,9 @@ dim(dP2) <- c(n_regions, N_age)
 dim(E_new) <- c(n_regions, N_age)
 dim(I_new) <- c(n_regions, N_age)
 dim(R_new) <- c(n_regions, N_age)
+
+
+
 
 dim(P_nV) <- c(n_regions, N_age)
 dim(inv_P_nV) <- c(n_regions, N_age)
@@ -192,7 +200,7 @@ dim(inv_P) <- c(n_regions, N_age)
 
 dim(vacc_rate) <- c(n_regions, N_age)
 
-
+#Inputs
 
 
 
@@ -210,5 +218,3 @@ dim(dP2_all) <- c(n_regions, N_age, n_years)
 dim(vacc_rate_daily) <- c(n_regions, N_age, n_years)
 dim(FOI_spillover) <- c(n_regions, n_t_pts)
 dim(R0) <- c(n_regions, n_t_pts)
-
-
