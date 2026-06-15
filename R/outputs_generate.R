@@ -248,8 +248,6 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
-#' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
-#' @param p_rep_death Probability of reporting of a fatal infection
 #' @param YLD_per_case TBA
 #' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
 #' @param cluster Cluster of threads to use if mode_parallel = TRUE
@@ -263,7 +261,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 Generate_VIMC_Burden_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),template = NULL,
                                          vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
                                          n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                                         p_rep_severe = 1.0,p_rep_death = 1.0, YLD_per_case = 0.006486, mode_parallel = FALSE,
+                                         YLD_per_case = 0.006486, mode_parallel = FALSE,
                                          cluster = NULL, seed = NULL, xref = NULL){
 
   assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
