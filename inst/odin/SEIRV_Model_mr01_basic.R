@@ -50,6 +50,7 @@ rate2 <- time_inc/t_infectious # Rate of transfer from I to R
 
 
 
+
 t_pt <- day/time_inc #Number of time points passed
 beta[1:n_regions] <- (R0[i, t_pt]*time_inc)/t_infectious #Daily exposure rate
 FOI_sum[1:n_regions] <-  min(FOI_max, beta[i]*(sum(I[i,])/P_tot[i]) + (FOI_spillover[i, t_pt]*time_inc)) #Total force of infection
@@ -175,6 +176,11 @@ dim(C) <- c(n_regions, N_age)
 
 
 
+
+
+
+
+#Calculated values
 dim(beta) <- n_regions
 dim(FOI_sum) <- n_regions
 dim(dP1) <- c(n_regions, N_age)
@@ -182,6 +188,9 @@ dim(dP2) <- c(n_regions, N_age)
 dim(E_new) <- c(n_regions, N_age)
 dim(I_new) <- c(n_regions, N_age)
 dim(R_new) <- c(n_regions, N_age)
+
+
+
 
 dim(P_nV) <- c(n_regions, N_age)
 dim(inv_P_nV) <- c(n_regions, N_age)
@@ -191,7 +200,7 @@ dim(inv_P) <- c(n_regions, N_age)
 
 dim(vacc_rate) <- c(n_regions, N_age)
 
-
+#Inputs
 
 
 
