@@ -586,7 +586,8 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
 
   #TODO - add assert_that functions
   n_params = nrow(pars_var)
-  assert_that(all(dim(vcv)==c(n_params,n_params)))
+  assert_that(all(dim(vcv)==c(n_params,n_params)), msg = "Dimensions of vcv must match number of parameters")
+  assert_that(n_iterations %% rerun_every != 0, msg = "rerun_every must not divide exactly into n_iterations")
 
   if(deterministic){
     assert_that(n_particles==1)
