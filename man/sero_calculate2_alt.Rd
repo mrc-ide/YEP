@@ -15,7 +15,7 @@ sero_calculate2_alt(
 \item{sero_data}{Data frame containing years, minimum and maximum ages, and values of vc_factor (proportion of
 people for whom vaccination status unknown)}
 
-\item{model_data}{Annual cumulative SEIRV output of Model_Run2}
+\item{model_data}{Annual cumulative SEIRV output of Model_Run}
 
 \item{n_region}{Region number to select from model_data}
 

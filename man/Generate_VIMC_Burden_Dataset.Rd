@@ -18,8 +18,6 @@ Generate_VIMC_Burden_Dataset(
   deterministic = FALSE,
   p_severe_inf = 0.12,
   p_death_severe_inf = 0.39,
-  p_rep_severe = 1,
-  p_rep_death = 1,
   YLD_per_case = 0.006486,
   mode_parallel = FALSE,
   cluster = NULL,
@@ -63,10 +61,6 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 \item{p_severe_inf}{Probability of an infection being severe}
 
 \item{p_death_severe_inf}{Probability of a severe infection resulting in death}
-
-\item{p_rep_severe}{Probability of reporting of a severe but non-fatal infection}
-
-\item{p_rep_death}{Probability of reporting of a fatal infection}
 
 \item{YLD_per_case}{TBA}
 

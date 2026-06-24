@@ -40,6 +40,7 @@ extra_param_names_ttf = c("a_T0", "a_Tm", "a_c","mu_T0", "mu_Tm", "mu_c",
 }
 #-------------------------------------------------------------------------------
 # TODO - Add provision for monthly case data
+# TODO - Add provision for calculating case + sero data for same regions
 # TODO - Update documentation
 #' @title Model_Run
 #'
@@ -92,7 +93,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 
   #TODO Add assert_that functions? (NB  -  Some checks carried out in parameter_setup)assert_that(mode_out %in% c(1:5))
   assert_that(n_particles <= 20, msg = "Number of particles must be 20 or less")
-  assert_that(mode_out %in% c(1:5))
+  assert_that(mode_out %in% c(1:5)) #TBC
 
   N_age = length(pop_data[1, 1, ]) #Number of age groups
   n_regions = length(pop_data[, 1, 1])
@@ -139,9 +140,12 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
     if(mode_out == 1){
       output_data = list(day = x_res[1, 1, ], year = x_res[2, 1, ],
                          FOI_total = array(x_res[3, , ]/time_inc, dim = c(n_regions,n_particles,t_pts_out)),
-                         S = array(x_res[index$S, , ], dim1), E = array(x_res[index$E, , ], dim1),
-                         I = array(x_res[index$I, , ], dim1), R = array(x_res[index$R, , ], dim1),
-                         V = array(x_res[index$V, , ], dim1), C = array(x_res[index$C, , ], dim1))
+                         S = array(x_res[index$S, , ], dim1),
+                         E = array(x_res[index$E, , ], dim1),
+                         I = array(x_res[index$I, , ], dim1),
+                         R = array(x_res[index$R, , ], dim1),
+                         V = array(x_res[index$V, , ], dim1),
+                         C = array(x_res[index$C, , ], dim1))
     } else {
       if(mode_out == 4){
         output_data = list(year = years_data,
@@ -161,25 +165,24 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
   return(output_data)
 }
 #-------------------------------------------------------------------------------
-# TODO - Adapt to new model version
 #' @title Model_Run_Many_Reps
 #'
-#' @description Run SEIRV model for single region for large number of repetitions
+#' @description Run SEIRV model for large number of repetitions
 #'
 #' @details Accepts epidemiological + population parameters and model settings; runs SEIRV model
-#' for one region over a specified time period for a number of repetitions and outputs time-dependent SEIRV
-#' values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
-#' running a large number of repetitions (>20).
+#' for one or more regions over a specified time period for a number of repetitions and
+#' outputs time-dependent SEIRV values, infection numbers and/or total force of infection
+#' values. Variation of Model_Run() used for running a large number of repetitions (>20).
 #'
-#' @param FOI_spillover Vector of values of force of infection due to spillover from sylvatic reservoir
+#' @param FOI_spillover Matrix of values of force of infection due to spillover from sylvatic reservoir
 #'   (size depends on mode_time)
-#' @param R0 Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)
-#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year
-#' @param pop_data Population by age group and year
+#' @param R0 Matrix of values of basic reproduction number for urban spread of infection (size depends on mode_time)
+#' @param vacc_data Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region. age group and year
+#' @param pop_data Population by region, age group and year
 #' @param years_data Incremental vector of years denoting years for which to save data
 #' @param year0 First year in population/vaccination data
 #' @param vaccine_efficacy Proportional vaccine efficacy
-#' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)model (should be 1.0, 2.5 or 5.0 days)
+#' @param time_inc Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)
 #' @param mode_out Type of data to output: \cr
 #'   If mode_out = 1, SEIRVC + FOI for all regions, steps and ages at every time point in years_data \cr
 #'   If mode_out = 2 annual totals of SEIR, R and V by region and age for calculating seroprevalence
@@ -190,7 +193,7 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
 #'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s) \cr
+#'  If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr
 #' @param start_SEIRV SEIRV data from end of a previous run to use as input (if mode_start = 2)
 #' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
 #'  If mode_time = 0, no time variation (constant values)\cr
@@ -212,7 +215,7 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
                                 seed = NULL) {
 
   assert_that(division <= 20, msg = "Number of particles run at once must be 20 or less")
-  assert_that(mode_out %in% c(1:5))
+  assert_that(mode_out %in% c(1:5)) #TBC
 
   n_particles0 = min(division, n_reps)
   n_threads = min(division, n_particles0)
@@ -260,8 +263,8 @@ Model_Run_Many_Reps <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(
     n_particles = n_particles_list[div]
 
     x <- dust_system_create(model, pars = pars, n_particles = n_particles,
-                            n_threads = n_threads, time = 0, dt = 1,
-                            deterministic = FALSE, preserve_particle_dimension = TRUE)
+                            n_threads = n_threads, time = 0, dt = 1, seed = seed,
+                            deterministic = deterministic, preserve_particle_dimension = TRUE)
     dust_system_set_state_initial(x)
     x_res <- dust_system_simulate(x, times = time_pts)
 

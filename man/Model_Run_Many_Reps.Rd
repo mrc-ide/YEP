@@ -24,14 +24,14 @@ Model_Run_Many_Reps(
 )
 }
 \arguments{
-\item{FOI_spillover}{Vector of values of force of infection due to spillover from sylvatic reservoir
+\item{FOI_spillover}{Matrix of values of force of infection due to spillover from sylvatic reservoir
 (size depends on mode_time)}
 
-\item{R0}{Vector of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
+\item{R0}{Matrix of values of basic reproduction number for urban spread of infection (size depends on mode_time)}
 
-\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by age group and year}
+\item{vacc_data}{Projected vaccination-based immunity (assuming vaccine_efficacy = 1) by region. age group and year}
 
-\item{pop_data}{Population by age group and year}
+\item{pop_data}{Population by region, age group and year}
 
 \item{years_data}{Incremental vector of years denoting years for which to save data}
 
@@ -39,7 +39,7 @@ Model_Run_Many_Reps(
 
 \item{vaccine_efficacy}{Proportional vaccine efficacy}
 
-\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)model (should be 1.0, 2.5 or 5.0 days)}
+\item{time_inc}{Time increment in days to use in model (should be 1.0, 2.5 or 5.0 days)}
 
 \item{mode_out}{Type of data to output: \cr
 If mode_out = 1, SEIRVC + FOI for all regions, steps and ages at every time point in years_data \cr
@@ -52,7 +52,7 @@ If mode_out = 6 [TBA - combine outputs for 2 and 3, for case+sero data]}
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
 If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s) \cr}
+If mode_start = 2, use SEIRV input in list from previous run(s) (TBD) \cr}
 
 \item{start_SEIRV}{SEIRV data from end of a previous run to use as input (if mode_start = 2)}
 
@@ -74,11 +74,11 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 '}
 }
 \description{
-Run SEIRV model for single region for large number of repetitions
+Run SEIRV model for large number of repetitions
 }
 \details{
 Accepts epidemiological + population parameters and model settings; runs SEIRV model
-for one region over a specified time period for a number of repetitions and outputs time-dependent SEIRV
-values, infection numbers and/or total force of infection values. Variation of Model_Run() used for
-running a large number of repetitions (>20).
+for one or more regions over a specified time period for a number of repetitions and
+outputs time-dependent SEIRV values, infection numbers and/or total force of infection
+values. Variation of Model_Run() used for running a large number of repetitions (>20).
 }

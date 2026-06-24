@@ -203,18 +203,32 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
     model_death_values = round(model_death_values/n_reps)
   }
 
+  output = list()
   if(output_frame) { #Output complete frames of data
-    return(list(model_sero_data = data.frame(region = template$sero$region,year = template$sero$year,
-                                             age_min = template$sero$age_min,age_max = template$sero$age_max,
-                                             samples = template$sero$samples,
-                                             positives = template$sero$samples*model_sero_data$sero,
-                                             vc_factor = template$sero$vc_factor),
-                model_case_data = data.frame(region = template$case$region,year = template$case$year,
-                                             cases = model_case_values,deaths = model_death_values)))
-  } else { #Minimal output for MCMC
-    return(list(model_sero_values = model_sero_data$sero,model_case_values = model_case_values,
-                model_death_values = model_death_values))
+    if(is.null(template$sero) == FALSE){
+      output$model_sero_data = data.frame(region = template$sero$region,
+                                          year = template$sero$year,
+                                          age_min = template$sero$age_min,
+                                          age_max = template$sero$age_max,
+                                          samples = template$sero$samples,
+                                          positives = template$sero$samples*model_sero_data$sero,
+                                          vc_factor = template$sero$vc_factor)
+
+    }
+   if(is.null(template$case) == FALSE){
+     output$model_case_data = data.frame(region = template$case$region,
+                                         year = template$case$year,
+                                         cases = model_case_values,
+                                         deaths = model_death_values)
+
+   }
+  } else { #Minimal output
+    output$model_sero_values = model_sero_data$sero
+    output$model_case_values = model_case_values
+    output$model_death_values = model_death_values
   }
+
+  return(output)
 }
 #-------------------------------------------------------------------------------
 #TODO - needs updated for new Model_Run
