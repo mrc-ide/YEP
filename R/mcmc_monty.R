@@ -261,9 +261,11 @@ fit_data_setup <- function(sero_template = data.frame(),case_template = data.fra
       for(j in 1:n_case_pts){
         regions = regions_all[which(region_index_case[j,] == 1)]
         region_group = paste(regions,collapse = ",")
-        k = which(case_subset$region == region_group)
-        case_data_list1[[i]][j] = case_subset$cases[k]
-        case_data_list2[[i]][j] = case_subset$deaths[k]
+        if(region_group %in% case_subset$region){
+          k = which(case_subset$region == region_group)
+          case_data_list1[[i]][j] = case_subset$cases[k]
+          case_data_list2[[i]][j] = case_subset$deaths[k]
+        }
       }
     }
   }
