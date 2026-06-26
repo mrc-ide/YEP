@@ -12,7 +12,6 @@ Generate_VIMC_Burden_Dataset(
   vaccine_efficacy = 1,
   time_inc = 1,
   mode_start = 1,
-  start_SEIRV = NULL,
   mode_time = 0,
   n_reps = 1,
   deterministic = FALSE,
@@ -26,9 +25,9 @@ Generate_VIMC_Burden_Dataset(
 )
 }
 \arguments{
-\item{FOI_values}{Array of values of force of infection due to spillover from sylvatic reservoir by region + time point}
+\item{FOI_values}{Array of values of force of infection due to spillover from sylvatic reservoir by region + time}
 
-\item{R0_values}{Array of values of basic reproduction number for human-human transmission by region and time point}
+\item{R0_values}{Array of values of basic reproduction number for human-human transmission by region and time}
 
 \item{input_data}{List of population and vaccination data for multiple regions}
 
@@ -41,19 +40,17 @@ for each line}
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr}
-
-\item{start_SEIRV}{SEIRV data from end of a previous run to use as input (list of datasets, one per region)}
+If mode_start = 1, shift some non-vaccinated individuals into R to give herd immunity (stratified by age) \cr}
 
 \item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
 If mode_time = 0, no time variation (constant values)\cr
-If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
-If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
-If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
-If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)}
+If mode_time = 1, FOI/R0 vary annually without seasonality (no. values = no. years to consider) \cr
+If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (no. values = 12) \cr
+If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (no. values = 365/dt) \cr
+If mode_time = 4, FOI/R0 vary annually with monthly seasonality (no. values = 12*no. years to consider) \cr
+If mode_time = 5, FOI/R0 vary annually with daily seasonality (no. values = (365/dt)*no. years to consider)}
 
-\item{n_reps}{number of stochastic repetitions}
+\item{n_reps}{no. stochastic repetitions}
 
 \item{deterministic}{TRUE/FALSE - set model to run in deterministic mode if TRUE}
 
@@ -63,12 +60,13 @@ If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values 
 
 \item{YLD_per_case}{TBA}
 
-\item{mode_div}{Mode of division of regions while running model. Parallel mode will run all years for every region \cr
-If mode_div = "parallel", run all regions simultaneously in a single use of the Model_Run function \cr
+\item{mode_div}{Mode of division of regions while running model. \cr
+If mode_div = "parallel", run all regions simultaneously in a single use of the Model_Run function;
+will run all years for every region \cr
 If mode_div = "serial", run all regions in series \cr
 If mode_div = "cluster", set model to run regions in parallel using cluster of nodes (see n_nodes parameter)}
 
-\item{n_nodes}{Number of nodes to use in parallelization (if mode_div = cluster)}
+\item{n_nodes}{no. nodes to use in parallelization (if mode_div = cluster)}
 
 \item{seed}{Optional random seed value; set to NULL to omit. \cr
 If mode_div = serial, same seed is used for all regions}

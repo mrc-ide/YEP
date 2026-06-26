@@ -1,4 +1,5 @@
-#TODO - adapt to allow for case and sero data from same region
+# Function to generate set of annual case/death and/or serological data for multiple regions or groups of regions
+# TODO - adapt to allow for case and sero data from same region
 #' @title Generate_Dataset
 #'
 #' @description Generate dataset [TBA]
@@ -7,37 +8,35 @@
 #'
 #' [TBA - Explanation of breakdown of regions to model and how to set lengths of FOI_values and R0_values]
 #'
-#' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time point
-#' @param R0_values Array of values of basic reproduction number for human-human transmission by region and time point
+#' @param FOI_values Array of values of force of infection due to spillover from sylvatic reservoir by region + time
+#' @param R0_values Array of values of basic reproduction number for human-human transmission by region + time
 #' @param input_data List of population and vaccination data for multiple regions in standard format [TBA]
 #' @param template TBA \cr
 #' sero: Seroprevalence data template - data frame with region, year, minimum/maximum age, vc_factor [TBA]
-#' and number of samples \cr
+#' and no. samples \cr
 #' case: Annual reported case/death data template - data frame with region and year \cr
 #' @param vaccine_efficacy Fractional vaccine efficacy
 #' @param time_inc Time increment in days to use in model (should be either 1.0, 2.5 or 5.0 days)
 #' @param mode_start Flag indicating how to set initial population immunity level in addition to vaccination \cr
 #'  If mode_start = 0, only vaccinated individuals \cr
-#'  If mode_start = 1, shift some non-vaccinated individuals into recovered to give herd immunity (stratified by age) \cr
-#'  If mode_start = 2, use SEIRV input in list from previous run(s)
-#' @param start_SEIRV SEIRV data from end of a previous run to use as input (list of datasets, one per region)
+#'  If mode_start = 1, shift some non-vaccinated individuals into R to give herd immunity (stratified by age) \cr
 #' @param mode_time Type of time dependence of FOI_spillover and R0 to be used: \cr
 #'  If mode_time = 0, no time variation (constant values)\cr
-#'  If mode_time = 1, FOI/R0 vary annually without seasonality (number of values = number of years to consider) \cr
-#'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (number of values = 12) \cr
-#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (number of values = 365/dt) \cr
-#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (number of values = 12*number of years to consider) \cr
-#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (number of values = (365/dt)*number of years to consider)
-#' @param n_reps number of stochastic repetitions
+#'  If mode_time = 1, FOI/R0 vary annually without seasonality (no. values = no. years to consider) \cr
+#'  If mode_time = 2, FOI/R0 vary with monthly seasonality without inter-annual variation (no. values = 12) \cr
+#'  If mode_time = 3, FOI/R0 vary with daily seasonality without inter-annual variation (no. values = 365/dt) \cr
+#'  If mode_time = 4, FOI/R0 vary annually with monthly seasonality (no. values = 12*no. years to consider) \cr
+#'  If mode_time = 5, FOI/R0 vary annually with daily seasonality (no. values = (365/dt)*no. years to consider)
+#' @param n_reps no. stochastic repetitions
 #' @param deterministic TRUE/FALSE - set model to run in deterministic mode if TRUE
 #' @param p_severe_inf Probability of an infection being severe
 #' @param p_death_severe_inf Probability of a severe infection resulting in death
 #' @param p_rep_severe Probability of reporting of a severe but non-fatal infection
 #' @param p_rep_death Probability of reporting of a fatal infection
-#' @param mode_parallel TRUE/FALSE - set model to run in parallel using cluster if TRUE
-#' @param cluster Cluster of threads to use if mode_parallel = TRUE
-#' @param output_frame TRUE/FALSE - indicate whether to output a complete data frame of results in template format (if TRUE)
-#'   or calculated values only (if FALSE)
+#' @param use_node_cluster TRUE/FALSE - set model to run in parallel using cluster if TRUE
+#' @param n_nodes no. nodes to use in cluster (if use_node_cluster = TRUE)
+#' @param output_frame TRUE/FALSE - indicate whether to output a complete data frame of results in template format
+#' (if TRUE) or calculated values only (if FALSE)
 #' @param seed Optional random seed value; set to NULL to omit.
 #' @param region_grouping TBA
 #' @param mode_grouping TBA
@@ -46,13 +45,14 @@
 #'
 Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(),
                              template = list(sero=NULL,case=NULL,xref_sero=NULL,xref_case=NULL),
-                             vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1, start_SEIRV = NULL, mode_time = 0,
+                             vaccine_efficacy = 1.0, time_inc = 1.0, mode_start = 1,  mode_time = 0,
                              n_reps = 1,deterministic = FALSE, p_severe_inf = 0.12, p_death_severe_inf = 0.39,
-                             p_rep_severe = 1.0,p_rep_death = 1.0,mode_parallel = FALSE,cluster = NULL,output_frame = FALSE,
-                             seed = NULL, region_grouping=NULL, mode_grouping=1){
+                             p_rep_severe = 1.0,p_rep_death = 1.0,use_node_cluster = FALSE,n_nodes = NULL,
+                             output_frame = FALSE, seed = NULL, region_grouping=NULL, mode_grouping=1){
 
-  assert_that(input_data_check(input_data),msg = paste("Input data must be in standard format",
-                                                       " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
+  assert_that(input_data_check(input_data),
+              msg = paste("Input data must be in standard format",
+                          " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   #TBA - Change assert_that functions for template
   assert_that(any(is.null(template$sero) == FALSE,is.null(template$case) == FALSE),
               msg = "Need serological and/or case data template(s)")
@@ -68,20 +68,20 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
     assert_that(between(p_rep_death,0.0,1.0),msg = "Fatal infection reporting probability must be between 0-1")
   }
   assert_that(between(vaccine_efficacy,0.0,1.0),msg = "Vaccine efficacy must be between 0-1")
-  assert_that(is.logical(mode_parallel))
-  if(mode_parallel){assert_that(is.null(cluster) == FALSE)}
+  assert_that(mode_start %in% c(0,1),msg = "mode_start must be 0 or 1")
+  assert_that(is.logical(use_node_cluster))
+  if(use_node_cluster){assert_that(is.integer(n_nodes) & n_nodes>0,msg = "n_nodes must be a positive integer")}
   assert_that(length(dim(FOI_values)) == 2,msg = "FOI_values must be 2-D array")
   assert_that(length(dim(R0_values)) == 2,msg = "R0_values must be 2-D array")
 
   #Check that regions in template match up with input data
   regions = regions_breakdown(c(template$sero$region,template$case$region))
-  assert_that(all(regions==input_data$region_labels),
-              msg="Regions in input data must match regions in template; use input_data_truncate() to adjust input data")
+  assert_that(all(regions %in% input_data$region_labels),msg="Regions in template must be present in input data")
+  input_data = input_data_truncate(input_data,regions)
   n_regions = length(regions)
-  assert_that(dim(FOI_values)[1] == n_regions,msg = "1st dimension of FOI_values must match number of regions to be modelled")
-  assert_that(dim(R0_values)[1] == n_regions,msg = "1st dimension of R0_values must match number of regions to be modelled")
-  if(mode_start == 2){assert_that(length(start_SEIRV) == n_regions,
-                                  msg = "Number of start_SEIRV datasets must match number of regions")}
+  assert_that(dim(FOI_values)[1] == n_regions && dim(R0_values)[1] == n_regions,
+              msg = "1st dimensions of FOI_values and R0_values must match no. regions to be modelled")
+  n_t_pts_epi = dim(FOI_values)[2]
 
   #Group regions based on template
   if(is.null(region_grouping)){
@@ -104,43 +104,45 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
 
   n_years=length(input_data$years_labels)
   N_age=length(input_data$age_labels)
-  if(mode_parallel){
-    FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = start_SEIRV_sets = list()
+  if(use_node_cluster){
+    FOI_subsets = R0_subsets = vacc_data_subsets = pop_data_subsets = years_data_sets = list()
     for(n_group in 1:n_groups){
       i_regions=region_grouping$region_groups[[n_group]]
       n_regions2=length(i_regions)
-      FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2]))
-      R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2]))
+      FOI_subsets[[n_group]] = array(FOI_values[i_regions,],dim=c(n_regions2,n_t_pts_epi))
+      R0_subsets[[n_group]] = array(R0_values[i_regions,],dim=c(n_regions2,n_t_pts_epi))
       vacc_data_subsets[[n_group]] = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age))
       pop_data_subsets[[n_group]] = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age))
-      start_SEIRV_sets[[n_group]] = list() #TBA
     }
 
+    cluster=makeCluster(n_nodes)
     model_output_all = clusterMap(cl = cluster,fun = Model_Run, FOI_spillover = FOI_subsets, R0 = R0_subsets,
                                   vacc_data = vacc_data_subsets,pop_data = pop_data_subsets,
-                                  years_data = region_grouping$years_data, start_SEIRV = start_SEIRV_sets,
+                                  years_data = region_grouping$years_data,
                                   mode_out = region_grouping$mode_out,
-                                  MoreArgs = list(year0 = input_data$years_labels[1],vaccine_efficacy = vaccine_efficacy,
-                                                  time_inc = time_inc,mode_start = mode_start,mode_time = mode_time,
-                                                  n_particles = n_reps, n_threads = 1 ,deterministic = deterministic,
-                                                  seed = seed))
+                                  MoreArgs = list(year0 = input_data$years_labels[1],
+                                                  vaccine_efficacy = vaccine_efficacy,
+                                                  time_inc = time_inc,mode_start = mode_start,start_SEIRV = NULL,
+                                                  mode_time = mode_time,n_particles = n_reps, n_threads = 1,
+                                                  deterministic = deterministic, seed = seed))
+    stopCluster(cluster)
   }
 
   for(n_group in 1:n_groups){
     i_regions=region_grouping$region_groups[[n_group]]
     n_regions2=length(i_regions)
     if(n_regions2>0){
-      if(mode_parallel){
+      if(use_node_cluster){
         model_output = model_output_all[[n_group]]
       } else {
-        model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(n_regions2,dim(FOI_values)[2])),
-                                 R0 = array(R0_values[i_regions,],dim=c(n_regions2,dim(R0_values)[2])),
+        model_output = Model_Run(FOI_spillover = array(FOI_values[i_regions,],dim=c(n_regions2,n_t_pts_epi)),
+                                 R0 = array(R0_values[i_regions,],dim=c(n_regions2,n_t_pts_epi)),
                                  vacc_data = array(input_data$vacc_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
                                  pop_data = array(input_data$pop_data[i_regions,,],dim=c(n_regions2,n_years,N_age)),
                                  years_data = region_grouping$years_data[[n_group]],
                                  year0 = input_data$years_labels[1], vaccine_efficacy = vaccine_efficacy,
-                                 time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],mode_start = mode_start,
-                                 start_SEIRV = NULL, #TBC
+                                 time_inc = time_inc, mode_out = region_grouping$mode_out[[n_group]],
+                                 mode_start = mode_start, start_SEIRV = NULL, #TBC
                                  mode_time = mode_time,n_particles = n_reps,
                                  n_threads = n_reps, deterministic = deterministic, seed = seed)
       }
@@ -183,8 +185,10 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
           for(n_rep in 1:n_reps){
             sero_results = sero_calculate2_alt(template$sero[sero_line_list_region,],
                                                model_output, n_region2, n_rep)
-            model_sero_data$samples[sero_line_list_region] = model_sero_data$samples[sero_line_list_region]+sero_results$samples
-            model_sero_data$positives[sero_line_list_region] = model_sero_data$positives[sero_line_list_region] + sero_results$positives
+            model_sero_data$samples[sero_line_list_region] = model_sero_data$samples[sero_line_list_region] +
+              sero_results$samples
+            model_sero_data$positives[sero_line_list_region] = model_sero_data$positives[sero_line_list_region] +
+              sero_results$positives
           }
         }
       }
