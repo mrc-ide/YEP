@@ -82,7 +82,7 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
   assert_that(max(years_data) + 2 - year0 <=  n_years, msg = "Period of years_data must lie within population data with 2 years at end")
   assert_that(time_inc %in% c(1, 2.5, 5), msg = "time_inc must have value 1, 2.5 or 5 days")
   assert_that(mode_start %in% c(0, 1, 2), msg = "mode_start must have value 0, 1 or 2")
-  if(mode_start == 2){assert_that(is.null(start_SEIRV) == FALSE)}
+  if(mode_start == 2){assert_that(!is.null(start_SEIRV))}
   assert_that(all(names(fixed_extra) %in% extra_param_names))
   inv_365 = 1.0/365.0
   pts_year = 365.0/time_inc
@@ -193,7 +193,7 @@ pars_fixed_setup <- function(sero_template = list(),case_template = list(), vacc
     output$P0 = P0
   }
   for(name in extra_param_names){
-    if(is.null(fixed_extra[[name]]) == FALSE){output[[name]] = fixed_extra[[name]]}
+    if(!is.null(fixed_extra[[name]])){output[[name]] = fixed_extra[[name]]}
   }
 
   return(output)
@@ -301,7 +301,7 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(),
   #TODO - remove checks/calcs to be moved to FOI/R0 calculation function
   assert_that(all(vars_extra_names %in% extra_param_names))
   if("m_FOI_BRA" %in% vars_extra_names){flag_BRA = 2} else {
-    if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
+    if(!is.null(pars_fixed$m_FOI_BRA)){ flag_BRA = 1 } else {flag_BRA = 0}
   }
   if(flag_BRA>0){assert_that(is.null(pars_fixed$ref_BRA) == FALSE)}
   assert_that(length(dim(env_covar_values)) == 3)
@@ -321,14 +321,14 @@ packer_setup <- function(pars_fixed = list(), env_covar_values = list(),
   for(name in extra_param_names_req){
     if(is.null(pars_fixed[[name]])){assert_that(name %in% vars_extra_names)}
   }
-  if(is.null(pars_fixed$i_ttf)==FALSE){
+  if(!is.null(pars_fixed$i_ttf)){
     for(name in extra_param_names_ttf){
       if(is.null(pars_fixed[[name]])){assert_that(name %in% vars_extra_names)}
     }
   }
-  if(is.null(pars_fixed$ref_BRA)==FALSE && is.null(pars_fixed$m_FOI_BRA)){
+  if(!is.null(pars_fixed$ref_BRA) && is.null(pars_fixed$m_FOI_BRA)){
     assert_that("m_FOI_BRA" %in% vars_extra_names)}
-  if(is.null(pars_fixed$i_ptf)==FALSE && is.null(pars_fixed$log_a_ptf)){
+  if(!is.null(pars_fixed$i_ptf) && is.null(pars_fixed$log_a_ptf)){
     assert_that("log_a_ptf" %in% vars_extra_names)}
 
   date_values = switch(mode_time + 1,
@@ -621,7 +621,7 @@ m_sample <- function(fit_data = list(), packer = NULL, prior = NULL, FOI_R0_prio
   samples <- monty_sample(model = posterior,sampler = sampler, n_steps = n_iterations,
                           initial = initial, n_chains = n_chains, runner = runner)
 
-  if(is.null(output_file)==FALSE){
+  if(!is.null(output_file)){
     saveRDS(list(samples = samples,
                  params = list(pars_var = pars_var, n_chains = n_chains,
                                n_iterations = n_iterations,

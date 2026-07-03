@@ -54,12 +54,12 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
               msg = paste("Input data must be in standard format",
                           " (see https://mrc-ide.github.io/YEP/articles/CGuideAInputs.html)"))
   #TBA - Change assert_that functions for template
-  assert_that(any(is.null(template$sero) == FALSE,is.null(template$case) == FALSE),
+  assert_that(any(!is.null(template$sero),!is.null(template$case)),
               msg = "Need serological and/or case data template(s)")
-  if(is.null(template$sero) == FALSE){
+  if(!is.null(template$sero)){
     assert_that(all(c("region","year","age_min","age_max","samples","vc_factor") %in% names(template$sero)))
   }
-  if(is.null(template$case) == FALSE){ #TODO - add option for monthly data
+  if(!is.null(template$case)){ #TODO - add option for monthly data
     assert_that(all(c("region","year","cases","deaths") %in% names(template$case)))
     #if("month" %in% names(template$case)){flag_monthly_cases=TRUE}else{flag_monthly_cases=FALSE}
     assert_that(between(p_severe_inf,0.0,1.0),msg = "Severe infection rate must be between 0-1")
@@ -195,15 +195,15 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
     }
   }
 
-  if(is.null(template$sero) == FALSE){model_sero_data$sero = model_sero_data$positives/model_sero_data$samples}
-  if(is.null(template$case) == FALSE && n_reps>1){
+  if(!is.null(template$sero)){model_sero_data$sero = model_sero_data$positives/model_sero_data$samples}
+  if(!is.null(template$case) && n_reps>1){
     model_case_values = round(model_case_values/n_reps)
     model_death_values = round(model_death_values/n_reps)
   }
 
   output = list()
   if(output_frame) { #Output complete frames of data
-    if(is.null(template$sero) == FALSE){
+    if(!is.null(template$sero)){
       output$model_sero_data = data.frame(region = template$sero$region,
                                           year = template$sero$year,
                                           age_min = template$sero$age_min,
@@ -213,7 +213,7 @@ Generate_Dataset <- function(FOI_values = c(),R0_values = c(),input_data = list(
                                           vc_factor = template$sero$vc_factor)
 
     }
-   if(is.null(template$case) == FALSE){
+   if(!is.null(template$case)){
      output$model_case_data = data.frame(region = template$case$region,
                                          year = template$case$year,
                                          cases = model_case_values,

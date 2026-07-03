@@ -118,7 +118,7 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
   #TODO - adapt for multiple parameter sets?
 
   if("m_FOI_BRA" %in% names(vars_extra)){flag_BRA = 2} else {
-    if(is.null(pars_fixed$m_FOI_BRA) == FALSE){ flag_BRA = 1 } else {flag_BRA = 0}
+    if(!is.null(pars_fixed$m_FOI_BRA)){ flag_BRA = 1 } else {flag_BRA = 0}
   }
   #TODO - switch n_r to n_regions
   if(is.null(pars_fixed$n_r)){
@@ -131,7 +131,7 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
 
   a_T0 = a_Tm = a_c = mu_T0 = mu_Tm = mu_c = PDR_T0 = PDR_Tm = PDR_c = log_a_ptf = 0
   #Temperature; TODO - add functionality for vector i_ttf (multiple temperature covariates)
-  if(is.null(pars_fixed$i_ttf)==FALSE){
+  if(!is.null(pars_fixed$i_ttf)){
     for(name in extra_param_names_ttf){
       if(is.null(pars_fixed[[name]])){assign(name,vars_extra[[name]])}else{assign(name,pars_fixed[[name]])}
     }
@@ -140,7 +140,7 @@ epi_param_calc2 <- function(pars_fixed = list(), env_covar_values = list(), log_
                                                  a_T0, a_Tm, a_c,mu_T0, mu_Tm, mu_c, PDR_T0, PDR_Tm,PDR_c)
   }
   #Precipitation; TODO - ditto
-  if(is.null(pars_fixed$i_ptf)==FALSE){
+  if(!is.null(pars_fixed$i_ptf)){
     if(is.null(pars_fixed$log_a_ptf)){log_a_ptf=vars_extra[["log_a_ptf"]]}else{log_a_ptf=pars_fixed$log_a_ptf}
     env_covar_values[pars_fixed$i_ptf,,] = precip_tf(precip_values=array(env_covar_values[pars_fixed$i_ptf,,],
                                                                          dim=c(n_regions,dim_t)),

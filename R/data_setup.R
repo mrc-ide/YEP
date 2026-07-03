@@ -184,9 +184,9 @@ enviro_data_var_check <- function(enviro_data_var){
   result=TRUE
 
   assert_that(is.list(enviro_data_var))
-  assert_that(is.null(enviro_data_var$regions)==FALSE)
-  assert_that(is.null(enviro_data_var$env_vars)==FALSE)
-  assert_that(is.null(enviro_data_var$values)==FALSE)
+  assert_that(!is.null(enviro_data_var$regions))
+  assert_that(!is.null(enviro_data_var$env_vars))
+  assert_that(!is.null(enviro_data_var$values))
   assert_that(length(dim(enviro_data_var$values))==3)
 
   return(result)
@@ -275,7 +275,7 @@ template_region_xref <- function(template=list(),regions=c()){
         template_regions_i=append(template_regions_i,n_region2)
       }
     }
-    if(is.null(template_regions_i)==FALSE){
+    if(!is.null(template_regions_i)){
       output$line_list[[n_region]]=c(1:n_lines)[line_template_regions %in% template_regions_i]
       output$year_data_begin[n_region]=min(template$year[output$line_list[[n_region]]])
       output$year_end[n_region]=max(template$year[output$line_list[[n_region]]])
@@ -298,7 +298,10 @@ template_region_xref <- function(template=list(),regions=c()){
 #'
 #' @param regions TBA
 #' @param template TBA
-#' @param mode_grouping TBA
+#' @param mode_grouping Method of grouping regions:\cr
+#'  1: 1 region per group\cr
+#'  2: 1 group for regions with serological data, 1 group for regions with case data \cr
+#'  3: More complex split based on dates/years \cr
 #' '
 #' @export
 #'
@@ -306,13 +309,13 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
                                 mode_grouping=1){
 
   assert_that(mode_grouping %in% c(1:3),msg="mode_grouping must be between 1 and 3")
-  assert_that(any(is.null(template$sero) == FALSE,is.null(template$case) == FALSE),
+  assert_that(any(!is.null(template$sero),!is.null(template$case)),
               msg = "Need serological and/or case data template(s)")
-  if(is.null(template$sero) == FALSE){
+  if(!is.null(template$sero)){
     if(is.null(template$xref_sero)){template$xref_sero = template_region_xref(template$sero,regions)}
     sero_line_list = template$xref_sero$line_list
   } else { sero_line_list = rep(NA,n_regions) }
-  if(is.null(template$case) == FALSE){
+  if(!is.null(template$case)){
     if(is.null(template$xref_case)){template$xref_case = template_region_xref(template$case,regions)}
     case_line_list = template$xref_case$line_list
   } else { case_line_list = rep(NA,n_regions) }

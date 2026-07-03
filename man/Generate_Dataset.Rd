@@ -45,8 +45,7 @@ case: Annual reported case/death data template - data frame with region and year
 
 \item{mode_start}{Flag indicating how to set initial population immunity level in addition to vaccination \cr
 If mode_start = 0, only vaccinated individuals \cr
-If mode_start = 1, shift some non-vaccinated individuals into R to give herd immunity (stratified by age) \cr
-If mode_start = 2, use SEIRV input in list from previous run(s)}
+If mode_start = 1, shift some non-vaccinated individuals into R to give herd immunity (stratified by age) \cr}
 
 \item{mode_time}{Type of time dependence of FOI_spillover and R0 to be used: \cr
 If mode_time = 0, no time variation (constant values)\cr

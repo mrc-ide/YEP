@@ -351,7 +351,7 @@ parameter_setup <- function(FOI_spillover = list(), R0 = list(), vacc_data = lis
 
   #TODO - additional assert_that functions?
   assert_that(mode_start %in% c(0, 1, 2), msg = "mode_start must have value 0, 1 or 2")
-  if(mode_start==2){assert_that(is.null(start_SEIRV)==FALSE)}
+  if(mode_start==2){assert_that(!is.null(start_SEIRV))}
   assert_that(mode_time %in% c(0:5), msg = "mode_time must be an integer between 0 and 5")
   assert_that(all(FOI_spillover >= 0.0))
   assert_that(all(R0 >= 0.0))
@@ -496,14 +496,14 @@ imm_fraction_function <- function(log_lambda =  - 4, R0 = 1.0, ages = c(0:100), 
 epi_param_calc <- function(coeffs_const = c(0), coeffs_var = c(0), enviro_data_const = data.frame(), enviro_data_var = NULL){
   #TODO  -  Ensure function works if only variable covariates? (Now works for const only or const + var)
   #TODO  -  Add assertthat checks
-  assert_that(is.null(enviro_data_const) == FALSE) #TBC if made capable of using all-variable data
+  assert_that(!is.null(enviro_data_const)) #TBC if made capable of using all-variable data
   assert_that(all(c(coeffs_const, coeffs_var) >= 0), msg = "All environmental coefficients must have positive values")
   assert_that(colnames(enviro_data_const)[1] == "region", msg = "Constant environmental data must contain regions")
   assert_that(is.numeric(coeffs_const) && is.numeric(coeffs_var),msg="Coefficients must be in numerical vectors")
 
   base_output_values = as.vector(as.matrix(enviro_data_const[, c(2:ncol(enviro_data_const))]) %*% as.matrix(coeffs_const))
 
-  if(is.null(enviro_data_var) == FALSE){
+  if(!is.null(enviro_data_var)){
     #assert_that(all(enviro_data_const$region))
     n_pts = dim(enviro_data_var$values)[3]
     var_output_values = colSums(coeffs_var*enviro_data_var$values)

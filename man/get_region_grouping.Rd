@@ -15,7 +15,10 @@ get_region_grouping(
 
 \item{template}{TBA}
 
-\item{mode_grouping}{TBA
+\item{mode_grouping}{Method of grouping regions:\cr
+ 1: 1 region per group\cr
+ 2: 1 group for regions with serological data, 1 group for regions with case data \cr
+ 3: More complex split based on dates/years \cr
 '}
 }
 \description{
