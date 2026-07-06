@@ -311,6 +311,7 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
   assert_that(mode_grouping %in% c(1:3),msg="mode_grouping must be between 1 and 3")
   assert_that(any(!is.null(template$sero),!is.null(template$case)),
               msg = "Need serological and/or case data template(s)")
+  n_regions=length(regions)
   if(!is.null(template$sero)){
     if(is.null(template$xref_sero)){template$xref_sero = template_region_xref(template$sero,regions)}
     sero_line_list = template$xref_sero$line_list
@@ -330,7 +331,6 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
 
   if(mode_grouping %in% c(1,2)){
     if(mode_grouping==1){ #1 region per group
-      n_regions=length(regions)
       for(i in 1:n_regions){
         region=regions[i]
         region_grouping$region_groups[[i]]=i
@@ -369,7 +369,6 @@ get_region_grouping <- function(regions=c(),template=list(sero=NULL,case=NULL,xr
       }
     }
   } else { #More complex split based on dates/years
-    n_regions=length(regions)
     codes=rep(NA,n_regions)
     for(i in 1:n_regions){
       if(is.na(sero_line_list[i])==FALSE){
