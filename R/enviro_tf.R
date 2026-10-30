@@ -83,15 +83,22 @@ temp_tf <- function(temp_values = c(25.0),
 #'
 #' @description Function for precipitation transformation
 #'
-#' @details TBA
+#' @details R function for transforming precipitation, designed to give
+#' sub-linear dependence of epidemiological parameters (spillover FOI and R0) on
+#' precipitation at high precipitation. If coefficient a_ptf is close to zero,
+#' functional form output ~= precipitation
 #'
-#' @param precip_values TBA
-#' @param a_ptf TBA
+#' @param precip_values Time/region-dependent values of precipitation
+#' @param a_ptf Coefficient governing sub-linearity of functional form
 #' '
 #' @export
 #'
 precip_tf <- function(precip_values = c(0), a_ptf = 0){
-  p_lim=0.5/a_ptf
+  assert_that(all(precip_values>=0),msg = "Precipitation should be non-negative")
+  assert_that(a_ptf>=0,msg = "Coefficient a_ptf should be non-negative")
+  p_lim=0.5/a_ptf #Limit such that at high precipitation,
+                  #output becomes constant with increasing precipitation
+                  #instead of decreasing
   precip_values[precip_values>p_lim]=p_lim
   precip_tf_values = precip_values*(1.0 - (a_ptf*precip_values))
 
@@ -100,7 +107,8 @@ precip_tf <- function(precip_values = c(0), a_ptf = 0){
 #-------------------------------------------------------------------------------
 #' @title epi_param_calc2
 #'
-#' @description TBA
+#' @description Function for calculating epidemiological parameters
+#' (spillover FOI and R0) from environmental covariates
 #'
 #' @details TBA
 #'
