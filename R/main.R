@@ -91,7 +91,8 @@ Model_Run <- function(FOI_spillover = 0.0, R0 = 1.0, vacc_data = list(), pop_dat
                       start_SEIRV = list(), mode_time = 0, n_particles = 1, n_threads = 1, deterministic = FALSE,
                       seed = NULL) {
 
-  #TODO Add assert_that functions? (NB  -  Some checks carried out in parameter_setup)assert_that(mode_out %in% c(1:5))
+  #TODO Add assert_that functions? (NB  -  Some checks carried out in parameter_setup)
+  assert_that(mode_out %in% c(1:5))
   assert_that(n_particles <= 20, msg = "Number of particles must be 20 or less")
   assert_that(mode_out %in% c(1:5)) #TBC
 
